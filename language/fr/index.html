@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio Accent Parisien — Analyse de fluidité</title>
+<style>
+  :root {
+    --bg: #0f1220;
+    --panel: #1a1e33;
+    --panel2: #22274a;
+    --text: #e8eaf6;
+    --muted: #9aa0c3;
+    --accent: #4f7cff;
+    --user: #43d9a3;
+    --ref: #ffb84f;
+    --danger: #ff5d73;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    max-width: 1000px;
+    margin-inline: auto;
+  }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  h1 span { color: var(--accent); }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+  h2 { font-size: 1.05rem; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot.user { background: var(--user); }
+  .dot.ref { background: var(--ref); }
+  section {
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+  button {
+    background: var(--accent); color: white; border: none;
+    padding: 10px 18px; border-radius: 10px; font-size: 0.95rem;
+    cursor: pointer; font-weight: 600;
+  }
+  button:hover { filter: brightness(1.15); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.rec { background: var(--danger); }
+  button.ghost { background: var(--panel2); color: var(--text); }
+  input[type="file"] { color: var(--muted); font-size: 0.85rem; }
+  canvas {
+    width: 100%; height: 180px; display: block;
+    background: #0b0e1a; border-radius: 10px;
+  }
+  canvas.small { height: 140px; }
+  .stats {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;
+  }
+  .stat {
+    background: var(--panel2); border-radius: 10px;
+    padding: 10px 14px; min-width: 120px;
+  }
+  .stat .val { font-size: 1.3rem; font-weight: 700; }
+  .stat .val.good { color: var(--user); }
+  .stat .val.bad { color: var(--danger); }
+  .stat .lbl { font-size: 0.75rem; color: var(--muted); }
+  .timer { font-variant-numeric: tabular-nums; color: var(--muted); }
+  .hint { font-size: 0.85rem; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+  .hint b { color: var(--text); }
+  .legend { font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 12px; vertical-align: middle; }
+  .phrases { display: grid; gap: 10px; }
+  .phrase {
+    background: var(--panel2); border-radius: 10px; padding: 12px 14px;
+    cursor: pointer; transition: outline 0.1s;
+    outline: 2px solid transparent;
+  }
+  .phrase:hover { outline-color: var(--accent); }
+  .phrase.active { outline-color: var(--user); }
+  .phrase .ecrit { color: var(--muted); font-size: 0.85rem; }
+  .phrase .parisien { font-size: 1.1rem; font-weight: 600; margin: 4px 0; }
+  .phrase .astuce { font-size: 0.8rem; color: var(--muted); }
+  .target {
+    background: var(--panel2); border-left: 4px solid var(--user);
+    border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;
+    font-size: 1.15rem; font-weight: 600; min-height: 1.4em;
+  }
+  audio { height: 34px; }
+  .msg { color: var(--danger); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<h1>🎙️ Studio <span>Accent Parisien</span></h1>
+<p class="sub">Enregistre ta voix, vois exactement où elle « casse », compare ta mélodie à celle d'un natif.</p>
+<p style="margin:-8px 0 20px"><a href="cours.html" style="display:inline-block;background:#4f7cff;color:#fff;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:10px">📚 Ouvrir le cours complet — L'Art Oral du Français</a></p>
+
+<!-- ===================== PHRASES ===================== -->
+<section>
+  <h2>1. Choisis une phrase d'entraînement (ou improvise)</h2>
+  <div class="target" id="target">Clique sur une phrase ci-dessous, puis enregistre-toi en la disant d'un seul souffle.</div>
+  <div class="phrases" id="phrases"></div>
+</section>
+
+<!-- ===================== TA VOIX ===================== -->
+<section>
+  <h2><span class="dot user"></span> 2. Ta voix</h2>
+  <div class="controls">
+    <button id="btnRecUser">● Enregistrer</button>
+    <span class="timer" id="timerUser">00.0 s</span>
+    <audio id="audioUser" controls style="display:none"></audio>
+    <button id="btnSlowUser" class="ghost" style="display:none">🐢 Lecture 0.75×</button>
+    <span class="msg" id="msgUser"></span>
+  </div>
+  <canvas id="cvUser"></canvas>
+  <div class="legend">
+    <i style="background:#3a4066"></i> forme d'onde
+    <i style="background:var(--user)"></i> mélodie (pitch)
+    <i style="background:var(--danger)"></i> cassure (pause dans la phrase)
+  </div>
+  <div class="stats" id="statsUser"></div>
+  <p class="hint" id="verdict"></p>
+</section>
+
+<!-- ===================== RÉFÉRENCE ===================== -->
+<section>
+  <h2><span class="dot ref"></span> 3. Voix de référence (natif parisien)</h2>
+  <div class="controls">
+    <input type="file" id="fileRef" accept="audio/*">
+    <button id="btnRecRef" class="ghost">● Ou enregistrer une référence</button>
+    <span class="timer" id="timerRef"></span>
+    <audio id="audioRef" controls style="display:none"></audio>
+  </div>
+  <canvas id="cvRef" class="small"></canvas>
+  <p class="hint">Télécharge un mot ou une phrase depuis <b>Forvo</b> (choisis un locuteur d'Île-de-France),
+  ou extrais 3–5 secondes d'un YouTubeur parisien (Hugo Décrypte, etc.), puis charge le fichier ici.</p>
+</section>
+
+<!-- ===================== COMPARAISON ===================== -->
+<section>
+  <h2>4. Comparaison des mélodies</h2>
+  <canvas id="cvCompare" class="small"></canvas>
+  <div class="legend">
+    <i style="background:var(--user)"></i> toi
+    <i style="background:var(--ref)"></i> référence
+    — les deux courbes sont alignées dans le temps (0 → 100 % de la phrase)
+  </div>
+  <p class="hint"><b>Objectif parisien :</b> une ligne plutôt plate et continue, avec une seule montée
+  sur la <b>toute dernière syllabe</b> du groupe. Si ta courbe fait des vagues ou des trous au milieu,
+  c'est le rythme wolof/sérère (accent en début de mot) qui ressort.</p>
+</section>
+
+<script>
+"use strict";
+
+/* ---------------- Phrases d'entraînement ---------------- */
+const PHRASES = [
+  { ecrit: "Je ne sais pas.", parisien: "Chais pas.", astuce: "Le « je ne » disparaît complètement. Une seule syllabe d'attaque, douce." },
+  { ecrit: "Je te dis que c'est un avion.", parisien: "Jte di ksé‑t‑un‑na‑VION.", astuce: "Liaison obligatoire : « un‑navion ». Tout collé, montée sur VION." },
+  { ecrit: "Il y a beaucoup de monde.", parisien: "Ya bou‑coup‑d'MONDE.", astuce: "« Il y a » → « ya ». Aucune pause avant MONDE." },
+  { ecrit: "Je vais acheter un café.", parisien: "Jvè‑ach‑té‑un‑ca‑FÉ.", astuce: "Un seul bloc, un seul souffle. La voix ne monte que sur FÉ." },
+  { ecrit: "Du coup, j'y vais.", parisien: "Du‑coup, j'y‑VÈ~", astuce: "Étire légèrement la dernière syllabe vers le haut, à la parisienne." },
+  { ecrit: "Tu as vu ce qu'il a fait ?", parisien: "T'a‑vu‑skil‑a‑FÈ ?", astuce: "« ce qu'il » → « skil ». Question : montée nette à la fin seulement." },
+];
+
+const phrasesDiv = document.getElementById("phrases");
+const targetDiv = document.getElementById("target");
+PHRASES.forEach((p) => {
+  const d = document.createElement("div");
+  d.className = "phrase";
+  d.innerHTML = `<div class="ecrit">${p.ecrit}</div><div class="parisien">${p.parisien}</div><div class="astuce">💡 ${p.astuce}</div>`;
+  d.onclick = () => {
+    document.querySelectorAll(".phrase").forEach(x => x.classList.remove("active"));
+    d.classList.add("active");
+    targetDiv.textContent = p.parisien + "  (" + p.ecrit + ")";
+  };
+  phrasesDiv.appendChild(d);
+});
+
+/* ---------------- Analyse audio ---------------- */
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+
+function analyse(buffer) {
+  const sr = buffer.sampleRate;
+  const x = buffer.getChannelData(0);
+  const N = 2048, H = 512;
+  const nFrames = Math.max(0, Math.floor((x.length - N) / H));
+  const rms = new Float32Array(nFrames);
+  const pitch = new Float32Array(nFrames); // 0 = non voisé
+  const tauMin = Math.floor(sr / 400), tauMax = Math.floor(sr / 60);
+
+  let maxRms = 0;
+  for (let f = 0; f < nFrames; f++) {
+    const off = f * H;
+    let s = 0;
+    for (let i = 0; i < N; i++) s += x[off + i] * x[off + i];
+    rms[f] = Math.sqrt(s / N);
+    if (rms[f] > maxRms) maxRms = rms[f];
+  }
+  const thr = Math.max(0.008, maxRms * 0.09);
+
+  // Pitch par autocorrélation normalisée (YIN simplifié)
+  const d = new Float32Array(tauMax + 1);
+  for (let f = 0; f < nFrames; f++) {
+    if (rms[f] < thr) continue;
+    const off = f * H;
+    let cum = 0;
+    let bestTau = 0, bestVal = 1;
+    for (let tau = 1; tau <= tauMax; tau++) {
+      let sum = 0;
+      for (let i = 0; i < N - tauMax; i++) {
+        const diff = x[off + i] - x[off + i + tau];
+        sum += diff * diff;
+      }
+      cum += sum;
+      d[tau] = cum > 0 ? sum * tau / cum : 1;
+      if (tau >= tauMin && d[tau] < bestVal) { bestVal = d[tau]; bestTau = tau; }
+    }
+    if (bestTau > 0 && bestVal < 0.3) pitch[f] = sr / bestTau;
+  }
+
+  // Détection des cassures : silences > 180 ms à l'intérieur de la parole
+  const frameDur = H / sr;
+  let first = -1, last = -1;
+  for (let f = 0; f < nFrames; f++) if (rms[f] >= thr) { if (first < 0) first = f; last = f; }
+  const gaps = [];
+  if (first >= 0) {
+    let gapStart = -1;
+    for (let f = first; f <= last; f++) {
+      if (rms[f] < thr) { if (gapStart < 0) gapStart = f; }
+      else if (gapStart >= 0) {
+        const dur = (f - gapStart) * frameDur;
+        if (dur > 0.18) gaps.push({ start: gapStart, end: f, dur });
+        gapStart = -1;
+      }
+    }
+  }
+  const spanDur = first >= 0 ? (last - first + 1) * frameDur : 0;
+  const gapDur = gaps.reduce((a, g) => a + g.dur, 0);
+  const continuity = spanDur > 0 ? 1 - gapDur / spanDur : 0;
+
+  return { x, sr, rms, pitch, gaps, first, last, frameDur, spanDur, continuity, thr };
+}
+
+/* ---------------- Rendu ---------------- */
+function fitCanvas(cv) {
+  const w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w * devicePixelRatio; cv.height = h * devicePixelRatio;
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  return [ctx, w, h];
+}
+
+function pitchY(hz, h) {
+  // échelle log 60–400 Hz
+  const t = (Math.log(hz) - Math.log(60)) / (Math.log(400) - Math.log(60));
+  return h - 10 - t * (h - 40);
+}
+
+function draw(cv, a, color) {
+  const [ctx, w, h] = fitCanvas(cv);
+  ctx.clearRect(0, 0, w, h);
+  if (!a) return;
+  const n = a.rms.length;
+  if (n === 0) return;
+
+  // cassures en fond rouge
+  ctx.fillStyle = "rgba(255,93,115,0.22)";
+  for (const g of a.gaps) {
+    const x0 = g.start / n * w, x1 = g.end / n * w;
+    ctx.fillRect(x0, 0, x1 - x0, h);
+  }
+
+  // forme d'onde (enveloppe RMS)
+  ctx.fillStyle = "#3a4066";
+  const mid = h / 2;
+  let maxR = 0; for (let i = 0; i < n; i++) maxR = Math.max(maxR, a.rms[i]);
+  for (let f = 0; f < n; f++) {
+    const amp = maxR > 0 ? a.rms[f] / maxR : 0;
+    const bh = Math.max(1, amp * (h * 0.85));
+    ctx.fillRect(f / n * w, mid - bh / 2, Math.max(1, w / n), bh);
+  }
+
+  // courbe de pitch
+  ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.lineCap = "round";
+  ctx.beginPath();
+  let pen = false;
+  for (let f = 0; f < n; f++) {
+    if (a.pitch[f] > 0) {
+      const px = f / n * w, py = pitchY(a.pitch[f], h);
+      if (pen) ctx.lineTo(px, py); else { ctx.moveTo(px, py); pen = true; }
+    } else pen = false;
+  }
+  ctx.stroke();
+}
+
+function drawCompare(aU, aR) {
+  const cv = document.getElementById("cvCompare");
+  const [ctx, w, h] = fitCanvas(cv);
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = "#2a2f52"; ctx.setLineDash([4, 4]);
+  for (const hz of [100, 150, 200, 300]) {
+    const y = pitchY(hz, h);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    ctx.fillStyle = "#5a6090"; ctx.font = "10px sans-serif";
+    ctx.fillText(hz + " Hz", 4, y - 3);
+  }
+  ctx.setLineDash([]);
+  const plot = (a, color) => {
+    if (!a || a.first < 0) return;
+    const span = a.last - a.first;
+    if (span <= 0) return;
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let pen = false;
+    for (let f = a.first; f <= a.last; f++) {
+      if (a.pitch[f] > 0) {
+        const px = (f - a.first) / span * w, py = pitchY(a.pitch[f], h);
+        if (pen) ctx.lineTo(px, py); else { ctx.moveTo(px, py); pen = true; }
+      } else pen = false;
+    }
+    ctx.stroke();
+  };
+  plot(aR, getComputedStyle(document.documentElement).getPropertyValue("--ref").trim() || "#ffb84f");
+  plot(aU, getComputedStyle(document.documentElement).getPropertyValue("--user").trim() || "#43d9a3");
+}
+
+/* ---------------- Stats + verdict ---------------- */
+function showStats(a) {
+  const div = document.getElementById("statsUser");
+  const pct = Math.round(a.continuity * 100);
+  const nb = a.gaps.length;
+  div.innerHTML = `
+    <div class="stat"><div class="val">${a.spanDur.toFixed(1)} s</div><div class="lbl">durée de parole</div></div>
+    <div class="stat"><div class="val ${pct >= 90 ? "good" : pct >= 75 ? "" : "bad"}">${pct} %</div><div class="lbl">continuité</div></div>
+    <div class="stat"><div class="val ${nb === 0 ? "good" : "bad"}">${nb}</div><div class="lbl">cassure${nb > 1 ? "s" : ""}</div></div>`;
+  const v = document.getElementById("verdict");
+  if (a.spanDur < 0.3) {
+    v.textContent = "Enregistrement trop court ou micro trop faible — réessaie plus près du micro.";
+  } else if (nb === 0 && pct >= 90) {
+    v.innerHTML = "✅ <b>Excellent !</b> Ta phrase est un seul bloc fluide, exactement le rythme parisien. Vérifie maintenant la mélodie : montée uniquement sur la dernière syllabe.";
+  } else if (nb <= 2) {
+    v.innerHTML = `⚠️ Ta voix casse <b>${nb} fois</b> (zones rouges). Refais la phrase en <b>collant les mots</b> à ces endroits précis — imagine que l'espace entre les mots n'existe pas. Essaie aussi la lecture 🐢 pour entendre la coupure.`;
+  } else {
+    v.innerHTML = `🔴 <b>${nb} cassures</b> : c'est le rythme « staccato » (accent en début de mot, héritage du wolof). Exercice sirène : redis la phrase en étirant toutes les voyelles sans jamais couper le souffle (« iiillfaaaiiibooo »), puis reviens à la vitesse normale en gardant ce fil d'air continu.`;
+  }
+}
+
+/* ---------------- Enregistrement ---------------- */
+let aUser = null, aRef = null;
+
+async function record(btn, timerEl, audioEl, onBuffer) {
+  if (btn.dataset.rec === "1") { btn._stop(); return; }
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true } });
+  } catch (e) {
+    document.getElementById("msgUser").textContent = "Micro refusé — autorise le micro dans le navigateur.";
+    return;
+  }
+  await AC.resume();
+  const rec = new MediaRecorder(stream);
+  const chunks = [];
+  rec.ondataavailable = (e) => chunks.push(e.data);
+  const t0 = performance.now();
+  const iv = setInterval(() => { timerEl.textContent = ((performance.now() - t0) / 1000).toFixed(1) + " s"; }, 100);
+  rec.onstop = async () => {
+    clearInterval(iv);
+    stream.getTracks().forEach(t => t.stop());
+    btn.dataset.rec = "0"; btn.classList.remove("rec");
+    btn.textContent = btn.dataset.label;
+    const blob = new Blob(chunks, { type: rec.mimeType });
+    audioEl.src = URL.createObjectURL(blob);
+    audioEl.style.display = "inline-block";
+    const buf = await AC.decodeAudioData(await blob.arrayBuffer());
+    onBuffer(buf);
+  };
+  rec.start();
+  btn.dataset.rec = "1";
+  btn.dataset.label = btn.textContent;
+  btn.textContent = "■ Stop";
+  btn.classList.add("rec");
+  btn._stop = () => rec.stop();
+}
+
+const btnU = document.getElementById("btnRecUser");
+btnU.onclick = () => record(btnU, document.getElementById("timerUser"), document.getElementById("audioUser"), (buf) => {
+  aUser = analyse(buf);
+  draw(document.getElementById("cvUser"), aUser, "#43d9a3");
+  showStats(aUser);
+  drawCompare(aUser, aRef);
+  document.getElementById("btnSlowUser").style.display = "inline-block";
+});
+
+document.getElementById("btnSlowUser").onclick = () => {
+  const au = document.getElementById("audioUser");
+  au.playbackRate = au.playbackRate === 1 ? 0.75 : 1;
+  document.getElementById("btnSlowUser").textContent = au.playbackRate === 1 ? "🐢 Lecture 0.75×" : "▶ Vitesse normale";
+  au.play();
+};
+
+const btnR = document.getElementById("btnRecRef");
+btnR.onclick = () => record(btnR, document.getElementById("timerRef"), document.getElementById("audioRef"), (buf) => {
+  aRef = analyse(buf);
+  draw(document.getElementById("cvRef"), aRef, "#ffb84f");
+  drawCompare(aUser, aRef);
+});
+
+document.getElementById("fileRef").onchange = async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  await AC.resume();
+  const buf = await AC.decodeAudioData(await f.arrayBuffer());
+  aRef = analyse(buf);
+  const au = document.getElementById("audioRef");
+  au.src = URL.createObjectURL(f);
+  au.style.display = "inline-block";
+  draw(document.getElementById("cvRef"), aRef, "#ffb84f");
+  drawCompare(aUser, aRef);
+};
+
+window.addEventListener("resize", () => {
+  draw(document.getElementById("cvUser"), aUser, "#43d9a3");
+  draw(document.getElementById("cvRef"), aRef, "#ffb84f");
+  drawCompare(aUser, aRef);
+});
+</script>
+</body>
+</html>

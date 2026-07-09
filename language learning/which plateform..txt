@@ -1,0 +1,61 @@
+	\
+
+Registration Success
+Great, you have successfully registered a CJdropshipping account. You can log in your account with the username:
+""
+
+User questionnaire
+To offer a better service, we would like to learn more about you.
+
+1. Which platform are you running your store now?
+[Multiple Selection]
+
+ Shopify
+ Temu Semi-Managed
+ Temu Local
+ Shein Semi-Managed
+ TikTok Shop US (Local)
+ TikTok Shop US (Cross Border)
+ TikTok Shop (Non-US)
+ WooCommerce
+ Mercado
+ ShopLazza
+ eBay
+ AliExpress
+ Lazada
+ Shopee
+ Nuvemshop
+ Etsy
+ AllValue
+ MabangERP 
+ Shipstation 
+ Others
+ I don't have any online store yet
+2. How many orders do you need to process per day?
+[Single Selection]
+
+ 0 (I just start my business)
+ 1-5 (per day)
+ 6-50 (per day)
+ 51-200 (per day)
+ 201-1000 (per day)
+ more than 1000
+3. What categories of products do you mainly market?
+[Multiple Selection]
+
+ Women's Clothing
+ Pet Supplies
+ Home, Garden & Furniture
+ Health, Beauty & Hair
+ Jewelry & Watches
+ Men's Clothing
+ Bags & Shoes
+ Toys, Kids & Babies
+ Sports & Outdoors
+ Consumer Electronics
+ Home Improvement
+ Automobiles & Motorcycles
+ Phones & Accessories
+ Computer & Office
+Next
+Skip

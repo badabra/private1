@@ -1,0 +1,524 @@
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+*{box-sizing:border-box;margin:0;padding:0}
+.search-wrap{position:relative;margin-bottom:1.25rem}
+#searchInput{width:100%;padding:9px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg,12px);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;outline:none}
+#searchInput:focus{border-color:var(--color-border-primary)}
+.cat-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cat-btn{padding:5px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;font-size:12px;color:var(--color-text-secondary);white-space:nowrap;transition:all 0.15s}
+.cat-btn:hover:not(.active){background:var(--color-background-secondary)}
+.cat-btn.active{font-weight:500;border-color:transparent}
+.c-spacing.active{background:#E1F5EE;color:#085041}
+.c-movement.active{background:#EEEDFE;color:#3C3489}
+.c-input.active{background:#FAEEDA;color:#633806}
+.c-weapon.active{background:#FAECE7;color:#993C1D}
+.c-mental.active{background:#E6F1FB;color:#0C447C}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-text-tertiary);margin:1.5rem 0 0.5rem}
+.term-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md,8px);margin-bottom:6px;overflow:hidden;cursor:pointer;transition:border-color 0.12s}
+.term-row:hover{border-color:var(--color-border-secondary)}
+.term-row.open{border-color:var(--color-border-primary)}
+.term-head{display:flex;align-items:center;gap:10px;padding:9px 12px}
+.abbr{font-size:11px;font-weight:500;padding:2px 7px;border-radius:8px;white-space:nowrap;min-width:44px;text-align:center;flex-shrink:0}
+.term-name{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1;min-width:0}
+.term-short{font-size:12px;color:var(--color-text-tertiary);flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chevron{font-size:14px;color:var(--color-text-tertiary);transition:transform 0.18s;flex-shrink:0}
+.term-row.open .chevron{transform:rotate(180deg)}
+.term-body{display:none;padding:10px 12px 14px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.term-body.open{display:block}
+.def{font-size:13px;color:var(--color-text-secondary);line-height:1.7;white-space:pre-line}
+.ex{margin-top:10px;font-size:12px;color:var(--color-text-secondary);border-left:2px solid var(--color-border-info);padding-left:10px;line-height:1.65}
+.ex strong{color:var(--color-text-info);font-weight:500}
+.warn{margin-top:8px;font-size:12px;border-left:2px solid var(--color-border-warning);padding:6px 10px;background:var(--color-background-warning);color:var(--color-text-warning);border-radius:0 var(--border-radius-md,8px) var(--border-radius-md,8px) 0;line-height:1.6}
+.warn strong{font-weight:500}
+.rank-box{margin-top:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md,8px);overflow:hidden}
+.rank-row{display:flex;align-items:center;gap:12px;padding:7px 12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.rank-row:last-child{border-bottom:none}
+.rank-num{font-size:11px;font-weight:700;min-width:22px;text-align:center;color:var(--color-text-tertiary)}
+.rank-wpn{font-size:13px;font-weight:500;color:var(--color-text-primary);min-width:90px}
+.rank-note{font-size:12px;color:var(--color-text-secondary)}
+.step-box{margin-top:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md,8px);padding:10px 12px}
+.step-title{font-size:12px;font-weight:600;color:var(--color-text-primary);margin-bottom:8px}
+.step{font-size:12px;color:var(--color-text-secondary);line-height:1.75;padding-left:16px;position:relative;margin-bottom:2px}
+.step::before{content:"→";position:absolute;left:0;color:var(--color-text-tertiary)}
+.no-results{padding:2rem;text-align:center;color:var(--color-text-tertiary);font-size:14px}
+@media(max-width:500px){.term-short{display:none}}
+</style>
+
+<h2 class="sr-only">Brawlhalla guide 9 — spacing system, movement depth, input mastery, weapon difficulty, mental performance</h2>
+
+<div style="padding:1rem 0">
+<div class="search-wrap"><input id="searchInput" placeholder="Search spacing, movement, mental, inputs..." oninput="render()"></div>
+<div class="cat-nav" id="catNav"></div>
+<div id="content"></div>
+</div>
+
+<script>
+const CATS=[
+  {id:"all",label:"All",cls:""},
+  {id:"spacing",label:"Spacing system",cls:"c-spacing"},
+  {id:"movement",label:"Movement depth",cls:"c-movement"},
+  {id:"input",label:"Input mastery",cls:"c-input"},
+  {id:"weapon",label:"Weapon difficulty",cls:"c-weapon"},
+  {id:"mental",label:"Mental performance",cls:"c-mental"},
+];
+const COLORS={
+  spacing:"background:#E1F5EE;color:#085041",
+  movement:"background:#EEEDFE;color:#3C3489",
+  input:"background:#FAEEDA;color:#633806",
+  weapon:"background:#FAECE7;color:#993C1D",
+  mental:"background:#E6F1FB;color:#0C447C",
+};
+const CAT_NAMES={spacing:"Spacing system",movement:"Movement depth",input:"Input mastery",weapon:"Weapon difficulty",mental:"Mental performance"};
+const CAT_ORDER=["spacing","movement","input","weapon","mental"];
+
+const TERMS=[
+
+// SPACING SYSTEM
+{cat:"spacing",abbr:"SpTool",name:"Spacing is a tool, not the goal",short:"Spacing creates the opportunity — what you do after is the real skill",
+def:`The most important framing for spacing. Most players who learn spacing treat it as the goal itself. They create the distance and then stand there, thinking they are safe. That is only half the work.
+
+Spacing is step one of a process. The process is:
+1. Create the correct distance (spacing)
+2. Move around and stay unpredictable within that distance
+3. Look for opportunities to attack or dodge
+4. React accordingly — either punish or escape
+
+If you create the correct distance and then do nothing, your opponent just adjusts and enters your range anyway. Spacing without action is wasted spacing.
+
+THE REAL FOCUS: keep spacing in the back of your mind but make your active attention about what you do after the spacing is established. Are you ready to punish? Are you watching for an approach? Are you about to bait? That is the actual game.
+
+Spacing unlocks three things: easier reactions to incoming attacks, better positioning to punish whiffs, and better angles to approach and attack. But all three only activate if you are actively doing something with the spacing — not just standing at the correct distance.`,
+ex:`You create the correct mid-range distance against a sword player. Old approach: stand there and wait. They adjust and attack you. New approach: immediately start moving within that range — small dashes, jump around, drift. They try to attack. You were already moving. The spacing created the reaction window. Your movement within the spacing used it.`},
+
+{cat:"spacing",abbr:"3Dist",name:"Three spacing distances",short:"Short, medium, long — only medium gives you all three benefits",
+def:`There are exactly three spacing distances, each with different properties:
+
+SHORT DISTANCE (inside opponent threat zone): you can attack them AND they can attack you. Both players are in mutual danger. High commitment, high risk. Good for close-range combo weapons (gauntlets, katars) that need to be inside range.
+
+LONG DISTANCE (outside all threat zones): you are completely safe but cannot attack. Nothing is happening. This is wasted positioning — you are safe but irrelevant.
+
+MEDIUM DISTANCE (the sweet spot): you are just outside the opponent threat zone but within your own attack range. Here you get all three benefits simultaneously:
+1. You can react and dodge their attack attempts before they reach you
+2. When they commit and miss, you are in perfect range to punish immediately
+3. You can approach and attack with higher accuracy because the distance is already correct
+
+The sweet spot is slightly different for each weapon matchup. A spear player needs a larger sweet spot than a gauntlet player. Finding the exact sweet spot for your weapon versus each opponent weapon is a significant skill that develops through experience.`,
+ex:`Against a sword player, your medium distance is approximately 3-4 character lengths. At 2 lengths (short) their NLight can tag you. At 6 lengths (long) neither of you threatens anything. At 3-4 lengths their NLight misses and yours reaches with a dash. That 1-character band is your entire neutral game location.`},
+
+{cat:"spacing",abbr:"MicroSp",name:"Microspacing",short:"Pixel-level precision — what separates Diamond from Valhallan",
+def:`Microspacing is the ability to create a distance so precise that the opponent thinks they can hit you but they are literally a fraction of a centimeter outside your hurtbox.
+
+At the microspacing level, you are not just "at mid-range" — you are at exactly the right pixel where their attack tip passes one pixel in front of you. They see you, they think they are in range, they commit. The attack misses. You punish.
+
+This is identified as the single thing that most separates Diamond from Valhallan players. It requires approximately 2000+ actual in-game hours to implement consistently. It is not something to stress about while in Gold or Plat — it is a long-term development that happens through accumulated game sense.
+
+HOW IT DEVELOPS: you cannot practice microspacing directly. It develops as a byproduct of thousands of spacing interactions. Your brain gradually calibrates the exact pixel ranges of every weapon from experience. What you CAN do now: practice drifting (see below) and moving precisely, which builds the foundation for microspacing over time.
+
+DRIFTING AS THE FOUNDATION: the most accessible path to microspacing is learning to use aerial drift to position precisely at landing. Instead of landing at a fixed spot determined by your jump arc, drift adjustments let you control exactly where you land — which is the core of microspacing.`,
+ex:`You are in the air against a spear player. Their SAir has a specific reach. Microspacing is landing at exactly the pixel where their SAir tip passes in front of you. They throw it. It misses by one pixel. You punish the recovery. At normal spacing you might land just inside their range and take the hit. Microspacing is the difference between that hit landing or missing.`},
+
+{cat:"spacing",abbr:"PervVis",name:"Peripheral vision for game awareness",short:"Focus on one point — see the whole stage simultaneously",
+def:`Most players at Gold-Plat look at the game without actually seeing it clearly. They are looking AT things rather than THROUGH them. The result is they have narrow awareness — they see the opponent but miss their own position, the stage edges, and approaching threats.
+
+PERIPHERAL VISION TECHNIQUE: pick a specific focal point (the opponent center-mass is good). Without moving your eyes off that point, expand your awareness outward to also take in:
+- Your own position on stage
+- Distance to blast zones
+- Platform positions
+- The opponent full body including feet (landing timing)
+
+When your focal point is the opponent and your peripheral vision is active, you see the whole picture simultaneously instead of scanning around losing frames of information.
+
+HOW TO PRACTICE: stare at a fixed point (the center of your screen) and practice maintaining awareness of the edges of the screen without moving your eyes. Start with 20-30 seconds and build up. In-game: fix your attention on the opponent and practice describing your own stage position without looking directly at it.
+
+FOR 2V2: peripheral vision becomes even more important. With proper peripheral vision you can see the entire stage at once and track both opponents simultaneously.`,
+ex:`You are fighting at center. Old approach: eyes scan between yourself, the opponent, the edge. Each scan takes frames. During a scan frame, you miss the opponent starting an attack. New approach: eyes locked on opponent, peripheral vision covering your position and the edge simultaneously. You catch the attack startup without looking away. React time is faster because no scan delay.`},
+
+{cat:"spacing",abbr:"BubPres",name:"Pressure bubble",short:"Hover around the threat zone without entering — makes them panic",
+def:`The pressure bubble is a specific spacing tactic: you stay just outside the opponent threat zone and move around the perimeter of it, creating the impression that you might enter at any moment without actually doing so.
+
+WHAT IT DOES: players under pressure bubble start to panic. They dodge preemptively (burning dodge cooldown), throw attacks into empty space (burning endlag), or jump away (burning air options). All of these are commitments you can punish.
+
+HOW TO DO IT: imagine an invisible circle around your opponent about one attack reach in radius. Move around the edge of this circle. Drift toward it, back off. Approach from one side, pull back. Never enter. The opponent sees you constantly threatening and cannot tell when the real attack is coming.
+
+THIS IS DIFFERENT FROM EMPTY APPROACH: an empty approach enters and exits quickly. The pressure bubble is sustained hovering. You are not going in and out — you are continuously circling the boundary.
+
+RESULT: the opponent fires first. They panic and commit to an attack or a dodge to stop the pressure. Their commit is your opening.`,
+ex:`You spend 8 seconds circling your opponent at sword tip range. Drifting toward them from the right. Pulling back. Jumping toward them. Landing outside their range. They are watching you the whole time feeling completely threatened without being able to do anything. At second 9 they throw a panicked NLight at max range. You were already outside range. Their NLight whiffs. You dash in and DLight into full combo.`},
+
+{cat:"spacing",abbr:"DriftSp",name:"Drifting as a spacing tool",short:"Mix drift directions in the air to confuse landing timing and create microspacing",
+def:`Aerial drift (holding a direction in the air) is not just for chasing or escaping. Used correctly it is one of the primary tools for precise spacing and landing mix-ups.
+
+THREE DRIFT APPLICATIONS FOR SPACING:
+
+LANDING TIMING MIX-UP: if you always drift in the same direction on the same jump arc, the opponent calibrates to your landing spot and timing. If you vary — drift right, then left, then fast fall, then drift right again — your landing spots and timing become unpredictable. The opponent cannot time an anti-air because they do not know when or where you will land.
+
+MICROSPACING FOUNDATION: drifting outward (away from the opponent) as they attack creates the pixel gap that makes their attack miss. You do not need to jump backward — a small drift while already airborne creates enough distance without wasted movement.
+
+OFF-STAGE DRIFT: off-stage, drifting away from aggressive edgeguarders creates distance while preserving options. Instead of using jumps or dodge to escape, a drift outward followed by a drift back in changes your trajectory without spending resources.`,
+ex:`You are airborne in the opponent threat zone. Instead of committing to a landing position, you drift left, then drift right, then fast fall slightly. Three different landing trajectories in the time it took them to read one. They were positioned for your first drift direction. Your second drift landed you behind them. Free attack.`},
+
+{cat:"spacing",abbr:"HBCov",name:"Weapon hitbox coverage zones",short:"Each weapon covers a different area — your spacing zone depends on their weapon",
+def:`Every weapon in Brawlhalla has a specific hitbox coverage pattern — the area around the legend where attacks can connect. Understanding this changes where your sweet-spot spacing zone is for each matchup.
+
+COVERAGE TYPES:
+HORIZONTAL: sword SLight, spear SLight — primarily extend forward. Spacing: stay outside the forward reach.
+DOWNWARD: DAir, ground pound, scythe attacks — cover below the legend. Spacing: do not be directly below a jumping opponent.
+UPWARD: NAir, recovery attacks — cover above the legend. Spacing: avoid being directly above unless you have an aerial answer.
+WIDE: gauntlet NAir, some sig hitboxes — cover a large radius. Spacing: need more total distance.
+TIGHT: blasters — very small hitbox "dots." Spacing: precise pixel game, slight drift can evade.
+
+PRACTICAL APPLICATION: before a match, think "what is this weapon best at covering?" Then position in the zones they cannot cover easily. A spear player covers horizontal range well. Stay above them or get inside their reach where long attacks cannot pivot.`,
+ex:`Facing a blaster player. Their hitboxes are small and precise. You do not need large distance — you need precise drift. Tiny movement adjustments make their tight hitboxes miss. Facing a hammer player. Their sigs cover a wide burst radius. You need more overall distance, not more precision. Different weapon, completely different spacing strategy.`},
+
+// MOVEMENT DEPTH
+{cat:"movement",abbr:"EmptyHop",name:"Empty hop",short:"Dash + jump + hold back = close weird angle aerial with cancelled momentum",
+def:`An empty hop is a specific technique for getting an unusual close-range aerial angle that a normal dash jump cannot achieve.
+
+NORMAL DASH JUMP: dash forward, jump. You carry full dash momentum and travel a long horizontal distance airborne. Good for chase, bad for close angles.
+
+EMPTY HOP: dash forward, jump, then IMMEDIATELY hold back (opposite direction of the dash). This cancels the forward momentum mid-jump. Instead of traveling far, you go up and slightly forward, landing very close to where you started.
+
+RESULT: you are airborne at a weird close-range angle that looks nothing like a normal dash jump. From this angle you can hit attacks that would be impossible from standing or from a full momentum dash jump.
+
+BEST WEAPONS FOR EMPTY HOP: spear and bow. These weapons have attacks that benefit enormously from getting close at unexpected angles. SAir, NAir, and DAir from an empty hop angle catch opponents who were set up for a farther jump.
+
+INPUT: dash, tap jump, immediately hold back. The hold back must happen almost simultaneously with the jump input — if you delay, you have already carried too much momentum to cancel.`,
+ex:`You are using spear. Opponent expects your dash jump approach with full momentum and positions to anti-air at that distance. You empty hop instead. Your jump goes up and lands close to your start position, not at where they prepared. You SAir from this unexpected close angle. They had no answer set up for that trajectory.`,
+warn:`Empty hopping requires the back input almost at the same time as the jump. If you are getting normal dash jumps, you are holding back too late. Practice the timing in training mode specifically.`},
+
+{cat:"movement",abbr:"NoMove",name:"Sometimes not moving is best",short:"When you have stage control — stillness is a choice, not laziness",
+def:`Movement is a tool. Like all tools, there are times not to use it.
+
+When you have stage control — you are at center, the opponent is approaching, you have the positional advantage — aggressive movement can actually give away the advantage. If you dash in when they are already coming to you, you close the distance when distance is your weapon.
+
+THE RULE: if you are in a position where your opponent must come to you, do not go to them. Let the distance work for you. Stand still or use only small adjustments (walking, micro-dashes) to maintain your position.
+
+This is different from standing still out of laziness or hesitation. This is deliberately choosing stillness because movement would reduce your advantage. The best movement is sometimes zero movement.
+
+WHEN TO APPLY: you have center, opponent is at an edge. You have a damage lead at high percent. The opponent is in disadvantage recovering. Any of these situations where moving forward would be worse than waiting.`,
+ex:`You have center, opponent is at the right edge at 90%. They need to come back through you. If you dash toward them, you close the distance and they have more options. If you stand at center and wait, they must walk into your attack range under your terms. You stay still. They walk toward you. You DLight when they enter range. Stage control did the work. You did nothing.`},
+
+{cat:"movement",abbr:"DashVCD",name:"Dash vs chase dodge after hitting",short:"Dashes are often safer than CDodge for follow-up — know when to use each",
+def:`After landing an attack, most players automatically chase dodge. But dashes are often the better choice for follow-up. Here is why:
+
+CHASE DODGE PROBLEMS: chase dodge spends your dodge (puts regular dodge on cooldown), sends you very far (overshoots on close-range opponents), and is harder to control direction compared to a dash. You are also committed — you cannot cancel a CDodge as easily.
+
+DASH ADVANTAGES: a dash after hitting preserves your dodge. You have more precise distance control. You can stop the dash earlier if the opponent did something unexpected. You have more options at the end of the dash.
+
+WHEN CHASE DODGE IS BETTER: the opponent was launched far away and you need to cover distance fast. A vertical CDodge upward for juggling. Off-stage situations where you need speed and distance.
+
+WHEN DASH IS BETTER: close-range follow-ups where you do not want to overshoot. When your dodge might be needed defensively in the next interaction. When you want more control over your approach speed.
+
+THE INPUT TO FORCE A DASH (not CDodge): after hitting someone, hold DOWN while pressing your movement direction. This forces a dash instead of a CDodge. Without holding down, the CDodge fires automatically.`,
+ex:`You land a DLight. Opponent is right in front of you. CDodge would send you flying past them. Dash instead: hold down + right, you slide forward a short controlled distance, DLight range closes perfectly. Your dodge is preserved for the next interaction. Better control, better positioning, dodge saved.`},
+
+{cat:"movement",abbr:"ExhRec",name:"Exhausted recovery",short:"Second recovery use = much less upward force",
+def:`Your recovery move (neutral heavy in the air) has two versions depending on whether you have already used it:
+
+FIRST RECOVERY: full force, full upward momentum. This is your primary recovery option.
+
+EXHAUSTED RECOVERY: if you use recovery twice in a row without touching the ground or wall, the second one gives significantly less upward force. It still fires, but you barely go up.
+
+WHY THIS MATTERS FOR RECOVERY: if you use your recovery early and then need it again to get back to stage, the second one may not give you enough height. This is why saving your first recovery for when you actually need it is important.
+
+USEFUL TECH — ESCAPE GROUND POUND: if an opponent ground pounds you while you are off-stage, you can use an exhausted recovery deliberately to dodge the ground pound hitbox and then chase dodge to the wall or stage. The exhaust recovery still moves you slightly and gives you i-frames, which can avoid the GP, and you immediately get a CDodge charge from the hit attempt.
+
+JUMPS ON STAGE: you have 3 jumps on stage (ground jump + 2 air jumps). Off-stage you have 2 jumps + recovery. This is not the same as 3 air jumps — the ground jump is only available when touching ground.`,
+ex:`Opponent ground pounds you off-stage. You are below the stage. Instead of trying to dodge the ground pound directly, you fire an exhausted recovery — it barely moves you but the active frames avoid the ground pound hitbox. You take no hit. You kept your CDodge and first recovery. You use them to safely return to stage.`},
+
+{cat:"movement",abbr:"CDMomCan",name:"Chase dodge momentum cancel",short:"Hold aim-up + opposite direction to stop mid-chase dodge",
+def:`After a chase dodge, you normally travel the full distance of the CDodge in the triggered direction. But you can cancel this momentum mid-chase dodge:
+
+INPUT: as you CDodge, simultaneously hold aim-up key AND hold the OPPOSITE direction of your CDodge. This kills your CDodge momentum and stops you early.
+
+WHY USE IT: you chase dodged too far and are about to overshoot your combo target. Cancelling mid-CDodge lets you stop at the right distance and still fire the follow-up attack.
+
+EXAMPLE FOR DIAGONAL: if you CDodge diagonally down-right, to cancel: hold aim-up (W key typically) AND hold down+left (S and A). The opposing forces stop your momentum.
+
+DELAYED CHASE DODGE: separately, you can delay when the CDodge fires by up to approximately 5 frames after the attack. Instead of firing immediately, you wait a beat before triggering the CDodge. Useful for timing the chase to arrive at the opponent as they peak or descend rather than while still flying.`,
+ex:`You land a SAir. The CDodge fires but the opponent was closer than expected. Without cancel you fly past them into empty space. With momentum cancel: CDodge fires, you immediately hold aim-up + opposite direction, you stop right next to them. Fire the follow-up attack. The CDodge carried you to the right distance and no further.`},
+
+{cat:"movement",abbr:"LagDash",name:"Shorter lag dash",short:"Hold opposite direction while dashing = shorter slower dash",
+def:`A standard forward dash travels a long distance. If you need to advance just slightly — to close a small gap without overshooting — a lag dash covers less distance.
+
+INPUT: hold your movement direction AND simultaneously hold the OPPOSITE direction. The conflicting inputs reduce your momentum. You dash in the primary direction but cover less ground.
+
+ALSO CALLED: short dash, controlled dash.
+
+WHEN TO USE: you are at medium range and need to advance by one step, not a full dash. Opponent is just slightly outside your DLight range. A full dash overshoots. A lag dash closes exactly the right amount.
+
+TURNAROUND DASH (related): instead of backdashing (which is slower and shorter), turn your legend around first and then forward dash in the direction you want to go. Since forward dashes are faster and longer than backdashes, a turnaround forward dash gives you more effective backward distance than a backdash.`,
+ex:`You are at medium-range. Opponent is half a dash length outside your DLight range. Full dash: you slide past them into their range, taking a hit. Lag dash: you advance exactly half a dash length, DLight range closes perfectly. One controlled step instead of a full commitment.`},
+
+{cat:"movement",abbr:"MovStat",name:"Movement stat does not affect dashes",short:"Speed stat affects walking and air speed — not dash distance or speed",
+def:`A common misconception: high movement stat = faster dashes. This is incorrect.
+
+WHAT MOVEMENT STAT DOES AFFECT:
+- Walking speed (meaningful for footsies and micro-adjustments)
+- Air speed (very significant for recovery and aerial chase)
+- Small movement speed
+
+WHAT MOVEMENT STAT DOES NOT AFFECT:
+- Dash distance
+- Dash speed
+- CDodge distance
+
+PRACTICAL IMPLICATION: if you are comparing two legends and one has higher movement speed, their dash will NOT cover more ground. The advantage is in small movement precision and air speed. This particularly matters off-stage — a higher movement legend recovers from off-stage significantly better because their air speed is faster.
+
+FOR BODVAR SPECIFICALLY: Bodvar has balanced stats including movement. His dash and CDodge perform identically to other similarly-statted legends. His movement advantage shows in aerial situations.`,
+ex:`You play a high-movement-stat legend vs a low-movement-stat legend. Both dash at the same time from the same distance. Both cover the same distance. No difference. Now both jump off-stage and return. High-movement legend arrives back to stage noticeably faster. The movement stat showed up in the air, not in the dash.`},
+
+{cat:"movement",abbr:"SigMov",name:"Sigs as movement options",short:"Some legend sigs can touch the wall in unexpected ways — creative recovery",
+def:`Most players only think of signatures as attacks. Some legend sigs have movement properties that make them useful specifically as positioning or recovery tools — not for their damage, but for where they take you.
+
+EXAMPLES:
+Some sigs send you horizontally across the stage, which can be used to reposition quickly and unexpectedly.
+Some sigs send you upward, allowing wall touches from unusual angles that would not be possible with a jump or recovery.
+Some sigs stall your fall, giving you extra time in the air during recovery.
+
+THE CORE CONCEPT: if you find yourself off-stage with no jumps and no recovery, and your sig would carry you to the wall or stage — use it as a last resort option. It may have a hitbox that helps, and the movement itself might get you to safety.
+
+HOW TO FIND YOURS: in training mode, go off-stage and test each of your 3 sigs. Does any of them carry you upward, sideways, or otherwise toward safety? Map these recovery-use cases for your specific legend.`,
+ex:`You are off-stage with no jumps and no recovery remaining. Normally this is death. But you notice your NSig sends you forward with momentum. You aim it toward the wall. It carries you close enough to snap to the wall. You refresh your resources and return to stage. The sig was not used as an attack — it was used as a movement option.`,
+warn:`Using sigs off-stage as movement options is risky because the hitbox is active and can be intercepted. Only use this as a last resort when you have no other options remaining.`},
+
+// INPUT MASTERY
+{cat:"input",abbr:"FourInput",name:"The four-input drill",short:"Down, dodge, jump, down — the core misinput training sequence",
+def:`This is the foundational input drill for eliminating dash jump misinputs. It directly trains the four-input sequence that underlies most movement techniques in Brawlhalla.
+
+THE SEQUENCE: tap down → tap dodge → tap jump → tap down. Repeat.
+
+WHY THESE FOUR: this sequence is the core of the dash jump fast fall motion. Almost every movement technique in the game builds on this base sequence in some variation.
+
+HOW TO DO IT (with no monitor):
+1. Start incredibly slow. Tap each input distinctly with a pause between each.
+2. Make the order perfect before adding speed.
+3. Gradually increase speed while maintaining the exact order.
+4. When you catch yourself breaking the order, slow down immediately.
+
+The monitor can be off. You are training finger coordination, not visual reaction.
+
+WHAT IT FIXES: most misinputs are not caused by slow fingers. They are caused by inputs firing in the wrong order. When you press dodge before jump, or jump before down, the game registers a different action than what you intended. This drill burns the correct order into muscle memory.
+
+FOR DIAMOND+: do the same sequence with eyes closed. This builds high-speed stamina and consistency under pressure without visual feedback.`,
+steps:["Turn off monitor or look away from screen.","Tap: down → dodge → jump → down. Very slowly at first. Each input distinct.","Repeat. The moment you feel the order slip, stop and restart from slow.","Gradually increase speed while keeping order perfect.","Pass condition: 30 seconds of clean sequence at full speed without order errors."],
+ex:`You keep accidentally chase dodging when you want to dash after landing a hit. The issue is input order: you press dodge before holding down, triggering CDodge instead of dash. The four-input drill trains holding down BEFORE pressing dodge. After 20 minutes of drill, the order locks in. The misinput stops occurring.`},
+
+{cat:"input",abbr:"InputOrd",name:"Input order principle",short:"Misinputs are wrong order, not wrong speed — fix order first",
+def:`The most important insight about misinputs in Brawlhalla: they almost never happen because your fingers are too slow. They happen because the inputs fired in the wrong order.
+
+EXAMPLE: you want to dash jump fast fall. The correct order is dash → jump → fast fall. If you accidentally trigger jump → dash, or fast fall → jump → dash, the game reads a completely different action.
+
+THE IMPLICATION: when you are trying to fix a misinput, do not try to go faster. Go slower. Find the exact order that the correct action requires. Then burn that order into muscle memory through slow, deliberate repetition.
+
+HOW TO DIAGNOSE A MISINPUT: when something went wrong, ask "what did the game do instead of what I intended?" The wrong action tells you which inputs fired in the wrong order.
+
+SPLIT COMPLEX COMBOS INTO PARTS: if a combo has 6 inputs and you keep dropping it at step 4, you do not practice all 6 together. Break it into steps 1-3 and steps 4-6. Master each part separately. Then combine them only after both parts are automatic.`,
+ex:`You want to do DLight → CDodge up → NAir (a vertical juggle combo). You keep accidentally airdodging instead of NAir at the end. The order problem: you are pressing dodge AFTER CDodge instead of attack. Your muscle memory has dodge mapped to the same timing as the end of the CDodge. Fix: isolate just CDodge → NAir. Practice that specific two-input transition slowly 30 times. The order locks in. The full combo works.`},
+
+{cat:"input",abbr:"EyesClosed",name:"Eyes-closed drill",short:"Diamond+ consistency training — full speed inputs with eyes closed",
+def:`Once you have mastered the four-input drill with eyes open, the Diamond-level variant adds a constraint: eyes closed.
+
+WHY EYES CLOSED: at high speed, visual feedback becomes a crutch. You subconsciously look at the screen to confirm each input before the next. This creates a micro-delay between inputs. Eyes closed forces your fingers to operate purely from muscle memory without visual confirmation.
+
+THE DRILL: do the four-input sequence (down → dodge → jump → down) at target speed with eyes completely closed. Focus only on the feel of each input. Your goal is maintaining clean order at maximum speed for as long as possible.
+
+TRANSFER TO MATCH PLAY: in a real ranked match, there is no time to look at your fingers. Your eyes are on the opponent. The eyes-closed drill trains your inputs to fire cleanly without any visual attention, which is exactly what you need mid-combo against a real opponent.
+
+GENERALIZING THE TECHNIQUE: once you understand the eyes-closed principle, apply it to any combo you are drilling. The combination drill stage (after learning each part separately) should include eyes-closed runs to cement high-speed consistency.`,
+steps:["Master the four-input drill with eyes open first.","Close eyes. Start at slow speed — same as you started with eyes open.","Maintain correct order without visual confirmation. Feel each input.","Gradually increase to match speed.","Goal: 30 seconds of clean sequence with eyes closed at full speed."],
+ex:`You consistently land DL → NAir → GP in training mode with eyes on screen. In ranked you keep dropping the GP under pressure. Problem: in training your eyes were helping confirm each step. In ranked your eyes are on the opponent, not your hands. Drill the same combo eyes-closed until it is 20-for-20. Now it transfers to ranked because your fingers never needed the visual help.`},
+
+// WEAPON DIFFICULTY
+{cat:"weapon",abbr:"WpnDiff",name:"Weapon difficulty ranking",short:"Easiest to hardest to learn and play effectively",
+def:`Based on a 2024 analysis focused on difficulty to learn and play effectively, not tier list power.
+
+The ranking reflects how much knowledge, execution, and spatial awareness each weapon requires to use at a reasonable level. The easiest weapons require less of all three. The hardest require precise spacing, unusual input execution, and deep matchup knowledge.`,
+ranks:[
+  {n:"1",w:"Sword",note:"Easiest. Self-explanatory aerials, simple kill confirm. Boring but effective."},
+  {n:"2",w:"Axe",note:"Easy power weapon. High knockback, slow. Little complexity needed."},
+  {n:"3",w:"Spear",note:"Long range poke, straightforward usage. Moderate combo demand."},
+  {n:"4",w:"Hammer",note:"Slow but devastating. Learn to confirm — not much else required."},
+  {n:"5",w:"Gauntlets",note:"Short range, fast combos. Easy to play wrong, moderate to play right."},
+  {n:"6",w:"Katars",note:"Similar to gauntlets but harder combo routes and more commitment."},
+  {n:"7",w:"Orb",note:"Unique movement properties require time to internalize."},
+  {n:"8",w:"Bow",note:"Projectile neutral changes entire game sense required."},
+  {n:"9",w:"Scythe",note:"Arcing hitboxes require strong spatial awareness to hit consistently."},
+  {n:"10",w:"Lance",note:"Dominant at one range — getting that range correct consistently is hard."},
+  {n:"11",w:"Rocket Lance",note:"Momentum commitment on sigs is punishing for any mistake."},
+  {n:"12",w:"Blasters",note:"Hardest. Smallest hitboxes, highest commitment, needs spacing mastery."},
+],
+ex:`Sword is the right starting weapon because low difficulty lets you focus on fundamentals (neutral, combos, positioning) without fighting the weapon. Blasters are the wrong starting weapon because the weapon is hard enough that it demands advanced spacing knowledge just to function — you cannot learn fundamentals if you are constantly struggling with the weapon itself.`},
+
+{cat:"weapon",abbr:"Blasters",name:"Why blasters is the hardest",short:"Smallest hitboxes in the game plus high commitment endlag",
+def:`Blasters is specifically identified as the hardest weapon in Brawlhalla for several compounding reasons:
+
+HITBOX SIZE: blasters hitboxes are described as "dots rather than boxes." NLight and SLight have extremely small hitbox areas compared to equivalent attacks on other weapons. These are the smallest attack hitboxes in the game. Missing by a tiny amount means a complete whiff with full endlag.
+
+COMMITMENT: many blasters attacks have very long endlag and recovery time after the animation. DLight is the primary example — the endlag is long enough that any player with reasonable reaction time will punish a whiff. This creates a high punishment environment on every missed attack.
+
+KILL REQUIREMENT: blasters needs more total damage than most weapons to secure kills consistently. This means longer games and more interactions against the same opponent, increasing the chance of being punished.
+
+META POSITION: blasters has historically been undertuned in the meta, meaning you are working harder for worse results compared to meta weapons.
+
+THE RESULT: blasters demands precise microspacing to make the small hitboxes connect, plus discipline to avoid the long-endlag moves unless the spacing is perfect. This combination makes it one of the highest skill-floor weapons in the game — you need to be quite good just to play it at a functional level.`,
+ex:`You try blasters for the first time. Your DLight keeps whiffing even though you thought you were in range. The hitbox is smaller than it looks. Every whiff gets punished because the endlag is very long. After 10 games you feel like you are doing everything right and still losing consistently. This is the blasters experience — the weapon demands spacing precision that other weapons do not require at the same level.`,
+warn:`If you are just starting out or working on fundamentals, do not main blasters. The weapon fight makes it very hard to learn anything else. Start with sword or spear, learn the game, then experiment with blasters once your fundamentals are solid.`},
+
+// MENTAL PERFORMANCE
+{cat:"mental",abbr:"FlowSt",name:"Flow state",short:"Peak performance state — how to enter it and what blocks it",
+def:`Flow state (also called being "in the zone") is a specific mental state where performance peaks. Your reactions are faster, your decisions are clearer, and the game feels easier. All competitive players experience it occasionally. The skill is learning to enter it reliably.
+
+FLOW BLOCKERS (things that prevent flow):
+Mental blockers: fear, anxiety, anger, grief, frustration. If any of these are active, flow cannot occur. You must eliminate them before starting a session.
+Physical blockers: distractions — phone notifications, calls, someone talking to you, background noise. Flow requires 100% of your cognitive resources on one task. Any split attention prevents flow.
+
+FLOW TRIGGERS (things that increase the chance of flow):
+Trigger 1 — CLEAR GOAL: before your session, set a specific, measurable goal. "I want to reach 1800 elo" or "I want to land the DL → NAir → GP combo consistently this session." Vague goals do not trigger flow. Specific goals do.
+Trigger 2 — CONSISTENT ROUTINE: a pre-session routine that fires the same neurochemical sequence every time. Over time your brain associates the routine with peak performance and enters flow faster.
+
+PRACTICAL APPLICATION: before each session, eliminate physical distractions (phone down, environment quiet), eliminate mental blocks (if you are angry, cool down before playing), set one specific goal, and run your warm-up routine.`,
+ex:`You sit down after a frustrating day at work. You are irritated. You jump into ranked immediately. First 3 games are losses because your decision-making is impaired by the residual frustration. New approach: 5 minutes of cool-down (walk around, breathe), phone face-down, set one goal ("practice not attacking without a trigger"), then play. The first session had no flow. The second session entered flow by game 2.`},
+
+{cat:"mental",abbr:"AnxBuff",name:"Anxiety as a performance buff",short:"The fight-or-flight response temporarily sharpens your performance",
+def:`Most players experience anxiety before ranked matches or during high-stakes situations and treat it as something to suppress or eliminate. The reframe: anxiety is your body helping you rise to the challenge.
+
+THE PHYSIOLOGY: when anxiety triggers, your body activates fight-or-flight. During this response: reaction speed gets faster, you think clearer, breathing deepens (more oxygen), heart rate increases (more blood flow), pupils dilate (better focus). For a short window, you are literally buffed.
+
+THE TWO ROADS:
+SHORT ROAD (fast and messy): assume the worst, react immediately, no logical thinking. You enter fight-or-flight in panic mode.
+LONG ROAD (precise and calm): take the time to ask questions, process the situation logically. You still enter fight-or-flight but from a controlled state that lets you use the buff.
+
+THE PRACTICAL CHOICE: when you feel ranked anxiety, do not fight the feeling. Accept it. Recognize it is your body preparing you. Then take the long road — ask "what is the actual challenge here?" This converts anxiety from performance-impairing to performance-enhancing.
+
+REPETITION ELIMINATES ANXIETY: the anxiety comes from the unknown. The more times you face a specific situation (playing ranked, close match, specific matchup), the more known it becomes. Known situations do not trigger anxiety. Your anxiety about ranked will naturally decrease with more ranked sessions — not because you get calmer but because the situation becomes familiar.`,
+ex:`Close game, last stock, you are at 80%. You feel your heart rate increase. Old response: panic, rush in, throw a random sig. Performance drops. New response: recognize the heart rate as your body giving you a buff. Take the long road — "opponent is at 90%, I need kill confirm, not random attack." The anxiety-buff made your reaction faster. The long-road thinking made your decision correct.`},
+
+{cat:"mental",abbr:"TiltCyc",name:"Tilt cycle — 4 steps",short:"Expectation → trigger → emotion → response — break the cycle at step 1",
+def:`Tilt follows a specific 4-step cycle. Understanding the cycle is the first step to breaking it.
+
+STEP 1 — EXPECTATION: you expect a specific outcome. "I should win this match." "That attack should not hit me." "My combo should work here." Expectations are the root cause of tilt.
+
+STEP 2 — TRIGGER: reality does not match the expectation. You lose the match. The attack hits you. The combo drops. The trigger fires.
+
+STEP 3 — EMOTION: the mismatch creates an emotion — anger, frustration, disappointment. This emotion impairs thinking.
+
+STEP 4 — RESPONSE: you respond from the emotional state. Rush in. Throw random sigs. Mash dodge. Play worse. Confirm the negative outcome.
+
+THE LOOP: the worse response leads to more triggers, which produce more emotion, which degrades the response further. Tilt snowballs.
+
+HOW TO BREAK IT:
+AT STEP 1: examine and adjust your expectations before they form. Realistic expectations create fewer triggers. "I might lose this next stock" is less tilting than "I should win this next stock."
+AT STEP 3: recognize the emotion as it arrives. Name it. "I am feeling frustrated right now." Naming it activates the logical part of your brain and reduces the emotional charge.
+AT STEP 4: replace the automatic response with a deliberate one. One breath. One neutral movement. The automatic response was chosen by your emotion. The deliberate response is chosen by you.`,
+ex:`You die at 60% to an edgeguard. Step 1: your expectation was "I should survive past 100%." Step 2: trigger fires (died at 60%). Step 3: anger activates. Step 4: automatic response — rush in aggressively on the next stock, ignore neutral, get combo'd, die again. Tilt loop complete. New approach: at step 1 set expectation "I might die at any percent." At step 3 recognize "I feel angry right now." At step 4 deliberately dash dance for 5 seconds before doing anything. Loop broken.`},
+
+{cat:"mental",abbr:"CompConf",name:"Competence before confidence",short:"Confidence built on skill is real — confidence without skill is delusion",
+def:`A principle from competitive performance: the only sustainable path to genuine confidence is becoming competent first.
+
+WHAT THIS MEANS: positive self-talk, affirmations, and mindset work alone do not create real confidence. They can temporarily mask self-doubt but cannot replace the underlying source — actually being capable.
+
+Real confidence sounds like: "I know I can land this combo because I have landed it 200 times in practice." It is grounded in demonstrated ability.
+
+Fake confidence sounds like: "I believe in myself even though I keep dropping this combo." It collapses under pressure.
+
+THE PROCESS:
+1. Identify the specific skill you lack confidence in
+2. Build competence through deliberate practice (not just playing, but drilling)
+3. The confidence follows naturally as the competence grows
+
+ELIMINATE NEGATIVE SELF-TALK: while building competence, negative self-talk actively slows the process. "I am terrible at this" changes nothing. It is not honest feedback — it is noise that wastes mental energy. Replace it with specific observations: "I dropped the GP timing just now. I need to press GP 2 frames earlier." That is actionable. "I am terrible" is not.
+
+WHAT GOT YOU HERE WILL NOT GET YOU THERE: the habits, knowledge, and techniques that got you to your current rank are not the same ones that will take you to the next. Each rank requires specific new skills. Identify what specifically is missing for the next rank and build competence there.`,
+ex:`You are Gold 4 and want to reach Plat. Old approach: play more games, "believe in yourself," hope your current level is enough. New approach: identify what Plat players do that you do not (kill confirms, platform cancel, approach variation). Pick ONE of those. Build competence in it specifically. When you can execute it reliably, your confidence in that specific situation grows. That competence is the actual Plat-level skill that takes you there.`},
+
+{cat:"mental",abbr:"PreRoutine",name:"Pre-session routine",short:"A consistent routine before playing triggers flow state faster",
+def:`A pre-session routine is a fixed sequence of actions you do before every playing session. Over time your brain associates the routine with playing well, and the routine itself begins to trigger the neurochemical state associated with peak performance.
+
+WHY ROUTINE WORKS: the brain forms associations between stimuli and states. If you consistently enter flow while doing the same actions beforehand, the actions become cues that help initiate flow. The routine trains your brain to shift into performance mode.
+
+COMPONENTS OF AN EFFECTIVE ROUTINE:
+1. PHYSICAL: short exercise (even 5-10 minutes of movement). Gets blood flowing and shifts your physical state.
+2. ENVIRONMENTAL: set up your space for focus. Phone face-down. Distractions cleared. One quiet environment.
+3. INTENTIONAL: set your specific goal for the session. One thing. Written or stated out loud.
+4. WARM-UP: a few minutes of training mode practice on the specific skill you are working on. Fingers warm, brain in game mode.
+
+THE ROUTINE DOES NOT NEED TO BE LONG. A 10-15 minute routine done consistently is more effective than a complex 45-minute routine done occasionally.
+
+CONSISTENCY IS THE REQUIREMENT: doing the routine differently each time defeats the purpose. The power is in the association built through consistent repetition.`,
+steps:["5-10 minutes physical movement (walk, stretch, pushups — anything)","Phone down. Environment quiet. One tab, the game.","State your session goal out loud: one specific thing to work on.","5 minutes training mode on that specific skill.","Enter ranked."],
+ex:`You have been playing ranked with no routine — just opening the game whenever and jumping in. Your first few games are always inconsistent. You add the routine. Three weeks later you notice your first game of each session feels completely different — you are already in game mode before the first match starts. The routine conditioned your brain to be ready faster.`},
+
+];
+
+let activeCat="all";
+let openMap={};
+
+function rankHTML(rows){
+  if(!rows) return "";
+  return `<div class="rank-box">${rows.map(r=>`<div class="rank-row">
+    <div class="rank-num">${r.n}</div>
+    <div class="rank-wpn">${r.w}</div>
+    <div class="rank-note">${r.note}</div>
+  </div>`).join("")}</div>`;
+}
+
+function stepsHTML(steps){
+  if(!steps) return "";
+  return `<div class="step-box"><div class="step-title">Steps</div>${steps.map(s=>`<div class="step">${s}</div>`).join("")}</div>`;
+}
+
+function render(){
+  const q=document.getElementById("searchInput").value.toLowerCase().trim();
+  const terms=TERMS.filter(t=>{
+    const mc=activeCat==="all"||t.cat===activeCat;
+    const mq=!q||(t.name.toLowerCase().includes(q)||t.abbr.toLowerCase().includes(q)||t.short.toLowerCase().includes(q)||(t.def&&t.def.toLowerCase().includes(q)));
+    return mc&&mq;
+  });
+  document.getElementById("catNav").innerHTML=CATS.map(c=>
+    `<button class="cat-btn ${c.cls}${activeCat===c.id?" active":""}" onclick="setCat('${c.id}')">${c.label}</button>`
+  ).join("");
+  let html="";
+  if(activeCat==="all"){
+    CAT_ORDER.forEach(cat=>{
+      const list=terms.filter(t=>t.cat===cat);
+      if(!list.length) return;
+      html+=`<p class="section-label">${CAT_NAMES[cat]}</p>`;
+      list.forEach(t=>{html+=termHTML(t);});
+    });
+  } else {
+    terms.forEach(t=>{html+=termHTML(t);});
+  }
+  if(!html) html=`<div class="no-results">No results for "${q}"</div>`;
+  document.getElementById("content").innerHTML=html;
+}
+
+function termHTML(t){
+  const key=t.cat+"_"+t.abbr;
+  const isOpen=!!openMap[key];
+  let extra="";
+  if(t.ranks) extra+=rankHTML(t.ranks);
+  if(t.steps) extra+=stepsHTML(t.steps);
+  return `<div class="term-row${isOpen?" open":""}" id="tr_${key}" onclick="toggle('${key}')">
+    <div class="term-head">
+      <span class="abbr" style="${COLORS[t.cat]}">${t.abbr}</span>
+      <span class="term-name">${t.name}</span>
+      <span class="term-short">${t.short}</span>
+      <span class="chevron">&#8964;</span>
+    </div>
+    <div class="term-body${isOpen?" open":""}">
+      <div class="def">${t.def}</div>
+      ${extra}
+      ${t.warn?`<div class="warn"><strong>Watch out:</strong> ${t.warn}</div>`:""}
+      <div class="ex"><strong>Example:</strong> ${t.ex}</div>
+    </div>
+  </div>`;
+}
+function toggle(key){
+  openMap[key]=!openMap[key];
+  render();
+  if(openMap[key]) setTimeout(()=>document.getElementById("tr_"+key)?.scrollIntoView({behavior:"smooth",block:"nearest"}),50);
+}
+function setCat(id){activeCat=id;render();}
+render();
+</script>

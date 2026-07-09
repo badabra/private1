@@ -1,0 +1,128 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Minima.Data;
+using Minima.Models;
+using Minima.Services;
+
+namespace Minima.Pages
+{
+    public class RegisterModel : PageModel
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly IPasswordHashService _passwordHashService;
+
+        [BindProperty]
+        public string FirstName { get; set; } = string.Empty;
+
+        [BindProperty]
+        public string LastName { get; set; } = string.Empty;
+
+        [BindProperty]
+        public string Username { get; set; } = string.Empty;
+
+        [BindProperty]
+        public string Email { get; set; } = string.Empty;
+
+        [BindProperty]
+        public string Password { get; set; } = string.Empty;
+
+        [BindProperty]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        public string ErrorMessage { get; set; } = string.Empty;
+
+        public RegisterModel(ApplicationDbContext context, IPasswordHashService passwordHashService)
+        {
+            _context = context;
+            _passwordHashService = passwordHashService;
+        }
+
+        public void OnGet()
+        {
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            // Validation
+            if (!ModelState.IsValid)
+            {
+                ErrorMessage = "Veuillez vérifier tous les champs.";
+                return Page();
+            }
+
+            if (string.IsNullOrWhiteSpace(FirstName) || string.IsNullOrWhiteSpace(LastName))
+            {
+                ErrorMessage = "Le prénom et le nom sont requis.";
+                return Page();
+            }
+
+            if (string.IsNullOrWhiteSpace(Username) || Username.Length < 3)
+            {
+                ErrorMessage = "L'identifiant doit contenir au moins 3 caractères.";
+                return Page();
+            }
+
+            if (string.IsNullOrWhiteSpace(Email) || !Email.Contains("@"))
+            {
+                ErrorMessage = "Veuillez entrer une adresse courriel valide.";
+                return Page();
+            }
+
+            if (string.IsNullOrWhiteSpace(Password) || Password.Length < 6)
+            {
+                ErrorMessage = "Le mot de passe doit contenir au moins 6 caractères.";
+                return Page();
+            }
+
+            if (Password != ConfirmPassword)
+            {
+                ErrorMessage = "Les mots de passe ne correspondent pas.";
+                return Page();
+            }
+
+            // Check if username already exists
+            if (_context.Users.Any(u => u.Username == Username))
+            {
+                ErrorMessage = "Cet identifiant est déjà utilisé.";
+                return Page();
+            }
+
+            // Check if email already exists
+            if (_context.Users.Any(u => u.Email == Email))
+            {
+                ErrorMessage = "Cet adresse courriel est déjà utilisée.";
+                return Page();
+            }
+
+            try
+            {
+                // Hash password
+                var passwordHash = _passwordHashService.HashPassword(Password);
+
+                // Create new user
+                var user = new User
+                {
+                    FirstName = FirstName.Trim(),
+                    LastName = LastName.Trim(),
+                    Username = Username.Trim(),
+                    Email = Email.Trim(),
+                    PasswordHash = passwordHash,
+                    IsActive = true,
+                    IsBlocked = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                // Redirect to login page
+                return RedirectToPage("/Login", new { message = "Inscription réussie! Veuillez vous connecter." });
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Une erreur s'est produite lors de l'inscription: {ex.Message}";
+                return Page();
+            }
+        }
+    }
+}

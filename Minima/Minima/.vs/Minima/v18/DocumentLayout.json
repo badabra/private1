@@ -1,0 +1,210 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\alioune\\documents\\tools by ai help\\minima\\minima\\minima\\pages\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\pages\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\alioune\\documents\\tools by ai help\\minima\\minima\\minima\\pages\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\pages\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\alioune\\documents\\tools by ai help\\minima\\minima\\minima\\pages\\forgotpassword.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\pages\\forgotpassword.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\alioune\\documents\\tools by ai help\\minima\\minima\\minima\\pages\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\pages\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\alioune\\documents\\tools by ai help\\minima\\minima\\minima\\migrations\\applicationdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\migrations\\applicationdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\alioune\\documents\\tools by ai help\\minima\\minima\\minima\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\alioune\\documents\\tools by ai help\\minima\\minima\\minima\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Alioune\\.copilot\\plans\\plan-implement-jwt-based-authentication-system-for-minima.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\alioune\\documents\\tools by ai help\\minima\\minima\\minima\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\alioune\\documents\\tools by ai help\\minima\\minima\\minima\\pages\\login.cshtml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\pages\\login.cshtml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\alioune\\documents\\tools by ai help\\minima\\minima\\minima\\pages\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\pages\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 7,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ForgotPassword.cshtml",
+              "DocumentMoniker": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\ForgotPassword.cshtml",
+              "RelativeDocumentMoniker": "Minima\\Pages\\ForgotPassword.cshtml",
+              "ToolTip": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\ForgotPassword.cshtml",
+              "RelativeToolTip": "Minima\\Pages\\ForgotPassword.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-07T19:44:17.614Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Dashboard.cshtml",
+              "DocumentMoniker": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\Dashboard.cshtml",
+              "RelativeDocumentMoniker": "Minima\\Pages\\Dashboard.cshtml",
+              "ToolTip": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\Dashboard.cshtml",
+              "RelativeToolTip": "Minima\\Pages\\Dashboard.cshtml",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAACMAAABoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-07T19:42:45.873Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ApplicationDbContextModelSnapshot.cs",
+              "DocumentMoniker": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Migrations\\ApplicationDbContextModelSnapshot.cs",
+              "RelativeDocumentMoniker": "Minima\\Migrations\\ApplicationDbContextModelSnapshot.cs",
+              "ToolTip": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Migrations\\ApplicationDbContextModelSnapshot.cs",
+              "RelativeToolTip": "Minima\\Migrations\\ApplicationDbContextModelSnapshot.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-06T14:41:21.426Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Program.cs",
+              "RelativeDocumentMoniker": "Minima\\Program.cs",
+              "ToolTip": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Program.cs",
+              "RelativeToolTip": "Minima\\Program.cs",
+              "ViewState": "AgIAADcAAAAAAAAAAAAUwEYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-30T18:24:15.556Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\Index.cshtml",
+              "RelativeDocumentMoniker": "Minima\\Pages\\Index.cshtml",
+              "ToolTip": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\Index.cshtml",
+              "RelativeToolTip": "Minima\\Pages\\Index.cshtml",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABAAAABHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-07T18:36:34.398Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Login.cshtml",
+              "DocumentMoniker": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\Login.cshtml",
+              "RelativeDocumentMoniker": "Minima\\Pages\\Login.cshtml",
+              "ToolTip": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\Login.cshtml",
+              "RelativeToolTip": "Minima\\Pages\\Login.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAArwDgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-30T17:42:06.579Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "plan-implement-jwt-based-authentication-system-for-minima.md [Preview]",
+              "DocumentMoniker": "C:\\Users\\Alioune\\.copilot\\plans\\plan-implement-jwt-based-authentication-system-for-minima.md",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\.copilot\\plans\\plan-implement-jwt-based-authentication-system-for-minima.md",
+              "ToolTip": "C:\\Users\\Alioune\\.copilot\\plans\\plan-implement-jwt-based-authentication-system-for-minima.md [Preview]",
+              "RelativeToolTip": "..\\..\\..\\..\\.copilot\\plans\\plan-implement-jwt-based-authentication-system-for-minima.md [Preview]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-06-30T18:27:46.222Z",
+              "EditorCaption": " [Preview]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Register.cshtml",
+              "DocumentMoniker": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\Register.cshtml",
+              "RelativeDocumentMoniker": "Minima\\Pages\\Register.cshtml",
+              "ToolTip": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\Register.cshtml",
+              "RelativeToolTip": "Minima\\Pages\\Register.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAF8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-30T18:33:08.596Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Minima\\Data\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Minima\\Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAowCAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-06T14:41:28.392Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Login.cshtml.cs",
+              "DocumentMoniker": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\Login.cshtml.cs",
+              "RelativeDocumentMoniker": "Minima\\Pages\\Login.cshtml.cs",
+              "ToolTip": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\Pages\\Login.cshtml.cs",
+              "RelativeToolTip": "Minima\\Pages\\Login.cshtml.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-30T18:27:18.749Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\appsettings.json",
+              "RelativeDocumentMoniker": "Minima\\appsettings.json",
+              "ToolTip": "C:\\Users\\Alioune\\Documents\\tools by ai help\\Minima\\Minima\\Minima\\appsettings.json",
+              "RelativeToolTip": "Minima\\appsettings.json",
+              "ViewState": "AgIAAAgAAAAAAAAAAIBJwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-06-30T18:24:28.646Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

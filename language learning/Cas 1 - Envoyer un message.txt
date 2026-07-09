@@ -1,0 +1,17 @@
+Cas 1 - Envoyer un message
+
+Acteur : Utilisateur
+Scénario principal :
+
+L'utilisateur se connecte à son compte.
+Il recherche le destinataire par son identifiant.
+Il ouvre la conversation.
+Il écrit son message et clique sur « Envoyer ».
+Le message s'affiche et est reçu en temps réel par le destinataire.
+
+Alternatives : si le champ message est vide, le bouton « Envoyer » reste désactivé. Si l'utilisateur recherché n'existe pas, un message d'erreur s'affiche.
+
+Cas 2 - Bloquer un utilisateur (admin)
+
+Acteur : Administrateur
+Scénario principal : l'admin ouvre la liste des utilisateurs → choisit un utilisateur → clique sur « Bloquer ». L'utilisateur bloqué ne peut plus envoyer de messages.

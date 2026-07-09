@@ -1,0 +1,53 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Administrator\\source\\repos\\Minima\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\administrator\\source\\repos\\minima\\minima\\pages\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\pages\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|c:\\users\\administrator\\source\\repos\\minima\\minima\\pages\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E785E0EE-9A57-4AEC-B10B-090039FBAFF5}|Minima\\Minima.csproj|solutionrelative:minima\\pages\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Login.cshtml",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Minima\\Minima\\Pages\\Login.cshtml",
+              "RelativeDocumentMoniker": "Minima\\Pages\\Login.cshtml",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\Minima\\Minima\\Pages\\Login.cshtml",
+              "RelativeToolTip": "Minima\\Pages\\Login.cshtml",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAAAB0AAAAWAQAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-29T14:04:29.366Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Register.cshtml",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\Minima\\Minima\\Pages\\Register.cshtml",
+              "RelativeDocumentMoniker": "Minima\\Pages\\Register.cshtml",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\Minima\\Minima\\Pages\\Register.cshtml",
+              "RelativeToolTip": "Minima\\Pages\\Register.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAABNAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-29T13:45:15.557Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,779 @@
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+*{box-sizing:border-box;margin:0;padding:0}
+.search-wrap{position:relative;margin-bottom:1.25rem}
+#searchInput{width:100%;padding:9px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg,12px);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;outline:none}
+#searchInput:focus{border-color:var(--color-border-primary)}
+.cat-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cat-btn{padding:5px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;font-size:12px;color:var(--color-text-secondary);white-space:nowrap;transition:all 0.15s}
+.cat-btn:hover:not(.active){background:var(--color-background-secondary)}
+.cat-btn.active{font-weight:500;border-color:transparent}
+.c-settings.active{background:#E1F5EE;color:#085041}
+.c-mech.active{background:#EEEDFE;color:#3C3489}
+.c-movement.active{background:#FAEEDA;color:#633806}
+.c-combat.active{background:#FAECE7;color:#993C1D}
+.c-predict.active{background:#E6F1FB;color:#0C447C}
+.c-refined.active{background:#F3EEF8;color:#5B2D8E}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-text-tertiary);margin:1.5rem 0 0.5rem}
+.term-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md,8px);margin-bottom:6px;overflow:hidden;cursor:pointer;transition:border-color 0.12s}
+.term-row:hover{border-color:var(--color-border-secondary)}
+.term-row.open{border-color:var(--color-border-primary)}
+.term-head{display:flex;align-items:center;gap:10px;padding:9px 12px}
+.abbr{font-size:11px;font-weight:500;padding:2px 7px;border-radius:8px;white-space:nowrap;min-width:44px;text-align:center;flex-shrink:0}
+.term-name{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1;min-width:0}
+.term-short{font-size:12px;color:var(--color-text-tertiary);flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chevron{font-size:14px;color:var(--color-text-tertiary);transition:transform 0.18s;flex-shrink:0}
+.term-row.open .chevron{transform:rotate(180deg)}
+.term-body{display:none;padding:10px 12px 14px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.term-body.open{display:block}
+.def{font-size:13px;color:var(--color-text-secondary);line-height:1.7;white-space:pre-line}
+.ex{margin-top:10px;font-size:12px;color:var(--color-text-secondary);border-left:2px solid var(--color-border-info);padding-left:10px;line-height:1.65}
+.ex strong{color:var(--color-text-info);font-weight:500}
+.warn{margin-top:8px;font-size:12px;border-left:2px solid var(--color-border-warning);padding:6px 10px;background:var(--color-background-warning);color:var(--color-text-warning);border-radius:0 var(--border-radius-md,8px) var(--border-radius-md,8px) 0;line-height:1.6}
+.warn strong{font-weight:500}
+.priority-box{margin-top:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md,8px);overflow:hidden}
+.priority-title{font-size:12px;font-weight:600;color:var(--color-text-primary);padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.priority-row{display:flex;align-items:center;gap:10px;padding:6px 12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.priority-row:last-child{border-bottom:none}
+.priority-num{font-size:11px;font-weight:700;min-width:22px;text-align:center}
+.priority-text{font-size:12px;color:var(--color-text-secondary)}
+.settings-box{margin-top:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md,8px);overflow:hidden}
+.setting-row{padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.setting-row:last-child{border-bottom:none}
+.setting-row strong{color:var(--color-text-primary);font-weight:600;display:block;margin-bottom:2px}
+.no-results{padding:2rem;text-align:center;color:var(--color-text-tertiary);font-size:14px}
+@media(max-width:500px){.term-short{display:none}}
+</style>
+
+<h2 class="sr-only">Brawlhalla guide 8 — settings, core mechanics, special movement, combat depth, prediction and layered offense</h2>
+
+<div style="padding:1rem 0">
+<div class="search-wrap"><input id="searchInput" placeholder="Search settings, mechanics, techniques..." oninput="render()"></div>
+<div class="cat-nav" id="catNav"></div>
+<div id="content"></div>
+</div>
+
+<script>
+const CATS=[
+  {id:"all",label:"All",cls:""},
+  {id:"settings",label:"Settings & mindset",cls:"c-settings"},
+  {id:"mech",label:"Core mechanics",cls:"c-mech"},
+  {id:"movement",label:"Special movement",cls:"c-movement"},
+  {id:"combat",label:"Combat depth",cls:"c-combat"},
+  {id:"predict",label:"Prediction & offense layers",cls:"c-predict"},
+  {id:"refined",label:"Refined definitions",cls:"c-refined"},
+];
+const COLORS={
+  settings:"background:#E1F5EE;color:#085041",
+  mech:"background:#EEEDFE;color:#3C3489",
+  movement:"background:#FAEEDA;color:#633806",
+  combat:"background:#FAECE7;color:#993C1D",
+  predict:"background:#E6F1FB;color:#0C447C",
+  refined:"background:#F3EEF8;color:#5B2D8E",
+};
+const CAT_NAMES={settings:"Settings & mindset",mech:"Core mechanics",movement:"Special movement",combat:"Combat depth",predict:"Prediction & offense layers",refined:"Refined definitions"};
+const CAT_ORDER=["settings","mech","movement","combat","predict","refined"];
+
+const TERMS=[
+
+// SETTINGS & MINDSET
+{cat:"settings",abbr:"SET",name:"Game settings to change first",short:"5 specific settings before your first ranked match",
+def:`Do these before playing a single ranked match. Source: Diamond-every-season guide.`,
+settings:[
+  {title:`Disable "Pick up with Light Attack"`,body:`Increases the range at which you can pick up weapons and removes misinputs where you accidentally throw a light attack when you meant to grab a weapon.`},
+  {title:`Separate "Jump" and "Aim Up" bindings`,body:`Remove all bindings for "Jump + Aim Up". Set a new binding for "Aim Up" alone and a separate one for "Jump". These two should never be the same button. Combined, they force a jump every time you aim up, which breaks many techniques.`},
+  {title:`Enable "Prioritize Neutral Over Side" (Advanced Controls)`,body:`Makes neutral inputs slightly faster and easier to execute. Not available on all controllers but worth checking.`},
+  {title:`Disable "Out of Jumps Recovery" (Advanced Controls)`,body:`Prevents a common misinput where your legend fires its recovery move when you have no jumps left, costing you the stock.`},
+  {title:`Queue waiting: Training Mode instead of Bot Match`,body:`Bot matches run while you wait in queue. Playing bots builds catastrophically bad habits because your brain learns that terrible gameplay works. The moment you face a real player it stops working completely. Disable this immediately.`},
+],
+ex:`These five changes are free improvements that cost zero skill to apply. Do them before your next session.`},
+
+{cat:"settings",abbr:"IMP",name:"Efficient improvement method",short:"One specific thing per session — rest on autopilot",
+def:`From the Diamond guide directly: do not try to learn everything at once. Pick one specific thing to work on. Focus all your attention on that one thing and put the rest of your gameplay on autopilot. This produces faster results than trying to improve everything simultaneously.
+
+This is the same principle as the "one thing per session" drill in file 6, confirmed here by a Diamond-every-season source.
+
+IMPROVEMENT SESSIONS vs FUN SESSIONS: if you are constantly trying to improve, you will burn out. Deliberately separate sessions where you are working on something specific from sessions where you are just playing for enjoyment. Both are necessary. Neither should replace the other.
+
+AVOID OTHER MODES: 2v2, experimental 1v1, and other modes play differently from standard ranked 1v1. The habits they build are partially wrong for ranked. Experimental 1v1 specifically rewards more aggression than ranked does. If your goal is to climb, keep the majority of your sessions in ranked 1v1.`,
+ex:`You have two sessions tonight. Session 1: you pick one focus (CDodge after every hit). For 45 minutes every hit is followed by a CDodge attempt, nothing else matters. Session 2: you turn off the focus and just play. You enjoy the game and decompress. Both sessions served a purpose.`},
+
+// CORE MECHANICS
+{cat:"mech",abbr:"ELC",name:"Endlag vs cooldown",short:"Two separate timers — most players only know one",
+def:`These are two completely different things that most players confuse or merge into one concept.
+
+ENDLAG: the period after an attack (hit or miss) where most of your options are disabled. Even after the animation finishes, you are briefly locked out. This determines when you can act again with ANY move.
+
+COOLDOWN: the period before you can use that SAME attack again. Each attack has its own individual cooldown. This is separate from endlag.
+
+THE KEY DISTINCTION: a move can have short endlag but a long cooldown. This means you can act with a DIFFERENT move almost immediately, but you cannot spam the same move for a while. You will develop a feel for which moves have long cooldowns as you play.
+
+PRACTICAL EXAMPLE: you throw NAir. Short endlag means you can immediately throw a DLight after landing. But NAir has its own cooldown, meaning you cannot throw another NAir immediately. So DLight works as the follow-up, but NAir into NAir might be blocked by the cooldown.
+
+Also important: many moves in Brawlhalla allow movement DURING the animation and SOME allow movement AFTER the endlag too. Brawlhalla is specifically designed this way. Learning to move during attack animations is one of the core skills of the game.`,
+ex:`You throw a signature. Short endlag means you can act again quickly. But the sig has a long individual cooldown. Your next attack is a light, not another sig. The light works because it has its own separate cooldown that is fresh. The sig is still recharging. Two separate timers, working independently.`},
+
+{cat:"mech",abbr:"HitJmp",name:"Getting hit restores one air jump",short:"Taking a hit mid-air gives back one jump",
+def:`When you are hit while airborne, you get one air jump restored. This is a specific mechanic with strategic implications.
+
+RECOVERY USE: if you are in a dangerous offstage position with no jumps and no recovery remaining, and you are lightly damaged, you can deliberately take a light hit to restore one air jump and use it to recover. You sacrifice some damage but avoid dying.
+
+EDGEGUARD IMPLICATION: opponents know this. A smart edgeguarder will not just throw random hits at you when you have no jumps — they will wait for a hit that is guaranteed to lead to your death rather than giving you a free jump restore.
+
+TANKING INTENTIONALLY: sometimes eating a hit is the correct play. If you are being edgeguarded and fear your recovery getting interrupted, you can jump INTO the opponent and take the hit deliberately. You restore a jump, take some damage, and continue recovering safely. You were never trying to avoid the hit — you wanted it.
+
+Note: weapon throws also restore an air jump when they hit you. This is relevant both for the person throwing and for the person being hit.`,
+warn:`Do not tank hits when you are at high damage (80%+). The knockback at high percent will send you further and the restored jump may not be enough to recover. This tactic is for low-to-mid percent only.`,
+ex:`You are offstage at 30% with no jumps and no recovery. The opponent jumps out to edgeguard. Instead of flailing, you jump INTO their attack. They hit you. You restore one air jump. You use it to snap to the ledge. You sacrificed 15 damage to survive. Correct call.`},
+
+{cat:"mech",abbr:"NeutDodge",name:"Neutral dodge vs directional dodge",short:"Two different tools with completely different uses",
+def:`Not all dodges are the same input. There are two distinct types and they serve completely different purposes.
+
+NEUTRAL DODGE (no direction held): your legend stays roughly in place. The invincibility lasts slightly longer than a directional dodge. Used when you want i-frames to protect you while staying at your current position — primarily for immediate counterattacks. You dodge the attack in place and fire back. Also used for gravity cancel setups (pressing attack during a neutral dodge mid-air activates gravity cancel).
+
+DIRECTIONAL DODGE (hold a direction): your legend moves in that direction. Shorter invincibility than neutral. Creates distance or repositions you. Used for escaping pressure, moving through attacks, or changing position quickly.
+
+WHY THIS MATTERS:
+Neutral dodge = stay and counter. Directional dodge = move and escape. If you are always using directional dodges, you have no counterattack option. If you are always neutral dodging, you are not creating distance from pressure.
+
+NEUTRAL DODGE IN NEUTRAL GAME: a neutral dodge at the right height (approximately neck level against a standing opponent) puts you in a position where your attacks suddenly cover both grounded AND jumping opponents if you follow with a gravity cancel. This makes neutral dodge a surprisingly powerful neutral tool.`,
+ex:`Opponent throws a DLight at you. If you neutral dodge: you take the i-frames in place and immediately fire back with DLight — counterattack. If you directional dodge: you move away from the DLight and create distance — reset. Same attack, two completely different responses with two different outcomes. Knowing which to use is a read on the situation.`},
+
+{cat:"mech",abbr:"WallMech",name:"Wall mechanics",short:"Wall jump, wall slip, what resets and what does not",
+def:`The walls on the sides of the stage have specific mechanics that most players at Gold-Plat do not fully understand.
+
+THREE WALL OPTIONS:
+1. Slide down with gravity (do nothing)
+2. Tap away from wall to move into the air
+3. Wall jump: press jump with no other input — does NOT use an air jump. Can be angled by holding forward or back during the jump.
+
+WALL RESETS: grabbing the wall refreshes your air jumps and slightly refreshes your dodge cooldown. This makes the wall a checkpoint. However: getting LAUNCHED into the wall does not count as grabbing. You need to be actively holding the wall. Using attacks into the wall DOES count as touching.
+
+WALL LIMITATIONS: while touching the wall, both dodges AND attacks are disabled. Any dodge invincibility is also cancelled if you dodge INTO a wall. You need to move away from the wall briefly to access these options — you do not need to move far.
+
+WALL JUMP vs AIR JUMP: wall jumps are more restricted in direction but save your air jump. Moving into the air then air jumping is more free but costs the jump. Prefer wall jumps when you need to preserve your air jump for recovery.
+
+WALL SLIP: if you perform 5 air actions (air jumps, wall jumps, recovery moves — NOT air dodges or wall grabs), an exclamation mark appears above you. At 9 actions, you get 3 exclamation marks and enter wall slip. During wall slip: all jumps except wall jumps, all dodges, and all recovery attempts are disabled. The only way out is to touch the ground. Any hit taken during wall slip is almost guaranteed death.`,
+warn:`Wall slip is a real kill condition. If you see the exclamation mark above your head, stop using air actions immediately. Land on something. One more recovery or air jump in this state and you enter wall slip — and any hit kills you.`,
+ex:`You are in a long offstage exchange, using recovery, jumps, and wall jumps. The exclamation mark appears. You immediately stop using air actions and let gravity pull you toward the stage edge. You grab the wall. Wall slip reset. Now you can use options again.`},
+
+{cat:"mech",abbr:"GPvars",name:"Ground pound variants",short:"Hold vs release — two different behaviors",
+def:`Ground pound (down heavy in the air) has two distinct versions depending on how you handle the input:
+
+RELEASE VERSION (tap and release): the ground pound fires immediately. It begins descending right away. Use this to attack at a distance or deter opponents who are approaching. Can catch enemies who are too close to the direct descent path.
+
+HOLD VERSION (hold the heavy input): the ground pound only activates if you make physical contact with the enemy during descent. It will not fire in empty air. You essentially fall toward the enemy and the attack begins at the moment of contact. More reliable at point-blank range, harder to dodge up close.
+
+WEAPON VARIATION: different weapons have different descending speeds on ground pound. Some are slow and very readable from distance. Some are faster and can catch people off guard. Test your weapon-specific ground pound speeds in training mode to know what you are working with.
+
+WHEN TO USE WHICH:
+Release: opponent is mid-screen below you, distance involved, you want to deter approach.
+Hold: you are very close to the opponent, you jumped directly above them, contact is nearly guaranteed.`,
+ex:`Opponent is directly below you recovering to the stage. You are above them. Hold version: you fall straight down, the attack only fires on contact — much harder for them to dodge since there is no visual warning until you arrive. Release version: you fire it early and descend with the active hitbox — they can see it coming from further away but the coverage is wider.`},
+
+{cat:"mech",abbr:"ColorFlash",name:"Color flash damage indicator",short:"Red flash = high damage = flies further",
+def:`When you hit an opponent, they flash a color. When you get hit, you flash a color. The color indicates current damage level.
+
+LOW DAMAGE: white or no flash. The opponent barely moves on hit. Combos are at their tightest windows here.
+MID DAMAGE: yellow-orange. Moderate knockback. Some combo routes start to break.
+HIGH DAMAGE: red. Strong knockback on every hit. Kill confirm range begins. Many follow-ups from low percent no longer connect.
+
+PRACTICAL USE: watch the color flash, not just the percent number. The flash is visible faster than reading the percent display. When you see red, your decision switches to kill confirm mode — stop building damage and start executing your kill setup.
+
+Also: some weapons use completely different combo routes depending on the enemy damage level. A follow-up that works at 20% might whiff entirely at 80% because the increased knockback launches the opponent too far for the same move to connect. The color flash is your real-time indicator that a route change is needed.`,
+ex:`You land a DLight. Yellow flash — mid percent. You continue your standard combo. A few stocks later you land another DLight. Red flash — kill percent. You switch immediately to kill confirm route: DLight into SSig. Same opening hit, completely different second move, decided instantly by the color you saw.`},
+
+// SPECIAL MOVEMENT
+{cat:"movement",abbr:"GCreal",name:"Gravity cancel — real definition",short:"Attack during neutral dodge mid-air = grounded attack while airborne",
+def:`File 3 mentioned gravity cancel briefly. Here is the full precise definition from the Diamond guide.
+
+EXACT INPUT: in the air, perform a NEUTRAL dodge (no direction), then immediately input an attack during the dodge animation. This cancels the dodge invincibility but briefly allows you to perform any GROUNDED attack while still airborne.
+
+WHY THIS IS POWERFUL: grounded attacks generally have better hitboxes, faster startup, and better follow-up potential than aerials. By gravity cancelling you access your ground game from the air. Your grounded DLight, NLight, SLight — all become available mid-air.
+
+THE HEIGHT TRICK: if you gravity cancel at approximately head/neck level (slightly above ground), your horizontal grounded attacks will simultaneously cover both GROUNDED opponents AND opponents who jumped. One gravity cancelled SLight hits both the person on the ground and the person at jump height. Enormous coverage from one input.
+
+ADDITIONAL USES:
+- Punish game: gravity cancel into DLight gives you your best combo starter from the air
+- Mix-up: opponents expect aerials in the air; grounded attack from above confuses timing
+- Combo extension: some combos only work with gravity cancel enabling a grounded link mid-combo
+- Safe landing: the grounded attack on landing covers your touchdown
+
+COST: using the neutral dodge for gravity cancel spends your dodge. This is the main tradeoff.`,
+ex:`You are airborne above the opponent. Instead of NAir (expected), you neutral dodge then immediately DLight. Your DLight fires from the air hitting at ground level. The opponent was expecting an aerial — their defensive timing was set for a slower aerial startup. Your grounded DLight from the air has faster startup and better hitstun. It connects cleanly and you convert into a full ground combo.`,
+warn:`Gravity cancel costs your dodge. If you burn it on gravity cancel and then need it for defense, it will be on cooldown. Use gravity cancel with intention, not habitually.`},
+
+{cat:"movement",abbr:"CDfull",name:"Chase dodge — complete mechanics",short:"Two charges, grounded vs aerial, cancel timing — full picture",
+def:`File 2 defined chase dodge. Here is the complete mechanical breakdown from the Diamond guide.
+
+ACTIVATION: after landing an attack (except throws or projectiles), press dodge. You are slung forward with high velocity and slightly longer invincibility than a regular dodge.
+
+DIRECTION RULES: CDodge can only go TOWARD the enemy or directly up or down. You cannot CDodge backwards. Vertical CDodges can be delayed slightly more than horizontal ones. If off-stage you can CDodge directly toward the wall/stage.
+
+CANCEL WINDOW: if you input an attack within approximately 1/3 of a second after the CDodge input, you cancel the CDodge with an attack. This forfeits the invincibility but retains the momentum. This is the CDC (chase dodge cancel) covered in file 4.
+
+TWO CHARGES: you can hold 2 CDodge charges. Using your regular dodge does NOT remove a CDodge charge. This means: even after using your regular dodge, if you land an attack, you still have a CDodge available. Also: after using the first CDodge, if you land a hit, you immediately have another CDodge available regardless of position.
+
+GROUNDED vs AERIAL CDODGE:
+Grounded: shorter cooldown afterward. Can chain a free second CDodge immediately after the first (just press the input twice). Much more efficient for aggressive ground combos.
+Aerial: longer cooldown. Useful for off-stage situations and vertical chases.
+
+INPUT CONFLICT: CDodge takes priority over dash inputs. Landing an attack on the ground and pressing forward + dodge gives you a CDodge, not a dash. If you want a forward dash after a grounded attack, use the down + dodge shortcut instead.`,
+ex:`You land a DLight. First CDodge fires forward, carrying you to the opponent for NAir. NAir lands. Second CDodge fires immediately (chained from the first). You CDodge up toward them and hit a second aerial. Both CDodges from one DLight starter. This is possible because grounded CDodge allows a free chain.`,
+warn:`CDodge puts your regular dodge on cooldown as if you had used a regular dodge. Two CDodges in succession means your dodge cooldown has been spent twice. Be aware of your dodge availability after aggressive CDodge chains.`},
+
+{cat:"movement",abbr:"DashCan",name:"Dash cancel and dash jump",short:"Cancel your dash into jumps, attacks, or opposite dashes",
+def:`A forward dash can be cancelled with any of the following:
+- Jump (including short hop): retains your dash momentum in the air. This is a DASH JUMP.
+- Attack: fires the attack with dash momentum behind it
+- Dodge: changes direction or applies i-frames mid-dash
+- Opposite direction dash: creates a DASH DANCE
+
+DASH JUMP DETAILS: short hop dash jump gives low airborne momentum. Full jump dash jump sends you significantly further. This distinction matters for approach angles and combo follow-ups. Fast falling after a dash jump lets you land quickly and chain another dash jump, letting you zoom across the stage repeatedly.
+
+DASH DANCE (cancel with opposite dash): can be chained repeatedly but each consecutive use slightly decreases responsiveness. One singular dash dance is highly effective at baiting trigger-happy opponents who commit early.
+
+BACKDASH LIMITATIONS: a backdash cannot be jump-cancelled backwards. You CAN do a neutral jump from a backdash which carries your backward momentum. You CANNOT do a true backward dash jump the same way as a forward one.
+
+MOMENTUM RETENTION: the key property of dash cancels is that the momentum carries into whatever you cancel into. A dash jump is not a normal jump — it carries horizontal momentum that a standing jump does not have. This makes your aerials faster and harder to react to when launched from a dash jump.`,
+ex:`You dash forward at full speed. Instead of slowing down to attack (which is readable), you dash jump at the last moment. You are now airborne with full dash momentum behind you. Your NAir arrives faster and from a more horizontal trajectory than a jump from standing. The timing breaks the opponent\'s defensive calibration.`},
+
+{cat:"movement",abbr:"TurnAtk",name:"Turnaround attacks",short:"Attack in the opposite direction of your dash — full inputs",
+def:`You normally cannot turn around mid-dash. But specific inputs let you perform an attack that simultaneously turns your legend around. This is a momentum and deception tool.
+
+TURNAROUND ATTACK INPUTS:
+- Turnaround neutral attack: Up + back + attack
+- Turnaround side attack: back + attack
+- Turnaround down attack: Down + back + attack
+
+TURNAROUND DASH INPUTS (for dashes that face backward):
+- Back (hold), down + dodge, then immediately forward
+- Same with jump added for a turnaround dash jump
+
+USE CASES: you are dashing forward. The opponent expects a forward-facing attack. You turnaround and fire a backward-facing attack. The opponent dodged forward (through where they expected your attack). Your backward attack catches their landing. The position reversal is disorienting.
+
+X-PIVOT (advanced variant): some attacks will slide a small distance when using the turnaround version immediately after a dash or dash jump, IF the inputs are fast enough AND the move supports x-pivot. Most visible with blasters (they literally bounce in the opposite direction). Nearly mandatory for certain weapons. Can be performed airborne or grounded.`,
+ex:`You are dashing right. The opponent is at center. You input turnaround side attack (back + attack). Your legend fires a SLight to the LEFT while still moving rightward. The opponent dodged the expected right-facing attack. Your left-facing SLight catches them on the other side. Same dash, completely unexpected attack direction.`},
+
+{cat:"movement",abbr:"EdgeCan",name:"Edge cancel",short:"Attack momentum during endlag slides you off an edge — cancels endlag",
+def:`When you use an attack on the stage or on a platform, if the momentum during the attack\'s endlag carries you over the edge before you become airborne, some of the endlag is cancelled. You transition from grounded endlag to airborne without the full endlag penalty.
+
+This works with ALL attacks — not just fast ones. Even slow attacks with long endlag can be edge cancelled.
+
+DASH EDGE CANCEL: you do not even need to attack. Edge cancelling the endlag of a dash or dash dance creates movement confusion without any attack. The opponent sees you approach then suddenly be airborne at the edge.
+
+PRACTICAL VALUE: reduces the punishment window on missed attacks used near edges. A move that would normally be punishable for 20 frames might only be punishable for 8 frames if you edge cancel it. Also creates unexpected position changes.
+
+DIFFICULTY: moderately high. Requires knowing exactly where the edge is and positioning attacks to end at that point. Worth learning but the Diamond guide rates it as optional for climbing.`,
+ex:`You throw a SLight near the right platform edge. The momentum during endlag carries your legend off the edge. Instead of sitting in full endlag on the platform, you are airborne immediately. The opponent was positioning to punish your SLight endlag. They arrive at where you were — you are no longer there. Edge cancel created a free escape from a punishable move.`},
+
+{cat:"movement",abbr:"PlatCan",name:"Platform cancel",short:"Attack or dash slightly above platform — snap to it and gain ground options",
+def:`This is identified as the single most useful technique for speeding up gameplay at Platinum level.
+
+WHAT IT IS: if you use an attack or dash while slightly ABOVE or BELOW a platform or the main stage, your character snaps onto the platform and performs a GROUNDED version of the action instead of an aerial one.
+
+WHY IT IS POWERFUL:
+1. You access grounded attacks (faster, better hitboxes, better combos) from slightly airborne positions
+2. Defensively: after getting hit, you can platform cancel back to the stage and reset to neutral immediately without burning dodge
+3. Recovery tool: allows movement options in situations where you would normally have none
+4. Effectively lets you treat platforms as a shield — aerial attempted, but instead snaps onto platform safely
+
+WAVELANDING (advanced): combine platform cancel with a dash. Perform a dash just as you land on a platform. The landing is cancelled by the dash, giving you immediate sliding momentum on the platform.
+
+AVOIDING ACCIDENTAL PLATFORM CANCEL: if you do not want the platform cancel to fire (you want an aerial to go through), hold the directional input slightly before the attack input. Also: some aerials can hit THROUGH a platform if you hold down during the input.
+
+The Diamond guide says mastering this gives the biggest possible boost to your gameplay. It makes platforms function completely differently.`,
+warn:`Beginners accidentally platform cancel when trying to use aerials close to the ground (DAir and ground pound are the worst offenders). Once you understand the mechanic, you can control it deliberately. Until then, be aware that this is probably causing some of your "missed" aerials near platforms.`,
+ex:`You get launched toward the left platform. Mid-air you dash toward the platform slightly before landing. Platform cancel fires: you are grounded immediately, no aerial landing lag, no landing frames. You dash out of it straight into a DLight on the opponent who was chasing you. Platform cancel turned a disadvantage recovery into an immediate offensive reset.`},
+
+{cat:"movement",abbr:"AerDD",name:"Aerial dash dance (off-platform)",short:"Dash off the edge of a platform to launch below it",
+def:`This technique is performed on a platform, not the main stage.
+
+INPUT: stand on a platform. Dash toward the edge so you barely remain on the ground. Immediately dash back.
+
+RESULT: if the timing is correct, instead of a regular dash dance, you are flung BELOW the platform with momentum. You are now approaching from below the platform rather than on top of it. The opponent had no visual cue that you were about to appear below them.
+
+WHY IT WORKS: a successful aerial dash dance leaves you airborne under the platform with the momentum of the dash. You can attack upward through the platform, fast fall away, or use the surprise of the new position.
+
+FAILED VERSIONS: if you get a regular airdodge instead, the timing was off. If you get a regular dash dance back onto the platform, adjust the edge distance.
+
+COMBINATION: can be mixed with a regular dash dance to make your platform movement extremely difficult to read.
+
+REWARD: significantly increases the usefulness of some heavy-hitting signatures. A heavy sig from below a platform where the opponent was standing is nearly impossible to react to.`,
+ex:`You are on the right soft platform. Opponent is also on it. Aerial dash dance fires: you disappear below the platform instantly. Opponent saw you on the platform and expected a forward attack. Instead you are below them. You fire NSig upward through the platform. They had no read for the angle change. The aerial dash dance changed the whole geometry of the interaction.`},
+
+{cat:"movement",abbr:"SlCharge",name:"Slide charge",short:"Signature that charges while sliding off the edge — situational",
+def:`A niche technique. Included so you recognize it when you see it.
+
+INPUT: dash past the edge or platform edge. Before becoming airborne, input a signature and hold it. Your legend begins sliding off the edge with the signature charging. The signature charges while falling through the air.
+
+RESULT: a signature that fires mid-fall with varying power based on how long it was charged. The distance it carries you is determined by your dash momentum.
+
+PRACTICAL VALUE: low. Requires the opponent to remain nearly stationary during your recovery. Telegraphed and slow enough to be easily countered. Occasionally useful in very specific setups. The Diamond guide notes it is mostly used as a reversal (turnaround slide charge) or for surprise in situations where the opponent is completely idle.
+
+WHY KNOW IT: you will see it used against you occasionally by creative players. Understanding what it is prevents confusion.`,
+ex:`An opponent dashes past the right edge and immediately charges their NSig while sliding off. You see them fall with an active charge. If you were rushing the edge to edgeguard, you run directly into the charged sig. Recognizing slide charge tells you to hang back rather than chase.`},
+
+// COMBAT DEPTH
+{cat:"combat",abbr:"PriCla",name:"Priority and clash system",short:"What beats what when attacks collide",
+def:`When two attacks connect simultaneously, the game checks priority. Understanding this changes how you challenge opponents.
+
+FIRST RULE: attacks need to hit the LEGEND, not the weapon or animation. A big visual animation does not mean a big hitbox. Watch where the legend's body is during the animation.
+
+CLASH CONDITION: a clash only occurs when both attacks hit both legends at the exact same moment. If one hits slightly before the other, no clash — it is just a trade.
+
+PRIORITY ORDER (highest to lowest):
+1. Signatures
+2. Gravity cancelled signatures
+3. Light attacks
+4. Gravity cancelled light attacks
+5. Aerial attacks, recovery, ground pound
+6. Unarmed attacks (always lose to weapon regardless of tier)
+
+Higher priority deletes the lower priority attack. Same priority = both get hit simultaneously.
+
+MULTI-HIT MOVES IN CLASHES: some moves look like one hit but are actually multiple hits. Only the FIRST hit registers in a clash. Multi-hit moves are weaker in clashes than they appear because the additional hits never connect. Knockback from a multi-hit clash can also send you in unexpected directions.
+
+KEY INSIGHT: signatures beat everything in a clash. But a sig can still LOSE to a light attack if the light attack has better range — the sig never clashes because the hitbox does not reach the opponent. Priority only matters when both hitboxes actually make contact simultaneously.`,
+priority:[
+  {n:"1",col:"#993C1D",bg:"#FAECE7",t:"Signatures — beat everything"},
+  {n:"2",col:"#633806",bg:"#FAEEDA",t:"Gravity cancelled signatures"},
+  {n:"3",col:"#3C3489",bg:"#EEEDFE",t:"Light attacks"},
+  {n:"4",col:"#085041",bg:"#E1F5EE",t:"Gravity cancelled light attacks"},
+  {n:"5",col:"#0C447C",bg:"#E6F1FB",t:"Aerials, recovery, ground pound"},
+  {n:"6",col:"#444441",bg:"#F1EFE8",t:"Unarmed — always loses to weapon"},
+],
+ex:`You throw NAir (aerial, tier 5). Opponent throws NLight (light attack, tier 3). If both hit simultaneously: NLight wins the clash, your NAir is deleted. You take the hit. The opponent does not. This is why challenging a grounded light attack with an aerial approach is a losing interaction if it comes down to a direct clash.`},
+
+{cat:"combat",abbr:"DmgScale",name:"Damage scaling and follow-up timing",short:"More damage = longer wait before follow-up — adjust or whiff",
+def:`When an opponent has more damage, knockback is amplified. This directly affects your combo timing.
+
+THE CONSEQUENCE: a follow-up that connects at 20% will whiff at 80% because the increased knockback sends the opponent further away before your follow-up move can reach them.
+
+GENERAL RULE: the more damaged the opponent, the LONGER you wait before attempting a follow-up, and the FURTHER you need to reposition to catch them.
+
+MOVES DESIGNED FOR COMBO STARTING: some moves (DLight on most weapons) are specifically designed to keep the opponent close even at higher damages. They have reduced knockback to preserve follow-up potential. But even these have a damage threshold where the combo changes.
+
+JUGGLING TIMING: when keeping an opponent airborne (juggling), gravity will pull them down. The timing of your next hit should sync with their descent — not thrown randomly. At high percent they fall from further away; timing your attack with their descent becomes essential.
+
+CAMP vs CHASE CHOICE: after landing a hit that sends an opponent upward, you have two options.
+CAMP: stay near the ground, dash and jump to keep them on their toes. Gravity forces them down to you. Prevents them building momentum. Some moves are specifically designed to counter aerial approaches — use these while camping.
+CHASE: use CDodge upward to follow them. Then air jump to reposition. If you knock them far, a vertical CDodge covers the distance instantly. After landing another hit during the chase, you have a fresh CDodge charge to continue or return to stage.`,
+ex:`You land DLight at 20%. Follow-up NAir connects immediately — true combo. Same situation at 75%. You land DLight. If you throw NAir immediately, it whiffs — the opponent was launched slightly further. You need to CDodge up first to close the distance before throwing NAir. Same combo, extra repositioning step required at higher percent.`},
+
+{cat:"combat",abbr:"Parry",name:"Parry — baiting and punishing your punish",short:"The strategy of deliberately looking punishable to catch your counter",
+def:`Parry in Brawlhalla is a specific strategic concept: deliberately using a move that looks punishable in order to bait your opponent into attempting a punish, then punishing their punish attempt.
+
+HOW IT WORKS: you throw an attack that misses intentionally, at a range where the opponent thinks they can punish it. They commit to a punish movement. You were already positioned just outside their punish range. Their punish whiffs. You punish the whiff.
+
+WHY IT IS COMMON AT PLATINUM: Platinum players have learned to punish whiffs. They see a missed attack and immediately respond with their punish reflex. Parry exploits this trained reflex by making the missed attack look real but be positioned out of their reach.
+
+PARRY vs REAL WHIFF: if your regular punish attempts keep missing against a specific opponent, you may not be positioning incorrectly — they may be parrying you. The solution is to use a faster punish, position differently, or use movement alone as a "punish" (stealing stage control without attacking).
+
+FAKE PUNISH: you can also do a fake punish — you look like you are going to punish their miss, but you stop short and do nothing. Their response to your apparent punish attempt can itself be exploited.
+
+IMPORTANT: do not try to punish everything, especially when unsure. An opponent who baits punishes will destroy a player who reflexively punishes every whiff. Develop judgment about which whiffs are genuine and which are parries.`,
+ex:`Opponent throws SLight that you should be able to punish. You dash in to punish. Their SLight was thrown at a range where you arrive just as their endlag ends. You are now in range of their immediate next attack. They fire it. You get hit. That was a parry. They were not whiffing accidentally — they were positioning to punish your punish attempt. Fix: use a faster punish option or do not take that specific punish.`},
+
+{cat:"combat",abbr:"WpnThrow",name:"Weapon throw mechanics",short:"Momentum-based, two main edgeguard uses, spawn management",
+def:`Weapon throws are the only truly ranged option in Brawlhalla. Complete mechanics:
+
+HOW IT WORKS: press and release the weapon pickup button. You can charge any throw and change direction until release. Critically: throw trajectory is based entirely on your legend\'s momentum at the moment of release. Fast rightward movement = weapon goes right with speed. Jumping while throwing changes the angle.
+
+HIT SIDE EFFECT: if YOU get hit shortly after throwing a weapon, the thrown weapon loses its attack properties and passes harmlessly through enemies.
+
+TWO MAIN EDGEGUARD USES:
+1. TIMING THROW: throw the weapon right as the opponent stops flying from your hit. The weapon arrives just as they enter recovery — they take another hit, knocking them further. Especially effective for securing kills on slightly-too-low damage opponents.
+2. RECOVERY INTERRUPT: throw at a specific recovery or signature to interrupt it. More effective on lightly damaged opponents when followed immediately by an unarmed hit.
+
+DEFENSIVE WEAPON THROWS (returning to stage):
+- Throw UPWARD near the wall to deter reckless edgeguarders attacking from above
+- Throw DIAGONALLY DOWNWARD when trying to land safely — creates a hitbox below you that discourages waiting opponents
+
+SLOW ANGLE TRICK: deliberately throw diagonally into the stage to reduce the weapon\'s travel speed. This shortens the time between throw and follow-up.
+
+SPAWN MANAGEMENT: you can deny newly spawned weapons by throwing yours away and grabbing the new one. You can delay spawns by keeping weapons in the air (only 2 weapons spawn if there are fewer than 2 on stage). Throw current weapon upward, grab the new spawn, repeat to delay.`,
+ex:`Opponent is off-stage at 95%, barely survived. You hit them earlier for 20 damage. They are now recovering slowly. You throw your weapon timed to arrive right as their fly distance ends. The weapon hits them during recovery and sends them further. Combined with the earlier 20 damage, they die. The weapon throw converted a barely-insufficient KO into an actual stock.`},
+
+{cat:"combat",abbr:"OptCount",name:"Options counting during edgeguard",short:"Track remaining resources to know how pressured the opponent is",
+def:`When edgeguarding, the more you know about what options the opponent has left, the more precisely you can pressure and predict.
+
+RESOURCES TO TRACK:
+- Air jumps: how many jumps do they have left? 2 = full options. 1 = limited. 0 = desperate.
+- Recovery: have they used their recovery move? If yes, they cannot use it again until touching ground or wall.
+- Air dodge: have they dodged recently? If yes, their dodge is on cooldown. If no, they can dodge your edgeguard.
+- Distance from stage/wall: how far are they from safety?
+
+MORE RESOURCES SPENT = MORE PRESSURED. An opponent at 0 jumps, used recovery, dodge on cooldown, far from stage has almost no options. At this point, one clean hit is nearly a guaranteed KO.
+
+ACTIVELY DEPLETING RESOURCES: part of good edgeguarding is intentionally making the opponent spend resources. Throw a weapon to force a dodge (burns their dodge). Approach to make them double jump early (burns a jump). Each resource you make them spend tightens the trap.
+
+THE SOCCER GOALIE PRINCIPLE: you are not chasing them. You are occupying space they want to enter. You intercept — you do not pursue. As long as your opponent fears your attacks, you control the fight.`,
+ex:`Opponent offstage: 1 air jump remaining, recovery spent (no stars on head — they used it), last dodge was visible and cooldown is active, one wall length from the stage. Options remaining: 1 jump, no dodge, no recovery. They basically have one move left. You position at the recovery trajectory and wait. They have to go somewhere you are covering. One hit secures the stock.`},
+
+{cat:"combat",abbr:"PanicMov",name:"Panic moves (abare)",short:"Attacking from disadvantage — when it helps and when it hurts",
+def:`A panic move is an attack thrown from disadvantage — when you have been hit and are in a bad position. In traditional fighting game terms this is called abare. It is always risky but sometimes necessary.
+
+WHY USE THEM: without any offensive threat, a good opponent will chase you indefinitely and cover every escape route. Panic moves force opponents to respect that you can still hit back. They use attacks as a DETERRENT, not as aggression.
+
+GRAVITY CANCEL OPTION: gravity cancelling before a panic move gives you access to faster grounded attacks from the air. This reduces the risk compared to a raw aerial panic move.
+
+BEST PANIC MOVE CRITERIA: big hitbox (hard to avoid), does not need momentum to reach (you have none), slow moves only if you can create enough space first.
+
+DAMAGE SCALING BENEFIT: at high damage, increased knockback creates distance automatically. This distance makes slower panic moves safer — the opponent is briefly far away, giving you startup time. But shorter range moves become useless because they cannot reach across the distance.
+
+FREQUENCY: the Diamond guide estimates panic moves are the correct option approximately 5% of the time. They are rarely better than defensive movement. Use them sparingly but make sure they land when you do use them.`,
+warn:`Panic moves in disadvantage are inherently risky: done prematurely, from a bad position, often require spending dodge on gravity cancel, usually halt your momentum. Overusing them trains the opponent to bait and punish them. Use 2-3 per stock maximum, with intent.`,
+ex:`You get launched far offstage. Opponent is edgeguarding. You return to stage level but they are hovering near the ledge. If you just try to recover passively, they cover every angle. You fire one panic move — a gravity cancelled SLight — as you approach. It is not a guaranteed hit but it forces them to move. In the movement, you find the gap to touch stage. The panic move created the escape route.`},
+
+// PREDICTION & LAYERED OFFENSE
+{cat:"predict",abbr:"Pairs",name:"Pairs framework — trigger and response",short:"Every opponent action is Action 1 that leads to a predictable Action 2",
+def:`From the Diamond guide: at Platinum level, your gameplay should be able to run on autopilot while you observe your opponent. Think of every action as PAIRS: a trigger (Action 1) and a response (Action 2).
+
+EXAMPLE: opponent gets hit (Action 1) → they immediately panic dodge (Action 2). Getting hit is the trigger. Dodging is the response. You now know their response to that trigger. Recreate the trigger and you know exactly what they will do.
+
+HOW TO BUILD A READ: observe Action 2 happening after Action 1. Ask: is this a bad habit, a panicked response, a misinput, or a deliberate mindgame? If it is a habit or panic, it will repeat. If it was deliberate, they will vary it.
+
+BIGGER PICTURE: also think beyond individual exchanges. Which weapon do they prefer? Do they use one particular move repeatedly? Are they vulnerable after a specific action? What is their overall gameplan? What do they do immediately after getting hit?
+
+OBSERVATION REQUIRES AUTOPILOT: you can only observe the opponent when your own gameplay is automatic enough to not require conscious attention. This is why drilling to automaticity matters — it frees your conscious brain to read the opponent instead of managing your own inputs.`,
+ex:`Stock 1: you notice every time the opponent is cornered at the edge, they dodge toward center (through you). Action 1: cornered. Action 2: dodge forward toward center. Stock 2: you corner them again. You position yourself on the side where their forward dodge will land. They dodge forward. You were already there. You punish their landing. The pair was identified and exploited.`},
+
+{cat:"predict",abbr:"MaxPrac",name:"Max range vs practical range",short:"Max range is for punishing only — practical range is where you actually fight",
+def:`Two different range concepts that most Gold-Plat players confuse.
+
+MAX RANGE: the absolute furthest distance your attack can connect. At max range, opponents who are standing still get hit. Opponents who are moving will not be there by the time your attack arrives.
+
+PRACTICAL RANGE: the range where you can land an attack before the opponent has time to react and move away. This is significantly shorter than max range for most attacks. This is where neutral fighting actually happens.
+
+THE PROBLEM AT GOLD-PLAT: many players spam attacks at absolute max range and are confused why they keep missing. The opponent simply walks or dashes away before the hitbox arrives. They are fighting at max range, not practical range.
+
+MAX RANGE USE: max range is for punishing. When an opponent commits to an action (whiffs a move, uses a recovery, jumps predictably) and you know exactly where they will be for the next 20 frames — then max range attacks connect because you can time them to arrive at the confirmed location.
+
+THE COMBINED RANGE RULE: attacking so that your hitbox covers the REMAINDER of the stage (between you and the opponent) forces the opponent to go airborne or approach. This is different from max range — it is using your attack coverage to control territory.`,
+ex:`Your SLight max range is 4 character lengths. You keep throwing it at 4 lengths but keep missing because the opponent dashes away. Your SLight practical range — where it lands on a moving opponent — is about 2.5 character lengths. At 3 lengths you threaten. At 2.5 you land. At 4 you miss. Stop fighting at 4.`},
+
+{cat:"predict",abbr:"LayOff",name:"Layered offense — 3 methods",short:"Three ways to make attacks unpunishable from different angles",
+def:`At Platinum, opponents have learned to punish predictable attacks. Adding layers to your offense means the same attack cannot be punished by the same response.
+
+METHOD 1 — INTENTIONAL SHORT RANGE: deliberately use an attack that falls short of the opponent. Land just outside their punish range. Bad players see the attack miss and automatically swing to punish. You are already outside their range. Their punish whiffs. You have all options.
+
+METHOD 2 — OVERSHOOT (retain momentum through attack): use a move that carries you forward through the attack. Overshoot past your normal attack range. Bad players have pre-positioned for their standard punish. You are no longer at the position they autopiloted to. Their punish fires at where you should have been. You are past it. Baits autopilot punishment.
+
+METHOD 3 — CHANGE THE TIMING: use the same attack at the same range, but earlier or later than your established rhythm. The opponent\'s dodge was timed to your rhythm. Your off-rhythm attack arrives when their dodge is no longer active.
+
+AGAINST FRUSTRATED OPPONENTS (all 3 methods): after being beaten 3 ways, opponents get twitchy and aggressive. Switch to very small movement — tiny dashes, barely moving — or stop completely. This is a fake advance. They commit to stopping you. There is nothing to stop. They are now the one overcommitting.
+
+THE COMBINED RESULT: an opponent who cannot punish any of your attacks, cannot predict your timing, and cannot read your range has only three options: be patient, retreat, or take an unnecessary risk. Most players at Platinum choose option 3 after enough frustration.`,
+ex:`Stock 1: you use SLight at max range (Method 1) and they whiff their punish. Stock 2: you use SLight with overshoot (Method 2) and they punish the wrong position. Stock 3: you use SLight at the same range but delayed timing (Method 3) and they dodge 10 frames early into nothing. Three stocks, three different layers. They never got a clean punish because no single defense covered all three variations.`},
+
+{cat:"predict",abbr:"SafeAtks",name:"Safe attacks as a strategy",short:"Safe moves that force reaction even when they do not hit",
+def:`A safe attack is one where, even on a miss, you are not punishable — either because the recovery is short or because you end up outside punish range after the animation.
+
+THE KEY INSIGHT: even a safe missed attack briefly stuns the opponent in their animation (the animation of NOT getting hit — they flinch, prepare to dodge, or prepare a response). They are briefly locked into that animation. This is time on your side.
+
+USE MOVEMENT AS THE PUNISH: if an attack is safe and the opponent commits to their punish response, you can use MOVEMENT instead of another attack as your "punish." Walk toward them. You are now inside their range with all options available. Bad players see you close in and panic-attack. That panic attack is your real punish opportunity.
+
+UNDERSTAND YOUR OWN SAFE MOVES: knowing which of your attacks are safe at which ranges is enough to climb a rank on its own. Use those attacks frequently in neutral. You cannot be punished for them. The opponent must deal with them every interaction or give up space.
+
+OVERUSE WARNING: if you use the same safe attack too often, the opponent will eventually learn to ignore it and take the initiative. Mix safe attacks with real threats to prevent this.`,
+ex:`Your NLight at max range is safe — short recovery, you end outside their punish range. You use it 4 times in a row. They cannot punish it. But they learn to walk forward through it. 5th NLight: they are walking forward, inside your range as the NLight ends. You use DLight immediately. They were not prepared for a follow-up from a move they had learned to walk through. The safe attack set up the real attack.`},
+
+{cat:"predict",abbr:"BufInp",name:"Buffer inputs",short:"Queue the next input just before endlag ends",
+def:`A buffer input is when you input an action just before your current action\'s endlag finishes. The game queues the input and executes it at the first available frame.
+
+WHY IT MATTERS: if you wait until the endlag fully ends before inputting your next action, you lose those frames. Buffering inputs at the correct moment closes the gap between actions, making your attack chains faster than they would be from manual timing.
+
+GREATSWORD SPECIFIC: the Diamond guide notes that greatsword gameplay practically requires buffer inputs. Its combo system chains moves back-to-back and the windows between moves are designed around buffered inputs. Playing greatsword without buffering feels clunky.
+
+GENERAL USE: any attack chain benefits from buffering the next input slightly before the endlag ends. The game accepts the input and fires it immediately when free. The result is a slightly tighter, faster attack chain without requiring inhuman reaction time.
+
+DIFFICULTY: moderately difficult. Getting the timing of the buffer window takes practice. If you input too early, the game may not register it (or may do the wrong thing). Too late and you are back to manual timing.`,
+ex:`You throw DLight. Endlag lasts 12 frames. You input NAir at frame 10 of the endlag. The game queues the NAir. At frame 12 when endlag ends, NAir fires immediately — frame 13. Compare: if you wait until frame 12 to input NAir, you get it at frame 13 anyway (assuming fast input). But if your manual timing is frame 15, buffering gives you frame 13. Two free frames tighter per combo step.`},
+
+,
+
+// REFINED DEFINITIONS — sharper framings and supplemental concepts from the Diamond guide
+
+{cat:"refined",abbr:"STR",name:"Strength — redefined as pressure",short:"High strength = less commitment needed, not just more damage",
+def:`The standard definition says strength increases damage and knockback. That is true but incomplete.
+
+The sharper framing from Diamond-level play: strength = PRESSURE.
+
+A legend with high strength does not need to commit a lot to get damage and kills. Every hit they land carries enough knockback that opponents are constantly threatened. They force the opponent offstage without elaborate setups. A single well-placed hit from a high-strength legend creates enormous danger.
+
+Crucially: pressure is not aggression. Pressure means the opponent must respect you because the consequences of getting hit are severe. A high-strength legend can sit at mid-range, throw occasional light attacks, and the opponent is still under constant pressure because any hit is dangerous.
+
+Legends with extreme strength (like high-strength hammer users) will automatically force enemies off stage with almost any landed attack at 60%+. You do not need complex combos — the stat does the work.
+
+HOW THIS CHANGES YOUR THINKING: if you play a high-strength legend, do not feel like you need to rush in and combo repeatedly. Patient, occasional hits are effective. If you face a high-strength legend, you cannot afford to trade hits — one trade they win, one trade you potentially die.`,
+ex:`You play a high-strength axe legend. You throw one DLight and follow with DSig at 80%. The knockback alone kills without an elaborate combo. Your opponent plays a high-dexterity gauntlet legend. They need 5-6 hits in a chain to kill at the same percent. One hit vs six hits for the same outcome. That is the practical meaning of strength as pressure.`},
+
+{cat:"refined",abbr:"DEF",name:"Defense — redefined as pressure reduction",short:"Works offensively too — allows more mistakes and more risks",
+def:`The standard definition says defense reduces damage and knockback so you survive longer. That is true but it also works offensively.
+
+The sharper framing: defense = REDUCING PRESSURE.
+
+High defense means you spend less time airborne per hit, which means more time on stage controlling it. But more importantly, high defense allows you to take more risks without the fear of dying instantly. You can trade hits more aggressively. You can attempt riskier reads. If the read fails and you get hit, you survive when a lower-defense legend would not.
+
+This makes defense an offensive stat in practice. A high-defense legend can play aggressively AND absorb mistakes. A low-defense legend must play carefully because each mistake is potentially lethal.
+
+PRACTICAL IMPLICATION: if you find yourself constantly dying at unexpected percents (80%, 90% when you should be surviving to 120%), your legend has low defense. The solution is not just to play better — it is to understand that your margin for error is smaller and factor that into how many risks you take.`,
+ex:`Two players at 85%. Player A has high defense. Player B has low defense. Both take the same hit. Player A flies a small distance and lands safely — still in the fight. Player B flies to the blast zone. Same attack, same percent, completely different outcome. Player A can afford one more aggressive trade. Player B cannot. Defense decided the risk tolerance of the entire stock.`},
+
+{cat:"refined",abbr:"DEX",name:"Dexterity — what it actually affects",short:"Endlag on MISSED attacks + weapon HP — irrelevant for combos",
+def:`The standard definition says dexterity increases attack speed. That framing is misleading.
+
+The precise framing from the Diamond guide: dexterity makes missing an attack feel less clunky, allowing the user to act slightly earlier after a MISS than they normally would.
+
+KEY DISTINCTION: dexterity is irrelevant for combos 99% of the time. It does NOT speed up your combo windows. What it does is reduce the endlag penalty on missed attacks specifically.
+
+PRACTICAL MEANING: a high-dexterity legend who throws a SLight that misses can act again 3-4 frames faster than a low-dexterity legend who missed the same attack. Over a match, this small difference compounds: every missed attack has slightly less punishment window.
+
+This is why dexterity enables a "calculated spam through precise spacing" playstyle. You throw attacks at ranges designed to miss safely, and dexterity reduces the endlag on those intentional misses, making them even harder to punish.
+
+SECOND EFFECT (updated): dexterity also increases weapon HP. Your weapons survive more hits before breaking or being knocked out of your hands. This is meaningful against opponents who specifically target your weapon.
+
+SUMMARY: dexterity does not make your combos faster. It makes your misses faster. Different stat, different application.`,
+ex:`You play a low-dexterity legend. You throw a SLight that misses. Your opponent has 18 frames to punish. You play a high-dexterity legend. You throw the same SLight at the same range that misses. Your opponent has 14 frames to punish. They use DLight as a punish but DLight has 16 frames of startup. Against low-dex they get it. Against high-dex they do not. Four frames from a stat difference decided the punish.`},
+
+{cat:"refined",abbr:"SPD",name:"Speed — who moves first, not who moves fastest",short:"Air speed is what matters; max running speed is nearly irrelevant",
+def:`The standard definition says speed increases movement speed. This creates a misleading picture.
+
+The precise framing: speed decides who gets to move first, not who moves the fastest.
+
+WHY MAX RUNNING SPEED IS NEARLY IRRELEVANT: at high level, almost all movement is done through dashes, wavedashes, and other techniques — not raw running. The max running speed differences between legends are negligible when movement techniques are in play.
+
+WHERE SPEED ACTUALLY MATTERS:
+1. WALKING SPEED: high-speed legends walk noticeably faster. Walking (not running) is used constantly in neutral for micro-adjustments. Walking speed differences are felt every exchange.
+2. AIR SPEED: this is the biggest effect. High-speed legends move significantly faster in the air. This matters enormously for recovery (offstage survival), aerial approaches, and chasing opponents. A high-speed legend returns from offstage much more safely than a low-speed legend.
+3. FIRST MOVEMENT: in neutral exchanges where both players are adjusting simultaneously, the higher-speed legend gets to their desired position slightly earlier. This is the "who moves first" advantage.
+
+IMPLICATION: if you play a high-speed legend, your aerial game and recovery are stronger than your stats imply. Use the air speed aggressively. If you play a low-speed legend, accept that aerial exchanges favor the opponent and invest in strong ground game instead.`,
+ex:`Both legends start at center and attempt to reach the right platform simultaneously. High-speed legend arrives first and gets the platform advantage. Low-speed legend is still moving there. Same decision, same start, different arrival. Speed decided who controlled the platform. Not running speed — just the first-movement advantage on every micro-adjustment throughout the match.`},
+
+{cat:"refined",abbr:"ThPred",name:"Theoretically perfect equals predictable",short:"Always doing the optimal response makes you readable",
+def:`One of the most important philosophical principles from the Diamond guide, and absent from all 7 files.
+
+The statement: theoretically perfect equals predictable.
+
+WHAT THIS MEANS: if you always do the correct optimal response to every situation, experienced opponents will map your responses to each trigger and exploit them. The best response to trigger X is always the same response Y. Once they know you always do Y when they do X, they do X specifically to set up their punish on your Y.
+
+EXAMPLES:
+- Always dodging when pressured at the edge → opponent conditions you to dodge, then punishes the dodge landing.
+- Always following a DLight with NAir (correct combo) → opponent learns to DI away from where NAir arrives.
+- Always recovering high when knocked offstage → opponent reads the high recovery and edgeguards it every time.
+
+THE SOLUTION: intentionally do the suboptimal thing sometimes. Not randomly — deliberately, with awareness that you are breaking a pattern. The suboptimal action has to be chosen; it cannot be a reflex. This is what separates mechanical execution from true game sense.
+
+THE PARADOX: you need to know the optimal response in order to knowingly deviate from it. You cannot intentionally be unpredictable without first knowing what predictable looks like.`,
+ex:`You always DL → NAir after winning neutral. Opponent starts DI-ing to escape the NAir. The optimal follow-up is now being countered. You intentionally break it: next DL, you do nothing — just DL and walk away. Opponent DI-d expecting NAir and ended up in a bad position trying to escape a follow-up that never came. The suboptimal follow-up (nothing) created a better outcome than the optimal follow-up (NAir being DI-d out of).`},
+
+{cat:"refined",abbr:"SltAdv",name:"Slight advantage vs full advantage",short:"Opponent whiffs while you are in disadvantage — not the same as landing a hit",
+def:`There are two different levels of advantage that most players conflate into one.
+
+FULL ADVANTAGE: you landed a hit. The opponent is in hitstun, briefly frozen, then knocked airborne. Their movement options are delayed. Their attacks are slower. You have real time to follow up. Free hits are possible.
+
+SLIGHT ADVANTAGE: the opponent MISSED an attack while you were in disadvantage. They are briefly in recovery frames. You got away without taking damage. But you are still airborne, still off-balance, still without momentum in most cases.
+
+THE CRITICAL DIFFERENCE: slight advantage does not typically grant free hits. You are not in the same position as if you had landed an attack. The Diamond guide is explicit about this. Do not treat a slightly-advantaged position the same as a full-advantage position.
+
+COMMON MISTAKE: opponent whiffs while you are in the air. You feel like you escaped and immediately swing aggressively as if you have full advantage. You overextend. The opponent recovers from their whiff before your aggressive swing connects. You get hit.
+
+CORRECT RESPONSE TO SLIGHT ADVANTAGE: use it to escape, reposition, and return to neutral. Do not try to convert it into damage the way you would a full-advantage state. Occasionally a fast option lands — but treat it as a bonus, not an expectation.`,
+ex:`You are airborne after getting hit. Opponent throws a follow-up NAir that misses. You are now in slight advantage — they are in endlag. Old response: immediately swing aggressively. Result: their endlag ends, they hit you before your attack comes out. New response: use the slight advantage to fast fall and land safely, resetting to neutral. You turned a disadvantaged state into a neutral state. That is the correct use of slight advantage.`},
+
+{cat:"refined",abbr:"AirCtrl",name:"Air control — tighter definition",short:"You only control areas you are actively threatening",
+def:`File 6 covers stage control broadly. This is a more precise and actionable definition from the Diamond guide.
+
+THE PRECISE DEFINITION: you only control the areas of the stage you are actively threatening with attacks. If an area is completely out of your attack range, you are not controlling it — regardless of where you are standing.
+
+MOMENTUM AND RANGE EXTENSION: momentum extends the effective range of many moves. A dashing player covers more horizontal area with the same attack than a stationary player. This means building and maintaining momentum directly increases how much stage you control.
+
+AIR CONTROL SPECIFICS: in the air you cannot create bursts of momentum easily — you can only use momentum you already built on the ground. This means your aerial control is largely determined by your ground movement before you jumped. A legend who jumps from a full sprint controls a wide aerial zone. A legend who jumps from a standstill controls a narrow one.
+
+THE GROUNDED ADVANTAGE: staying grounded gives you more control than being airborne. On the ground you can dash, redirect, and create momentum on demand. In the air you are committed to the momentum you already have.
+
+FORCING OPPONENTS AIRBORNE: if you keep the opponent airborne while you stay grounded, you are maximizing this advantage. They lose dash access, their attacks are slower, they cannot create new momentum. You can choose when and how to engage. This is why juggling (keeping opponents airborne) is so powerful — it is sustained air control dominance.`,
+ex:`You are standing at center with no momentum. Your SLight reaches 3 character lengths. You control a 6-length diameter around you. Now you dash before throwing SLight. The dash momentum adds range. Your SLight now reaches 4 lengths. You control an 8-length diameter. Same position, different momentum, 33% more controlled territory. Momentum is not just movement — it is control expansion.`},
+
+{cat:"refined",abbr:"SigQ",name:"Sig questions — understanding your signatures",short:"A checklist for learning what your sigs actually do",
+def:`From the Diamond guide: do not spam sigs but do not ignore them. Each signature has a specific intended use that may not be obvious at first glance. Understand your sigs before using them.
+
+THE CHECKLIST — ask these questions about each of your 3 sigs:
+
+SPACE: does it take up a lot of space? A sig with a large hitbox controls territory and can catch approaches from unexpected angles.
+
+DISTANCE: can it safely keep the opponent at a distance? Some sigs push opponents away from you even on hit.
+
+KNOCKBACK: does it have high knockback? And in what direction? Does it kill horizontally, vertically, or diagonally?
+
+SPEED: is it faster than it looks? Some sigs have deceptively fast startup. These can be used as punishes in spots where you would expect them to be too slow.
+
+SAFETY ON MISS: are you in danger if you miss? Some sigs leave you airborne or far forward. Others return you to a neutral position.
+
+FOLLOW-UP ON MISS: can you follow up with an attack despite missing? Some sigs have enough forward movement or reach that a follow-up after the miss is still possible.
+
+MOVEMENT: does it alter your position? Some sigs move you forward, backward, upward, or sideways as part of the animation. This movement can be used to reposition.
+
+PLATFORMS: can it hit enemies on platforms above you? Some sigs have hitboxes that extend upward.
+
+ALTERABLE: can the sig be modified (turnaround, slide charge, hold vs release variants)?
+
+Going through this checklist once for your three sigs gives you a complete picture of when and how to use them properly.`,
+ex:`You play Bodvar. NSig (bear charge): large forward hitbox (space), moves you forward (movement), fast startup, dangerous on miss (you fly forward), can be armor-absorbed. SSig: horizontal knockback, strong KO move, moderate speed. DSig: downward angle, edgeguard use. Each sig has a specific role. NSig for reads and neutral control, SSig for kill confirms, DSig for edgeguard setups. Without the checklist you might use all three interchangeably and miss their specific strengths.`},
+
+{cat:"refined",abbr:"DblDig",name:"Double-digit sig rule",short:"Over 10 sigs thrown in a match = you have used too many",
+def:`A concrete diagnostic from the Diamond guide.
+
+THE RULE: if you count your signature usage over a match and the number reaches double digits (10+), you have definitely used too many.
+
+This is not about the sigs hitting or missing — it is about frequency. Sigs are high-commitment, high-telegraph moves. Using them repeatedly in a match signals to the opponent that you default to them under pressure, which makes them easy to read and punish.
+
+The correct number varies by situation and legend, but double-digit usage in a single game is a clear red flag for overreliance.
+
+HOW TO USE THIS: after a match where you felt like you kept getting punished, count how many sigs you threw. If you hit double digits, overused sigs are likely a major factor in the losses.
+
+THE INTENTION TEST: every sig should have a specific intention before it fires. "I read they were going to approach" or "I confirmed from DLight" or "they were recovering and I edgeguarded." If you cannot assign an intention to a sig you threw, that sig should not have been thrown.
+
+CORRECT SIG FREQUENCY: 3-6 sigs per match in most situations. Each one deliberate. A few more is fine if your legend uses sigs as part of specific combos. 10+ means you are swinging randomly and hoping.`,
+ex:`You review a match in your head. You remember throwing sig after sig in the second stock. You count: 14 sig attempts. 4 hit, 10 missed and got punished. You were using sigs as your main neutral tool instead of as a finishing or confirmatory option. The 10 missed sigs gave your opponent free damage totaling roughly 80 damage across the stock. The sigs that hit gave you 60. You literally lost damage on sigs this stock. The double-digit rule identifies exactly this problem.`},
+
+{cat:"refined",abbr:"ExtEG",name:"Extended edgeguard",short:"Chasing on stage after they land is still an edgeguard",
+def:`The standard definition of edgeguarding ends when the opponent touches the stage. This is a limited view.
+
+The extended definition from the Diamond guide: an edgeguard does not end until both players return to neutral — meaning both are safely on the ground at a safe distance with equal momentum. As long as the opponent does not feel safe, you are still in the edgeguard.
+
+THE CHASE-ON-STAGE EDGEGUARD: after an opponent returns to stage, stay just outside the range of their counterattacks. Keep moving toward them. They cannot attack you because you are just outside their range. You can attack them because you have more momentum and stage position. As long as you maintain this positioning, they cannot reset to neutral even on the main stage.
+
+HOW IT WORKS: you stay close enough to threaten but far enough to avoid their attacks. If they move left, you move left. If they try to dash away, you follow. The opponent is cornered in open space — they cannot create safety without either hitting you or making a significant position change.
+
+DIFFICULTY: this is described as very difficult to execute but hilarious when it works. It requires precise distance management and the ability to move while maintaining threat without committing.
+
+PSYCHOLOGICAL EFFECT: this chase-on-stage pressure is extremely tilting for opponents. Being pressured even after making it back to stage breaks the expectation of safety at landing.`,
+ex:`Opponent barely makes it back to stage. You do not stop. You stay 2 character lengths away and keep walking toward them. They try to dash left — you dash left too. They throw a NLight — you were just outside range, it misses. You step in and DLight punish. They try to jump — you short hop NAir. They cannot reset. The edgeguard continued on stage for 8 more seconds after they touched it. That entire sequence was one extended edgeguard.`},
+
+,
+
+// BRAWLACADEMY MINDSET ADDITIONS — from Atrophius, former pro, Top 8 placements
+
+{cat:"refined",abbr:"PkAvg",name:"Peak elo vs average elo",short:"Raising your average matters more than pushing your peak",
+def:`From a former professional player. A distinction that changes how you interpret rank fluctuations.
+
+PEAK ELO: the highest elo you have reached. This reflects your absolute best performance — the ceiling of what you can do when everything clicks. It is rare, situational, and not a reliable measure of your actual skill.
+
+AVERAGE ELO: where your total accumulated skill actually lives. This is what your rank looks like across many sessions, against many opponents, when some games are good and some are bad. It is a more honest measure.
+
+THE KEY INSIGHT: pushing your peak is less important than raising your average. Most players focus on the wrong number. They celebrate a new peak elo and stress when they drop below it. But a drop from your peak does not mean you got worse. It means variance happened.
+
+WHEN TO BE CONCERNED: if your AVERAGE starts trending downward over multiple sessions, something is wrong — likely tilt, a forming bad habit, or an opponent type you consistently cannot handle. That is the signal to investigate. A single peak drop is just noise.
+
+PRACTICAL USE: stop tracking your peak. Track your average over 20-30 games. Is it moving up over weeks? You are improving. Is it flat or falling? Find the pattern and address it specifically.`,
+ex:`You hit 1700 elo for the first time (new peak). You then go 3-7 in your next session and drop to 1620. Old reaction: "I got worse, I am losing my gains." Correct reaction: "My peak was 1700. My average this week is around 1650. The 1620 is a low variance point, not a new average. I am still improving." The distinction removes the emotional weight from individual session results.`},
+
+{cat:"refined",abbr:"FairGame",name:"Everything is fair game",short:"Any valid tactic in the game is a legitimate tool — no exceptions",
+def:`From former pro Atrophius. A foundational competitive mindset principle.
+
+THE PRINCIPLE: if it is in the game, it is fair game. All movement options, weapons, signatures, playstyles, and tactics — all valid. There is no such thing as a disrespectable playstyle in ranked play. Everyone is playing to win using whatever means necessary. That is the correct approach.
+
+WHY THIS MATTERS FOR IMPROVEMENT: complaining that a playstyle is unfair or cheesy creates a mental block. You declare the tactic invalid and stop thinking about how to beat it. But the tactic keeps working. You keep losing to it. You never solve the problem.
+
+THE REFRAME: if you encounter a playstyle you do not know how to deal with, that is not an injustice. It is information. It is your problem to solve. It is an opportunity to improve in a specific area you currently lack.
+
+WHAT CHANGES WHEN YOU ACCEPT THIS: instead of "that sig spam is broken," you think "what is the correct response to this sig spam pattern?" One response leads to frustration and stagnation. The other leads to a specific drill or adaptation that closes the gap permanently.
+
+ANYTHING in the game has a counter. Finding the counter is your job as a competitive player.`,
+ex:`You lose 3 times to a player who sits at max range and throws signatures repeatedly. Old response: "that is spam, it should not work." New response: "max-range sig spam is a pattern. What beats it? Moving inside the range before the startup. Gravity cancel to get inside safely. Punishing the recovery." You now have a plan. The frustration is gone because the tactic became a puzzle to solve rather than an insult to accept.`},
+
+{cat:"refined",abbr:"Puzzle",name:"Brawlhalla as a puzzle game",short:"Treat every matchup as a puzzle to solve, not a fight to win",
+def:`From former pro Atrophius. A mental model that changes how you think DURING a match.
+
+THE FRAME: every legend has stats, frame data, hitboxes. Your legend has its own set. The matchup is a puzzle: how do you use your kit consistently to beat their kit, given what they are doing right now?
+
+WHY THE PUZZLE FRAME HELPS:
+- Puzzles do not make you angry. Fights do.
+- Puzzles have solutions. Fights feel arbitrary.
+- When you are losing a puzzle, you think "what am I missing?" When you are losing a fight, you think "this is unfair."
+
+THE ADAPTATION BENEFIT: thinking in puzzle terms makes mid-game adaptation natural. Instead of "they keep dodging my combos" (frustrating), you think "my current combo route does not account for their dodge pattern — what adjustment solves that?" You are problem-solving, not reacting emotionally.
+
+AS YOU LEARN MORE: every new technique you add to your knowledge is a new puzzle piece. You do not just "learn a new move" — you learn how it fits into the puzzle of beating specific opponents in specific situations.
+
+THE PRACTICAL HABIT: when you lose a stock or a game, immediately ask "what was the specific puzzle I failed to solve?" Not "why did I lose" (too broad) but "what specific situation kept happening that I had no answer for?" Name the situation. Find the answer. That is the puzzle approach.`,
+ex:`You keep losing stocks to an opponent who jumps above you and DAirs as you walk under them. Emotional response: "that DAir is so cheap." Puzzle response: "they are exploiting my grounded movement. The puzzle is: how do I stop being under them when they jump? Options: 1. Anti-air with upward attack when I see the jump. 2. Move out from under them instead of walking toward them. 3. Platform cancel to get airborne faster and contest at their level." You now have three potential puzzle pieces. Test them in the next stock. That is puzzle thinking applied mid-match.`},
+
+]
+
+let activeCat="all";
+let openMap={};
+
+function priorityHTML(rows){
+  if(!rows||!rows.length) return "";
+  return `<div class="priority-box">
+    <div class="priority-title">Priority order — highest to lowest</div>
+    ${rows.map(r=>`<div class="priority-row">
+      <div class="priority-num" style="background:${r.bg};color:${r.col}">${r.n}</div>
+      <div class="priority-text">${r.t}</div>
+    </div>`).join("")}
+  </div>`;
+}
+
+function settingsHTML(rows){
+  if(!rows||!rows.length) return "";
+  return `<div class="settings-box">${rows.map(r=>`<div class="setting-row"><strong>${r.title}</strong>${r.body}</div>`).join("")}</div>`;
+}
+
+function render(){
+  const q=document.getElementById("searchInput").value.toLowerCase().trim();
+  const terms=TERMS.filter(t=>{
+    const mc=activeCat==="all"||t.cat===activeCat;
+    const mq=!q||(t.name.toLowerCase().includes(q)||t.abbr.toLowerCase().includes(q)||t.short.toLowerCase().includes(q)||(t.def&&t.def.toLowerCase().includes(q)));
+    return mc&&mq;
+  });
+  document.getElementById("catNav").innerHTML=CATS.map(c=>
+    `<button class="cat-btn ${c.cls}${activeCat===c.id?" active":""}" onclick="setCat('${c.id}')">${c.label}</button>`
+  ).join("");
+  let html="";
+  if(activeCat==="all"){
+    CAT_ORDER.forEach(cat=>{
+      const list=terms.filter(t=>t.cat===cat);
+      if(!list.length)return;
+      html+=`<p class="section-label">${CAT_NAMES[cat]}</p>`;
+      list.forEach(t=>{html+=termHTML(t);});
+    });
+  } else {
+    terms.forEach(t=>{html+=termHTML(t);});
+  }
+  if(!html) html=`<div class="no-results">No results for "${q}"</div>`;
+  document.getElementById("content").innerHTML=html;
+}
+
+function termHTML(t){
+  const key=t.cat+"_"+t.abbr;
+  const isOpen=!!openMap[key];
+  let extra="";
+  if(t.settings) extra+=settingsHTML(t.settings);
+  if(t.priority) extra+=priorityHTML(t.priority);
+  return `<div class="term-row${isOpen?" open":""}" id="tr_${key}" onclick="toggle('${key}')">
+    <div class="term-head">
+      <span class="abbr" style="${COLORS[t.cat]}">${t.abbr}</span>
+      <span class="term-name">${t.name}</span>
+      <span class="term-short">${t.short}</span>
+      <span class="chevron">&#8964;</span>
+    </div>
+    <div class="term-body${isOpen?" open":""}">
+      <div class="def">${t.def}</div>
+      ${extra}
+      ${t.warn?`<div class="warn"><strong>Watch out:</strong> ${t.warn}</div>`:""}
+      <div class="ex"><strong>Example:</strong> ${t.ex}</div>
+    </div>
+  </div>`;
+}
+function toggle(key){
+  openMap[key]=!openMap[key];
+  render();
+  if(openMap[key]) setTimeout(()=>document.getElementById("tr_"+key)?.scrollIntoView({behavior:"smooth",block:"nearest"}),50);
+}
+function setCat(id){activeCat=id;render();}
+render();
+</script>

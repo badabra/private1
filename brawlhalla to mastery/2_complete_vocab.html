@@ -1,0 +1,351 @@
+
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+*{box-sizing:border-box}
+.search-wrap{position:relative;margin-bottom:1.25rem}
+.search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--color-text-tertiary);pointer-events:none}
+#searchInput{width:100%;padding:9px 12px 9px 36px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;outline:none}
+#searchInput:focus{border-color:var(--color-border-primary)}
+.cat-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cat-btn{padding:5px 12px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;font-size:12px;color:var(--color-text-secondary);white-space:nowrap;transition:all 0.15s}
+.cat-btn.active{font-weight:500;border-color:transparent}
+.cat-btn:hover:not(.active){background:var(--color-background-secondary)}
+.cat-atk.active{background:#EEEDFE;color:#3C3489}
+.cat-mov.active{background:#E1F5EE;color:#085041}
+.cat-prop.active{background:#FAEEDA;color:#633806}
+.cat-def.active{background:#FAECE7;color:#993C1D}
+.cat-stage.active{background:#E6F1FB;color:#0C447C}
+.cat-combo.active{background:#FBEAF0;color:#72243E}
+.cat-concept.active{background:#EAF3DE;color:#27500A}
+.cat-meta.active{background:#F1EFE8;color:#444441}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-text-tertiary);margin:1.25rem 0 0.5rem;padding:0}
+.term-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:6px;overflow:hidden;cursor:pointer;transition:border-color 0.12s}
+.term-row:hover{border-color:var(--color-border-secondary)}
+.term-row.open{border-color:var(--color-border-primary)}
+.term-head{display:flex;align-items:center;gap:10px;padding:9px 12px}
+.abbr{font-size:11px;font-weight:500;padding:2px 7px;border-radius:8px;white-space:nowrap;min-width:36px;text-align:center}
+.term-name{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1}
+.term-short{font-size:12px;color:var(--color-text-tertiary);flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chevron{font-size:14px;color:var(--color-text-tertiary);transition:transform 0.18s}
+.term-row.open .chevron{transform:rotate(180deg)}
+.term-body{display:none;padding:10px 12px 12px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.term-body.open{display:block}
+.def{font-size:13px;color:var(--color-text-secondary);line-height:1.65;white-space:pre-line}
+.ex{margin-top:8px;font-size:12px;color:var(--color-text-secondary);border-left:2px solid var(--color-border-info);padding-left:10px;line-height:1.6}
+.ex strong{color:var(--color-text-info);font-weight:500}
+.no-results{padding:2rem;text-align:center;color:var(--color-text-tertiary);font-size:14px}
+</style>
+
+<h2 class="sr-only">Complete Brawlhalla vocabulary reference — attacks, movement, properties, defense, stage, combos, concepts, meta</h2>
+
+<div style="padding:1rem 0">
+<div class="search-wrap"><i class="ti ti-search" aria-hidden="true"></i><input id="searchInput" placeholder="Search any term or abbreviation…" oninput="render()"></div>
+<div class="cat-nav" id="catNav"></div>
+<div id="content"></div>
+</div>
+
+<script>
+const CATS=[
+  {id:'all',label:'All',cls:''},
+  {id:'atk',label:'Attacks',cls:'cat-atk'},
+  {id:'mov',label:'Movement',cls:'cat-mov'},
+  {id:'prop',label:'Attack properties',cls:'cat-prop'},
+  {id:'def',label:'Defense',cls:'cat-def'},
+  {id:'stage',label:'Stage & positioning',cls:'cat-stage'},
+  {id:'combo',label:'Combo vocab',cls:'cat-combo'},
+  {id:'concept',label:'Concepts',cls:'cat-concept'},
+  {id:'meta',label:'Legend & meta',cls:'cat-meta'},
+];
+
+const ABBR_COLORS={
+  atk:'background:#EEEDFE;color:#3C3489',
+  mov:'background:#E1F5EE;color:#085041',
+  prop:'background:#FAEEDA;color:#633806',
+  def:'background:#FAECE7;color:#993C1D',
+  stage:'background:#E6F1FB;color:#0C447C',
+  combo:'background:#FBEAF0;color:#72243E',
+  concept:'background:#EAF3DE;color:#27500A',
+  meta:'background:#F1EFE8;color:#444441',
+};
+
+const TERMS=[
+  // ATTACKS
+  {cat:'atk',abbr:'NL',name:'Neutral light',short:'Quick attack, no direction held',
+   def:`Your bread-and-butter quick hit on the ground with no directional input. Each weapon has a unique NL. Generally fast and low-commitment. Often a combo starter at low percent.`,
+   ex:'You walk toward the opponent and tap attack without holding any direction. Your sword does a quick forward jab. That\'s the NL.'},
+  {cat:'atk',abbr:'SL',name:'Side light',short:'Light attack held left or right',
+   def:`Light attack while holding a horizontal direction. Usually hits forward or sweeps horizontally. Common to open or extend combos — varies a lot by weapon.`,
+   ex:'Holding right and pressing light with gauntlets sends a quick straight punch forward. That\'s the SL.'},
+  {cat:'atk',abbr:'DL',name:'Down light',short:'Light attack held down',
+   def:`Light attack while holding down. Usually a low sweep or crouching hit. One of the most important combo starters in the game — most weapons have a DL that launches the opponent just enough for a follow-up.`,
+   ex:'Sword DL does a low sweep that pops the opponent up slightly. You immediately follow with a NAir. DL is step one of countless strings.'},
+  {cat:'atk',abbr:'NAir',name:'Neutral air',short:'Aerial attack, no direction',
+   def:`Aerial light attack with no directional input while airborne. Usually a quick air jab or spin. Fast, low-commitment, good for quick aerial punishes and combo extenders.`,
+   ex:'You\'re airborne, opponent is near you. You press attack without holding direction. Your legend does a quick air punch. NAir.'},
+  {cat:'atk',abbr:'SAir',name:'Side air',short:'Aerial attack held sideways',
+   def:`Aerial light attack while holding a horizontal direction in the air. Often a forward aerial kick or swing. Used for horizontal aerial pressure, chasing, and some kill confirms.`,
+   ex:'You\'re in the air chasing the opponent to the right. You hold right and press attack. SAir launches you forward with a kick. You use it to pressure their recovery.'},
+  {cat:'atk',abbr:'DAir',name:'Down air',short:'Aerial attack held down',
+   def:`Aerial light attack while holding down. Often a downward kick or stomp. Some DAirs have a spike property — sending the opponent sharply downward, which is lethal offstage. A key edgeguarding and combo tool.`,
+   ex:'Opponent is recovering from below. You jump out and press DAir. Your legend stomps downward, hitting them mid-recovery and sending them down into the bottom blast zone. Spike.'},
+  {cat:'atk',abbr:'GP',name:'Ground pound',short:'Aerial heavy held down',
+   def:`In the air, hold down and press heavy. Your legend slams downward with a powerful blast. It\'s not a light — it\'s a heavy/sig that fires downward. It deals heavy knockback, often downward or at an angle. A core combo ender and mix-up tool.
+
+Note: some players call this "down heavy in air" or "aerial down heavy" — same thing.`,
+   ex:'You pop the opponent up with a DL. They\'re in the air above you. You jump and ground pound. The downward blast catches them before they recover. GP is the finisher.'},
+  {cat:'atk',abbr:'NSig',name:'Neutral sig',short:'Signature with no direction',
+   def:`Your legend\'s unique heavy attack with no directional input. Each legend has 3 signatures (one per direction). These are the most powerful and stylized moves — unique to each legend. Neutral sig usually hits in front or is a straight forward burst.`,
+   ex:'Orion\'s neutral sig fires a rocket forward. Bodvar\'s neutral sig is a forward bear charge. Completely different per legend — learn yours.'},
+  {cat:'atk',abbr:'SSig',name:'Side sig',short:'Signature held sideways',
+   def:`The legend\'s horizontal signature. Often a horizontal sweep, dash, or projectile. Can have a lot of range or speed. Useful for horizontal KOs and neutral reads.`,
+   ex:'Katarina\'s side sig dashes her forward with a sword slash. If you read an opponent running at you, SSig can be a clean punish.'},
+  {cat:'atk',abbr:'DSig',name:'Down sig',short:'Signature held down',
+   def:`The legend\'s downward signature. Usually a powerful ground slam or area attack. Often has high knockback but slower startup. Some DSigs are combo starters at low percent.`,
+   ex:'Lucien\'s DSig fires blasters downward in a close-range burst. Heavy damage and knockback. Slow startup — you need to read it, not react.'},
+  {cat:'atk',abbr:'Rec',name:'Recovery attack',short:'Attack during recovery move',
+   def:`When you press attack during your legend\'s movement/recovery ability (the special move usually bound to Q), your legend performs a unique attack. This is called a "recovery attack" or "recovery cancel into attack."\n\nSome recovery attacks are deceptively strong and are part of combos. Many players never use them.`,
+   ex:'While using your legend\'s recovery ability to get back on stage, you press attack mid-animation. Your legend does a kick or slash. Some legends have recovery attacks that combo into aerials.'},
+  {cat:'atk',abbr:'WThrow',name:'Weapon throw',short:'Throw your weapon as a projectile',
+   def:`You can throw your equipped weapon by pressing heavy while holding a direction in the air, or using specific inputs. The weapon flies across the screen as a hitbox. Useful for offstage pressure, zoning, or to force dodges.\n\nAfter throwing, you fight unarmed until you pick it back up or a new weapon spawns.`,
+   ex:'Opponent is recovering offstage. You throw your spear toward them. They have to dodge it, which uses their dodge cooldown. Now you edgeguard a dodgeless opponent.'},
+
+  // MOVEMENT
+  {cat:'mov',abbr:'DJ',name:'Double jump',short:'Second jump used while airborne',
+   def:`Every legend has a ground jump and a double jump. Once you use your double jump in the air, you cannot jump again until you land. Your double jump is a critical resource — using it early commits your aerial path and makes your recovery predictable.\n\nPro rule: delay the double jump as long as possible when recovering. The moment you use it, the opponent can read where you're going.`,
+   ex:'You get hit upward. You\'re high in the air. Instead of immediately double jumping back to stage (predictable), you wait, drift a bit, then use the double jump at a more unpredictable moment.'},
+  {cat:'mov',abbr:'FF',name:'Fast fall',short:'Hold down to fall faster',
+   def:`While airborne and moving downward, hold down to sharply increase your fall speed. Lets you land faster after an aerial, making you harder to chase with anti-airs and helping you mix up your landing timing.`,
+   ex:'You NAir in the air. Instead of floating down slowly, you immediately hold down to fast fall. You land before the opponent can anti-air your descent.'},
+  {cat:'mov',abbr:'WD',name:'Wavedash',short:'Dash then immediately dodge = sliding movement',
+   def:`Dash in a direction, then immediately air dodge into the ground. The momentum carries you in a long slide while you stay in a low, fast-moving stance. Wavedashing lets you cover ground quickly while maintaining the ability to act sooner than a full dash.\n\nUsed to approach, space, and mix up movement patterns. A very visible technique in high-level play.`,
+   ex:'Instead of running at the opponent, you wavedash — you slide toward them with low momentum, then immediately NLight or DLight before they can react to the approach.'},
+  {cat:'mov',abbr:'DD',name:'Dash dance',short:'Dash back and forth without committing',
+   def:`Repeatedly dashing left and right in quick succession, staying at a range where you threaten but don\'t commit. Creates ambiguity — the opponent can\'t tell if you\'re going in or backing out. Part of neutral footsies.`,
+   ex:'You dash in, stop, dash back before hitting your attack. The opponent flinched and threw an attack at air. You\'re back outside their range. Classic dash dance bait.'},
+  {cat:'mov',abbr:'CD',name:'Chase dodge',short:'Dodge toward an airborne opponent to close gap',
+   def:`Air dodging aggressively in the direction of the opponent to close distance fast. Not for defense — for offense. Used when the opponent is in disadvantage in the air and you need to get close quickly.`,
+   ex:'You hit the opponent upward. They\'re floating down. You chase dodge upward toward them and hit with an aerial before they land. Chase dodge let you close the gap instantly.'},
+  {cat:'mov',abbr:'CDC',name:'Chase dodge cancel',short:'Cancel attack recovery with a chase dodge',
+   def:`After an attack, you can cancel some of the recovery frames by immediately chase dodging. This makes you less punishable and lets you chain offense faster. It\'s a core mechanic at high level — without CDC, your strings are slower and more punishable.\n\nTo do it: throw a move, then immediately dodge toward the opponent. If timed right, you cancel the recovery frames.`,
+   ex:'You throw a SAir. Normally you\'d float for a moment in recovery. Instead you immediately chase dodge toward the opponent, canceling the recovery. You arrive at them already for the next hit.'},
+  {cat:'mov',abbr:'PDrop',name:'Platform drop',short:'Hold down on a soft platform to fall through',
+   def:`Soft platforms (the floating ones) can be dropped through by holding down. A key movement tool — you can mix up your position by dropping to a lower platform, threatening from below, or using the platform for height advantages.`,
+   ex:'You\'re on the top soft platform being chased. You platform drop straight down, fall under the opponent\'s attack, and land at center. They swung at where you were.'},
+  {cat:'mov',abbr:'ADodge',name:'Air dodge',short:'Directional dodge while airborne',
+   def:`Pressing dodge while airborne lets you dodge in any direction with i-frames. This is your main aerial escape tool. It can also be used offensively as a chase dodge. Be careful — using air dodge on your way back to stage makes recovery very predictable.`,
+   ex:'You\'re airborne and the opponent jumps at you. You air dodge through their attack, pass through them with i-frames, and land safely.'},
+
+  // ATTACK PROPERTIES
+  {cat:'prop',abbr:'HB',name:'Hitbox',short:'The invisible area that deals damage',
+   def:`Every attack has a hitbox — an invisible shape (circle, rectangle, etc.) that deals damage when another character overlaps with it. Being inside the hitbox when it\'s "active" means you get hit. The visual animation does not always match the hitbox exactly — this is why moves can "look like they miss" but still hit, or look like they connected but don\'t.`,
+   ex:'A move looks like a wide swing. But the hitbox is only active for 3 frames at the tip. You were too close and inside the hitbox at the wrong frame. You got hit even though visually you were "behind" the swing.'},
+  {cat:'prop',abbr:'Start',name:'Startup frames',short:'Delay before the hitbox appears',
+   def:`The number of frames between pressing the button and the hitbox actually becoming active. Slow startup = reactable, can be avoided. Fast startup = hard to react to.\n\nSigs generally have slower startup than lights. This is why you can\'t throw random sigs in neutral — they\'ll get hit or dodged before the hitbox comes out.`,
+   ex:'You throw a DSig. It has 20 frames of startup. The opponent sees the animation start and dodges through it. They punish you during recovery. Slow startup = punishable on reaction.'},
+  {cat:'prop',abbr:'Active',name:'Active frames',short:'When the hitbox is actually out',
+   def:`The window during which the attack can actually hit. Long active frames = more forgiving timing. Short active frames = you have to be precise. Some moves have very short active windows — missing by a single frame means the hitbox was already gone.`,
+   ex:'A move has 3 active frames. You throw it slightly late. The opponent passes through the animation, but the hitbox was only active in frames 12–14 and they arrived at frame 15. The move didn\'t hit despite looking like it should have.'},
+  {cat:'prop',abbr:'Recov',name:'Recovery frames',short:'Frames after hitbox ends — you\'re vulnerable',
+   def:`After the active frames end, before you can act again, you\'re in "recovery." This is your vulnerability window. If the opponent dodged your move, you\'re in recovery and they can punish you. Every move has this. The question is: how long is it, and can the opponent reach you in time?`,
+   ex:'You throw a heavy and miss. You\'re in 30 frames of recovery. The opponent was right next to you. They have more than enough frames to counter-attack. You get punished.'},
+  {cat:'prop',abbr:'KB',name:'Knockback',short:'Force and direction a hit sends the opponent',
+   def:`Knockback is how far and in what direction a hit sends the opponent. Two factors: the move\'s base knockback value and the opponent\'s current damage percent. At high percent, the same move sends them much farther — this is why KOs happen at high percent.\n\nKnockback has a direction vector. Most side moves send opponents horizontally toward the blast zones. Most up moves send them toward the top blast zone. Spikes send them downward.`,
+   ex:'At 20%, your SSig sends the opponent 3 body-lengths away. At 120%, the exact same SSig sends them off the stage and past the side blast zone. Same move, different knockback because of percent.'},
+  {cat:'prop',abbr:'SS',name:'Sweetspot / sourspot',short:'Some moves have stronger and weaker zones',
+   def:`Some attacks deal more damage and knockback from a specific part of the hitbox (the sweetspot) versus the rest of it (sourspot). Sweetspots are usually at the tip of the weapon or at a specific moment in the animation.\n\nThis matters for spacing — be at the wrong distance and you get the weak sourspot hit, which may not combo or KO.`,
+   ex:'Your sword side sig sweetspots at the tip. Up close, you get the sourspot — 20 damage, weak knockback. At perfect spacing, you get the sweetspot — 35 damage, KO knockback at 90%.'},
+  {cat:'prop',abbr:'Spike',name:'Spike',short:'Downward hit that sends opponents below the stage',
+   def:`A spike is any hit with a sharply downward knockback angle. Offstage, a spike is almost always lethal — the opponent gets sent toward the bottom blast zone and usually can\'t recover in time.\n\nNot all DAirs spike. Check your legend\'s move properties. Spikes are one of the most powerful edgeguard tools.`,
+   ex:'Opponent is recovering from the side. You jump out and spike them with a DAir. They go straight down. At 60% they were fine. With a spike at 60% offstage, they die. That\'s spike value.'},
+  {cat:'prop',abbr:'Iframes',name:'Invincibility frames (i-frames)',short:'Brief unhittable window during dodge',
+   def:`When you dodge, there are a number of frames where you simply cannot be hit — any attack passes through you. These are invincibility frames. This is what makes dodging work.\n\nI-frames don\'t last the whole dodge animation. There\'s a small window at the start. After that, the rest of the dodge animation is NOT invincible — you can still be hit. And dodge cooldown after has no i-frames.`,
+   ex:'Your opponent throws a ground pound. You dodge right through it. Your i-frames were active during the hitbox. You didn\'t get touched even though visually you were right there.'},
+
+  // DEFENSE
+  {cat:'def',abbr:'GDodge',name:'Ground dodge',short:'Dodge sideways on the ground',
+   def:`On the ground, pressing dodge moves you horizontally left or right with i-frames. Used to escape pressure, dodge through attacks, or reposition. Has a cooldown afterward.`,
+   ex:'Opponent rushes at you. You ground dodge through them to the other side, reversing your positions. They\'re now facing the wrong way with you behind them.'},
+  {cat:'def',abbr:'DC',name:'Dodge cooldown',short:'Window after dodging when you can\'t dodge again',
+   def:`After any dodge, there\'s a mandatory cooldown — a window where you cannot dodge again. This is the main counterplay to defensive players: if you can identify when someone dodged, you can attack them knowing their dodge is unavailable. The cooldown is clearly visible as a visual "flicker."\n\nSpam dodging = constant cooldown = you become very easy to hit.`,
+   ex:'You notice the opponent just dodged. You immediately attack — you know their dodge isn\'t available. They can\'t dodge your punish. This is how you punish defensive players.'},
+  {cat:'def',abbr:'DI',name:'DI (directional influence)',short:'Hold a direction when hit to change your trajectory',
+   def:`When you\'re hit by an attack, hold a direction to slightly alter the angle of your knockback. Up-DI keeps you alive longer against vertical kills. In-DI (toward center stage) keeps you alive against horizontal kills. DI can also disrupt combo trajectories — your opponent sets up a follow-up at a specific angle, but you DI away from it.`,
+   ex:'Hit by a side sig at 100% toward the right blast zone. If you hold left (into the stage), you travel less far. If you hold up-left, you travel upward instead of directly right. DI bought you survival time.'},
+  {cat:'def',abbr:'Tech',name:'Tech',short:'Dodge on landing to cancel bounce/tumble',
+   def:`When you hit the ground at high velocity (after a hard knockdown), you normally bounce or tumble — a slow recovery state. If you press dodge at the exact moment of landing, you "tech" it — canceling the bounce animation and getting up immediately.\n\nPerfect tech = free. Missed tech = opponent has a guaranteed punish on you while you\'re tumbling.`,
+   ex:'You get hit into the ground hard. You press dodge exactly on landing. Instead of bouncing helplessly, you stand right up and can immediately move. Failed tech = you tumble for 40+ frames = opponent punishes freely.'},
+
+  // STAGE & POSITIONING
+  {cat:'stage',abbr:'BZ',name:'Blast zone',short:'Invisible KO boundaries around the stage',
+   def:`The four invisible walls around the stage that KO anyone who crosses them: left, right, top, and bottom. Different stages have different blast zone distances — some have farther top blast zones (harder to vertical KO), some have closer side blast zones (easier to horizontal KO).\n\nKnowing blast zone positions matters for: predicting KO percents, DI direction, and edgeguard setup.`,
+   ex:'Your side sig sends the opponent right. On Small Brawlhalla stage, the side blast zones are close — they die at 90%. On Brawlhaven (wide stage), same move at 90% might not KO. Stage choice affects KO conditions.'},
+  {cat:'stage',abbr:'SoftPlat',name:'Soft platform',short:'Floating platform you can drop through',
+   def:`A platform in the air that you can stand on AND drop through by holding down. Most stages have 2–3 soft platforms. Smart use of platforms adds a third dimension to movement — you can go up and down, not just left and right.\n\nPlatforms are also used for safety: standing on one gives the opponent a worse approach angle. And platform drop → attack is a common mix-up.`,
+   ex:'You\'re being pressured at center. You jump up to a soft platform — now the opponent has to come up to you. You platform drop toward them and DLight as you come through. Mix-up from platform.'},
+  {cat:'stage',abbr:'Center',name:'Center stage',short:'Most valuable real estate on the stage',
+   def:`The center of the main platform. Being here gives you maximum options: you can go in any direction, you\'re far from all blast zones, and you can react to what the opponent does. The player who holds center forces the opponent toward edges.\n\nFighting for center is a significant part of neutral. Getting knocked off-center and cornered is disadvantage.`,
+   ex:'Both players start at center. You land a hit that sends them left. Now they\'re near the left edge. You stay at center. They have to come back through you or stay cornered. You control center.'},
+  {cat:'stage',abbr:'Offstage',name:'Offstage',short:'Outside the platform, over the void',
+   def:`The area outside the main platform but inside the blast zones — essentially hovering over nothing. Being offstage is dangerous: you\'re forced to recover, your movement options are limited, and one mistake means falling to the bottom blast zone.\n\nEdgeguarding happens offstage. Going offstage deliberately to edgeguard is high risk, high reward — you can KO the opponent but risk getting KO\'d yourself.`,
+   ex:'You and the opponent both go offstage trading hits. You hit them downward and they hit you sideways. Both of you are now trying to recover. Whoever has worse position or fewer jumps/recovery uses loses the stock.'},
+  {cat:'stage',abbr:'LT',name:'Ledge trap',short:'Position at the ledge to intercept recovery',
+   def:`Positioning yourself at or near the ledge to threaten the opponent as they try to get back on stage. The opponent has limited recovery options — they come from below, from the side, or snap to the edge. You set up hitboxes or movement to punish each option.\n\nLedge trapping is a conversion tool: you have a stock lead, so you stay at ledge and force them to recover into your attacks instead of resetting to neutral.`,
+   ex:'Opponent is below the right edge recovering. You stand at the right ledge and spam DAir downward. They have to either take the hit, dodge through it (using dodge cooldown), or go around — all of which you can react to.'},
+  {cat:'stage',abbr:'EG',name:'Edgeguard',short:'Attack offstage opponent to deny recovery',
+   def:`Going offstage or attacking from ledge to prevent the opponent from returning to the stage. One of the most efficient ways to convert a stock. Instead of building to 150%+, you knock them off at 70% and kill them with smart offstage play.\n\nEdgeguarding requires reading recovery patterns. Most players have predictable recovery angles — learn to punish those angles.`,
+   ex:'Opponent knocked off left at 75%. They always use recovery ability at the same angle. You position at the ledge and throw out a side attack exactly there. They fly into it. KO at 75% — no need to play to 150%.'},
+  {cat:'stage',abbr:'HiLo',name:'High / low positioning',short:'Vertical position advantage',
+   def:`Being above your opponent is generally advantageous in Brawlhalla — you have air attacks (gravity-aided), ground pound threats, and the opponent has to deal with vertical approach. Being below is disadvantage — you need to find a way up without getting hit.\n\nThis is why getting launched high is bad: you\'re above the opponent temporarily, but you\'re in disadvantage because you have no ground.`,
+   ex:'You jump above the opponent. Now they have to respect ground pound and DAir. You have more options than they do right now. You\'re in high positioning advantage.'},
+
+  // COMBO VOCAB
+  {cat:'combo',abbr:'TC',name:'True combo',short:'Guaranteed sequence — no escape',
+   def:`A sequence where each hit connects before hitstun ends. The opponent literally cannot escape — no dodge, no DI, nothing changes the result. True combos are percent-dependent: what\'s true at 0% may not be at 80%.\n\nKnowing your legend\'s true combos at each percent range is essential knowledge.`,
+   ex:'DLight → NAir is true at 0–50% with sword. The DLight\'s hitstun lasts long enough for NAir to connect. At 80%, DLight sends them too far and NAir no longer reaches before hitstun ends — not a true combo.'},
+  {cat:'combo',abbr:'String',name:'String',short:'Connected sequence, escapable with perfect defense',
+   def:`A sequence of moves that reliably connects but CAN technically be escaped with frame-perfect dodge or DI. In practice, most strings land because the opponent can\'t react in time, even if they\'re not guaranteed.\n\nMost of your actual damage in games will come from strings, not true combos.`,
+   ex:'SLight → SLight → SAir is a common sword string. The second SLight requires a specific DI to escape. The SAir requires perfect prediction. In practice it lands on almost everyone.'},
+  {cat:'combo',abbr:'0TD',name:'Zero to death',short:'Combo that kills from 0%',
+   def:`A combo that takes an opponent from 0% directly to a KO without them touching the ground or having a chance to act. These exist in Brawlhalla but are rare and often require specific reads or positions.\n\nNot something to chase constantly, but knowing if your legend has any 0TD setups is useful.`,
+   ex:'Some legends with specific weapon combinations have 0TD combos from certain positions. Landing one is rare but eliminates a whole stock instantly.'},
+  {cat:'combo',abbr:'Starter',name:'Combo starter',short:'Move that creates a reliable follow-up opportunity',
+   def:`A move whose knockback angle and hitstun creates an opening for a follow-up. Not all combo starters are obvious — they just need to put the opponent in a position where your next move reaches before they recover.\n\nDLight is a classic combo starter for most weapons. So is NAir at low percent.`,
+   ex:'DLight pops the opponent slightly upward and stuns them. This is the starter — it created a window. Your follow-up (GP, NAir, SAir) is the conversion. The starter\'s job is to create the opportunity.'},
+  {cat:'combo',abbr:'Finish',name:'Combo finisher / ender',short:'Move that closes the combo with big knockback',
+   def:`The last move in a combo — typically high knockback to send the opponent far or offstage. You don\'t always finish with a sig or heavy; sometimes the "ender" is a well-placed aerial that sends them into a wall of pain or toward the blast zone.`,
+   ex:'DLight → NAir → GP. The ground pound is the ender — it fires them downward with high knockback. The whole combo built to this moment.'},
+  {cat:'combo',abbr:'KC',name:'Kill confirm',short:'Reliable sequence that leads to a KO',
+   def:`A combo or setup that you know with high confidence will result in a KO at a certain percent range. Not necessarily a true combo — but reliable enough that you can "confirm" a kill from that situation.\n\nKnowing your kill confirms removes guesswork: above 110%, if you land X move, do Y → KO.`,
+   ex:'At 110%+, landing a SAir confirms into a side sig for the KO. You\'ve practiced it, it\'s reliable. When you land the SAir, you don\'t think — you immediately go into the sig. Kill confirmed.'},
+  {cat:'combo',abbr:'Reset',name:'Reset (neutral reset)',short:'After combo ends, both players return to neutral',
+   def:`When a combo ends, both players return to the neutral phase — nobody has momentum. This often happens when the opponent escapes a string with good DI or when you end an aerial and both players land.\n\nA neutral reset after a successful combo should not be feared — you converted the combo into damage, now you go back to neutral to do it again.`,
+   ex:'You land a 3-hit string for 40 damage. The last hit sends them to the other side of the stage. Both players are standing. Neutral reset. You start the neutral dance again, now with a damage lead.'},
+  {cat:'combo',abbr:'WoP',name:'Wall of pain',short:'Aerial juggle pushing toward blast zone',
+   def:`Continuously hitting an airborne opponent with aerials, keeping them in the air and pushing them toward a blast zone (usually the top or a side). Not always a true combo — relies on the opponent being unable to land or escape. A high-damage pressure tool.`,
+   ex:'Hit them upward. Chase with UAir. They bounce. UAir again. Higher. Again. The top blast zone KO. Wall of pain to the ceiling.'},
+
+  // CONCEPTS
+  {cat:'concept',abbr:'Neut',name:'Neutral (phase)',short:'Neither player has advantage — the open state',
+   def:`The phase where neither player has committed to an action and both have full options. The entire match cycles between neutral and advantage. Winning neutral means landing the first meaningful hit when the game was "open."\n\nHow to win neutral: control space, bait commitment, punish whiffs. Don\'t swing randomly — swing when you\'ve created a reason for your swing to connect.`,
+   ex:'Both players walk around center, no attacks landing. You fake a dash in. Opponent throws a preemptive DLight. You were already stepping back — it whiffs. You dash back and punish the recovery. You just won neutral.'},
+  {cat:'concept',abbr:'WP',name:'Whiff punish',short:'Hit the opponent during their attack\'s recovery',
+   def:`The most fundamental offensive concept. Your opponent throws a move that misses. During their recovery frames, you hit them. This is whiff punishing.\n\nAt high level, almost every hit is a whiff punish or a read. Random attacking gets you counter-hit (they hit you while YOUR attack is starting up or recovering).`,
+   ex:'Opponent does a forward dash attack, you\'re just outside range. It whiffs. They have 25 frames of recovery. You dash in and hit in frame 5. Clean whiff punish — you didn\'t take any risk.'},
+  {cat:'concept',abbr:'Bait',name:'Bait',short:'Make the opponent react to something fake',
+   def:`A bait is when you intentionally look like you\'re about to do something — making the opponent commit to a defensive or offensive response — and then you don\'t actually do it, punishing their reaction.\n\nBaits and conditioning are closely linked: you need the opponent to have seen your real attack enough times to react to the fake.`,
+   ex:'You always throw DLight when you run in. The opponent learns to dodge on your run-in. Now you run in but hold the DLight. They dodge prematurely. Their dodge ends, they have cooldown. You throw the DLight into their cooldown. Baited.'},
+  {cat:'concept',abbr:'Cond',name:'Conditioning',short:'Training opponent to expect pattern X then doing Y',
+   def:`Conditioning means intentionally repeating a pattern multiple times so the opponent learns to defend against it — then switching to the counter-strategy.\n\nYou show pattern X (they learn it), then you exploit their response to pattern X with pattern Y. This is the cat-and-mouse game of high-level neutral.`,
+   ex:'3 times in a row you hit them with a SAir from the air. They start dodging sideways every time you jump. 4th time: you jump, they dodge sideways. You\'re ready — you do a GP instead. Punish. Conditioning worked.'},
+  {cat:'concept',abbr:'Mix',name:'Mix-up',short:'Two options they can\'t both defend against',
+   def:`A true mix-up presents the opponent with two or more options where there is no single answer that beats all of them. They have to guess. If they guess wrong, they get hit.\n\nMix-ups win against defensive players who rely on perfect dodging. Make them choose 50/50s until they lose.`,
+   ex:'After DLight, you can go for GP (hits if they stand) or NAir (hits if they jump). No single dodge covers both. You mix between them so the opponent never knows which to dodge. 50/50 mix-up.'},
+  {cat:'concept',abbr:'Adv',name:'Advantage / disadvantage state',short:'Who has momentum and options',
+   def:`Advantage: you just hit the opponent, they\'re in recovery or recovering from offstage. You have momentum and options — press it.\n\nDisadvantage: you\'re the one recovering, cornered, in hitstun, or coming back from offstage. Your job is to escape, not attack randomly.\n\nRecognizing which state you\'re in changes everything about what you should do.`,
+   ex:'You get hit and fly upward. You\'re in the air with one jump used. Opponent is below with full ground options. You\'re in hard disadvantage. Don\'t air attack randomly — find a safe landing spot first.'},
+  {cat:'concept',abbr:'Ctrl',name:'Stage control',short:'Controlling center to maximize options',
+   def:`Holding center stage gives you the most options and the least vulnerability to blast zones. The player at center can choose when and how to approach. The player at the edge is cornered.\n\nFighting for center is a constant low-level battle in every match. Don\'t let yourself get cornered passively — when pushed to an edge, your first priority is to regain center.`,
+   ex:'You notice you\'ve drifted to the left edge without thinking. Opponent is at center — they control the fight. Your first goal isn\'t to attack: it\'s to get back to center safely before they exploit your position.'},
+  {cat:'concept',abbr:'Footsies',name:'Footsies',short:'Spacing game at the edge of attack range',
+   def:`The ground-based range game where both players hover at the boundary of each other\'s attack range. Step in to threaten, step back to bait, attack only when you have a real opening. This is less developed in Brawlhalla than in traditional fighters but still applies at max weapon range.`,
+   ex:'You and the opponent both have swords. You walk to the edge of each other\'s SLight range and dance there — neither committing. You step in slightly. They flinch and throw SLight. You were already stepping back. Their SLight whiffs. Punish.'},
+
+  // META
+  {cat:'meta',abbr:'Stats',name:'Legend stats',short:'Strength, dex, defense, speed — 4 values per legend',
+   def:`Every legend has 4 base stats from a fixed budget: Strength (damage output), Dexterity (attack speed/combo ability), Defense (damage received/survivability), Speed (ground + air movement).\n\nNo legend is strictly better — they trade off. A high-strength legend hits harder but may be slower. A high-speed legend is mobile but may die earlier. Learn your legend\'s stat profile.`,
+   ex:'Petra (gauntlets/katars) has high speed and dexterity — very fast combo-oriented. Brynn (axe/spear) has higher strength and defense — slower but hits harder and survives longer. Same game, different playstyle from stats.'},
+  {cat:'meta',abbr:'Weight',name:'Weight class',short:'How far you fly per percent',
+   def:`Heavier legends fly less far when hit, meaning they survive to higher percents. Lighter legends fly farther and die earlier but may hit harder to compensate. Weight affects your KO percent for every move.\n\nKnowing the weight of your opponents changes when you go for kill confirms.`,
+   ex:'Against Artemis (heavy), your SSig KOs at 140%. Against Ada (light), the same SSig KOs at 110%. Same move, 30% earlier KO just from weight difference.'},
+  {cat:'meta',abbr:'FD',name:'Frame data',short:'Exact frame counts for startup/active/recovery',
+   def:`Frame data is the precise numerical information about every move: how many startup frames, active frames, recovery frames. Used to determine true combos (does hitstun from move A last long enough for move B\'s startup to connect?), punish windows, and safe vs unsafe moves.\n\nYou don\'t need to memorize all frame data, but understanding the concept lets you use community resources to improve your combo game.`,
+   ex:'Move A has 20 frames of hitstun. Move B has 15 frames startup. 15 < 20, so move B connects before hitstun ends. True combo. Move C has 25 frames startup. 25 > 20, so move C does NOT connect. Just a string at best.'},
+  {cat:'meta',abbr:'Gadget',name:'Gadget',short:'Stage items: bombs, mines, etc.',
+   def:`Items that spawn on stage during certain modes or on gadget-enabled stages: bombs, mines, spike balls. They can be picked up, thrown, and used tactically. In competitive ranked play, gadgets are usually turned off — but in casual they add another layer of stage control.`,
+   ex:'A bomb spawns at center. You grab it before your opponent and throw it at them as they approach. Forces a dodge, opening them up. Gadget control is stage control in gadget modes.'},
+  {cat:'meta',abbr:'KP',name:'Kill percent',short:'The % at which a move KOs a specific legend',
+   def:`The damage percent at which a specific move will KO a specific opponent (accounting for their weight and the blast zone distance). Kill percent varies by: the move\'s knockback, opponent weight, blast zone distance, and DI.\n\nKnowing kill percents removes guesswork — you know when to go for the kill confirm vs. keep building damage.`,
+   ex:'Your side sig KOs Bödvar (heavy) from center at 130%. But it KOs Ada (light) at 100%. You\'re fighting Ada at 105%? Go for the side sig kill confirm. It\'s in range.'},
+  {cat:'meta',abbr:'OS',name:'Option select',short:'One input that covers multiple opponent options',
+   def:`A move or timing that beats several different opponent responses at once. Instead of reading one specific option, you pick an action that handles multiple outcomes.\n\nThe best option selects in Brawlhalla are wide-hitbox moves thrown at ranges that cover "they approach" AND "they stay." You don\'t need to guess.`,
+   ex:'Instead of reading their dodge direction, you throw a grounded NLight that has a hitbox covering forward and neutral. It catches them standing still AND catching them if they walked in. One move, two situations covered.'},
+];
+
+let activeCat='all';
+let openMap={};
+
+function render(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  const terms=TERMS.filter(t=>{
+    const matchCat=activeCat==='all'||t.cat===activeCat;
+    const matchQ=!q||(t.name.toLowerCase().includes(q)||t.abbr.toLowerCase().includes(q)||t.short.toLowerCase().includes(q)||t.def.toLowerCase().includes(q));
+    return matchCat&&matchQ;
+  });
+
+  const nav=document.getElementById('catNav');
+  nav.innerHTML=CATS.map(c=>`<button class="cat-btn ${c.cls}${activeCat===c.id?' active':''}" onclick="setCat('${c.id}')">${c.label}</button>`).join('');
+
+  const grouped={};
+  const catOrder=['atk','mov','prop','def','stage','combo','concept','meta'];
+  const catNames={atk:'Attacks',mov:'Movement',prop:'Attack properties',def:'Defense',stage:'Stage & positioning',combo:'Combo vocab',concept:'Concepts',meta:'Legend & meta'};
+
+  if(activeCat==='all'){
+    catOrder.forEach(c=>{grouped[c]=terms.filter(t=>t.cat===c)});
+  } else {
+    grouped[activeCat]=terms;
+  }
+
+  let html='';
+  let totalShown=0;
+
+  if(activeCat==='all'){
+    catOrder.forEach(cat=>{
+      const list=grouped[cat];
+      if(!list||list.length===0)return;
+      totalShown+=list.length;
+      html+=`<p class="section-label">${catNames[cat]}</p>`;
+      list.forEach(t=>{ html+=termHTML(t); });
+    });
+  } else {
+    const list=grouped[activeCat]||[];
+    totalShown=list.length;
+    list.forEach(t=>{ html+=termHTML(t); });
+  }
+
+  if(totalShown===0) html=`<div class="no-results">No terms match "${q}"</div>`;
+
+  document.getElementById('content').innerHTML=html;
+}
+
+function termHTML(t){
+  const key=t.cat+'_'+t.abbr;
+  const isOpen=!!openMap[key];
+  return `<div class="term-row${isOpen?' open':''}" id="tr_${key}" onclick="toggle('${key}')">
+    <div class="term-head">
+      <span class="abbr" style="${ABBR_COLORS[t.cat]}">${t.abbr}</span>
+      <span class="term-name">${t.name}</span>
+      <span class="term-short">${t.short}</span>
+      <span class="chevron">&#8964;</span>
+    </div>
+    <div class="term-body${isOpen?' open':''}">
+      <div class="def">${t.def}</div>
+      <div class="ex"><strong>Example:</strong> ${t.ex}</div>
+    </div>
+  </div>`;
+}
+
+function toggle(key){
+  openMap[key]=!openMap[key];
+  render();
+  if(openMap[key]){
+    setTimeout(()=>document.getElementById('tr_'+key)?.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+  }
+}
+
+function setCat(id){
+  activeCat=id;
+  render();
+}
+
+render();
+</script>

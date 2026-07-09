@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brawlhalla — Advanced Vocabulary Guide</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f4f0;color:#1a1a1a;padding:1.5rem}
+h1{font-size:20px;font-weight:500;margin-bottom:4px}
+.subtitle{font-size:13px;color:#777;margin-bottom:1.5rem}
+.search-wrap{position:relative;margin-bottom:1rem}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:0.4}
+#searchInput{width:100%;padding:9px 12px 9px 34px;border:1px solid #ddd;border-radius:10px;background:#fff;font-size:14px;outline:none}
+#searchInput:focus{border-color:#aaa}
+.cat-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #e5e3de}
+.cat-btn{padding:5px 12px;border-radius:20px;border:1px solid #ddd;background:transparent;cursor:pointer;font-size:12px;color:#666;white-space:nowrap;transition:all 0.12s}
+.cat-btn:hover:not(.active){background:#f0eeea}
+.cat-btn.active{font-weight:500;border-color:transparent}
+.cat-tech.active{background:#EEEDFE;color:#3C3489}
+.cat-subgame.active{background:#E1F5EE;color:#085041}
+.cat-mind.active{background:#FAEEDA;color:#633806}
+.cat-matchup.active{background:#FAECE7;color:#993C1D}
+.cat-ranked.active{background:#E6F1FB;color:#0C447C}
+.cat-habit.active{background:#FBEAF0;color:#72243E}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:#999;margin:1.25rem 0 0.5rem}
+.term-row{border:1px solid #e5e3de;border-radius:8px;margin-bottom:6px;overflow:hidden;cursor:pointer;transition:border-color 0.12s;background:#fff}
+.term-row:hover{border-color:#bbb}
+.term-row.open{border-color:#888}
+.term-head{display:flex;align-items:center;gap:10px;padding:9px 12px}
+.abbr{font-size:11px;font-weight:500;padding:2px 7px;border-radius:8px;white-space:nowrap;min-width:44px;text-align:center}
+.term-name{font-size:14px;font-weight:500;flex:1;color:#111}
+.term-short{font-size:12px;color:#999;flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chevron{font-size:18px;color:#bbb;transition:transform 0.18s;margin-left:4px}
+.term-row.open .chevron{transform:rotate(180deg)}
+.term-body{display:none;padding:10px 12px 14px;border-top:1px solid #f0eeea;background:#fafaf8}
+.term-body.open{display:block}
+.def{font-size:13px;color:#444;line-height:1.7;white-space:pre-line}
+.ex{margin-top:10px;font-size:12px;color:#555;border-left:2px solid #60a5fa;padding-left:10px;line-height:1.65}
+.ex strong{color:#2563eb;font-weight:500}
+.tip{margin-top:8px;font-size:12px;color:#555;border-left:2px solid #f59e0b;padding-left:10px;line-height:1.65}
+.tip strong{color:#b45309;font-weight:500}
+.no-results{padding:2rem;text-align:center;color:#aaa;font-size:14px}
+</style>
+</head>
+<body>
+
+<h1>Brawlhalla — Advanced Vocabulary</h1>
+<p class="subtitle">Guide 3 of 3 · Advanced techniques, the 3 sub-games, mindgames, matchup knowledge, ranked structure, habit breaking</p>
+
+<div class="search-wrap">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input id="searchInput" placeholder="Search any term…" oninput="render()">
+</div>
+<div class="cat-nav" id="catNav"></div>
+<div id="content"></div>
+
+<script>
+const CATS=[
+  {id:'all',label:'All',cls:''},
+  {id:'tech',label:'Advanced techniques',cls:'cat-tech'},
+  {id:'subgame',label:'The 3 sub-games',cls:'cat-subgame'},
+  {id:'mind',label:'Mindgame layer',cls:'cat-mind'},
+  {id:'matchup',label:'Matchup knowledge',cls:'cat-matchup'},
+  {id:'ranked',label:'Ranked & competitive',cls:'cat-ranked'},
+  {id:'habit',label:'Habit breaking',cls:'cat-habit'},
+];
+
+const ABBR_COLORS={
+  tech:'background:#EEEDFE;color:#3C3489',
+  subgame:'background:#E1F5EE;color:#085041',
+  mind:'background:#FAEEDA;color:#633806',
+  matchup:'background:#FAECE7;color:#993C1D',
+  ranked:'background:#E6F1FB;color:#0C447C',
+  habit:'background:#FBEAF0;color:#72243E',
+};
+
+const CAT_NAMES={
+  tech:'Advanced techniques',
+  subgame:'The 3 sub-games',
+  mind:'Mindgame layer',
+  matchup:'Matchup knowledge',
+  ranked:'Ranked & competitive',
+  habit:'Habit breaking',
+};
+
+const TERMS=[
+  {cat:'tech',abbr:'GC',name:'Gravity cancel',short:'Use recovery in air to reset aerial state',
+   def:`Your legend's recovery ability can be used mid-air not just to recover offstage — it resets your aerial state and momentum. This is called a gravity cancel.
+
+When used in neutral, it lets you: throw aerials immediately after, change your fall trajectory, or stall mid-air to bait anti-airs. It's one of the biggest mobility tools in the game and separates mid-level from high-level play.
+
+Key insight: recovery ability is not just for getting back to stage. It's a movement tool in every single neutral exchange.`,
+   ex:'You jump out aggressively. The opponent anti-airs you. Instead of landing helplessly, you gravity cancel mid-fall — your recovery resets your aerial state and you throw a DAir at an unexpected angle on the way down.',
+   tip:'Most players only use recovery when dying offstage. High-level players use it 5–10 times per stock as a pure movement tool in neutral.'},
+
+  {cat:'tech',abbr:'Pivot',name:'Pivot',short:'Reverse direction mid-dash and attack the other way',
+   def:`Dash in one direction, then sharply reverse your facing direction and fire an attack going backward. You cover ground with the dash but attack in the direction you came from — or use the momentum shift to bait approaches.
+
+Used to: bait commitment (dash in, pivot and punish their counter-approach), escape pressure while still attacking, and make movement less readable.`,
+   ex:'You dash right toward the opponent. They commit to a forward attack expecting you to keep coming. You pivot — your legend reverses — and your back-facing side attack hits them during their recovery.',
+   tip:'Pivots fight muscle memory at first. The input is: dash, immediately tap the opposite direction, then press attack before your character fully turns.'},
+
+  {cat:'tech',abbr:'SDI',name:'SDI — smash DI',short:'Rapid direction inputs during hitstun to shift position',
+   def:`Rapidly tapping a direction multiple times during hitstun physically moves your character's position slightly during the hit itself. Different from regular DI, which changes your knockback trajectory after the hit.
+
+SDI lets you shift away from a combo starter's sweet zone so the follow-up move misses because you're no longer where the attacker expected you. This is extremely precise — few players use it — but it breaks otherwise true combos at high level.`,
+   ex:'Opponent\'s DLight → GP is true at your percent. You rapidly tap sideways during the DLight hitstun. Your character shifts slightly. The GP misses because you\'re now off the expected trajectory. The "true combo" got SDI\'d.',
+   tip:'SDI requires multiple inputs in about 10–15 frames. Even imperfect SDI surprises opponents who have never seen their combos dropped.'},
+
+  {cat:'tech',abbr:'JC',name:'Jump cancel',short:'Cancel certain move recovery by jumping',
+   def:`Some ground attacks can be canceled early by jumping — ending the animation sooner than natural recovery frames and immediately transitioning to an aerial state.
+
+This collapses the gap between ground game and air game: throw a ground move, jump cancel out of recovery, immediately air dodge or aerial. Faster and less punishable than waiting through full recovery.`,
+   ex:'You throw a ground NLight. Instead of waiting through recovery frames to jump, you jump cancel it — immediately transition into the air and air dodge before the recovery window ends.',
+   tip:'Jump cancels are move-specific. Not every attack can be jump canceled. Learn which of your legend\'s moves have this property first.'},
+
+  {cat:'tech',abbr:'Armor',name:'Super armor',short:'Some sigs absorb hits during startup and still fire',
+   def:`Certain signature moves have super armor frames during startup — if the opponent hits you in this window, you absorb the hit (take damage but no knockback) and your sig still fires.
+
+Super armor does NOT mean zero damage — you still take it. But no knockback means your sig connects anyway and you often trade favorably.
+
+Not every sig has armor. Knowing which ones do (yours and your opponents') is matchup knowledge.`,
+   ex:'Opponent sees your sig startup and rushes in to punish. Your sig has super armor. They deal 18 damage, you absorb it, your sig fires and sends them away for 32 damage. You traded up.',
+   tip:'When you know an opponent has an armored sig, never attack into their startup. Wait for them to whiff it, then punish the recovery.'},
+
+  {cat:'tech',abbr:'RAR',name:'RAR — reverse aerial rush',short:'Run one way, reverse mid-air, aerial the other way',
+   def:`Run in one direction, jump, quickly flick the opposite direction mid-air to reverse your facing, then throw an aerial facing the direction you just came from.
+
+Result: your run momentum carries you one way, but your aerial hitbox faces the opposite direction — covering space behind your movement. A crossup tool and spacing tool combined.`,
+   ex:'You run right. You jump, flick left mid-air to reverse facing, and throw a SAir facing left. It hits behind your movement direction. The opponent expected an attack going right — they got hit from the other side.',
+   tip:'RAR is most useful when opponents tend to dodge through your approaches. Your RAR catches them on the far side of the dodge.'},
+
+  {cat:'tech',abbr:'CDC2',name:'CDC chain',short:'Chaining chase dodge cancels for tighter offense',
+   def:`Extending CDC (chase dodge cancel — canceling attack recovery with a chase dodge) into full chains: attack → CDC → attack → CDC → attack. Each CDC shortens recovery windows, making strings tighter and harder to interrupt.
+
+At high level, strings aren't just move → move → move. They're move → CDC → move → CDC → move. The CDCs are the connective tissue that makes strings flow.`,
+   ex:'SAir → CDC toward opponent → DLight → CDC → NAir → CDC → GP. The CDCs between each move close gaps and cancel recovery. Without them, each move has a pause the opponent could interrupt.',
+   tip:'Learn one CDC in a string first. Add a second only after the first is automatic. Multiple CDCs require individual CDCs to be reflexive, not conscious.'},
+
+  {cat:'subgame',abbr:'NeutG',name:'Neutral game',short:'Winning the first hit when nothing is happening',
+   def:`The phase where neither player has committed and both have full options. The entire skill set: controlling space, threatening without committing, baiting commitment, punishing whiffs.
+
+Winning neutral gives you transition into punish game. Losing neutral puts you in disadvantage and you must escape back to neutral.
+
+The loop: neutral → win neutral (land first hit) → punish game → they escape → neutral reset → repeat.`,
+   ex:'You and the opponent exchange no hits for 8 seconds. You fake a dash in, they throw a preemptive SLight — it whiffs. You dash back in during recovery and land a DLight. Neutral game won — now you\'re in punish game.',
+   tip:'The single biggest neutral upgrade: stop attacking unless you have a real reason. Wait for the whiff. Most Gold/Plat players lose neutral by attacking randomly.'},
+
+  {cat:'subgame',abbr:'PunG',name:'Punish game',short:'Converting a neutral win into maximum damage',
+   def:`After winning neutral, you're in punish game. Your job: take the advantage and convert it into as much damage as possible — ideally a stock or at least 60–80% damage.
+
+Many players win neutral and do nothing with it — one hit, then both players reset. That's wasted punish game. Every neutral win should be worth 30–80% damage minimum.
+
+Punish game only works if you have combos memorized. You cannot improvise mid-match at high speed.`,
+   ex:'You whiff punish into DLight at 20%. You convert: DLight → NAir → SAir → CDC → GP. That\'s 60% from one neutral win. Punish game converted properly.',
+   tip:'If your per-neutral-win damage averages under 30%, your punish game is the ceiling on your rank. Drill combos until they\'re automatic.'},
+
+  {cat:'subgame',abbr:'EdgeG',name:'Edgeguard game',short:'Preventing recovery to convert offstage into a stock',
+   def:`The phase where the opponent is offstage recovering and you can prevent them from returning. Separate skill set from neutral and punish.
+
+The value: instead of needing 150%+ to KO, good edgeguard game means you KO at 60–90% by finishing the stock offstage.
+
+Edgeguard skills: reading recovery patterns, positioning at ledge vs. going offstage, timing hitboxes to intercept recovery angles, knowing when to go deep vs. stay safe.`,
+   ex:'You knock the opponent off the right side at 70%. They always recover high. You jump out with a DAir at exactly that height. KO at 70% — no need to build to 150%.',
+   tip:'Two biggest edgeguard mistakes: (1) going offstage recklessly and dying, (2) standing at ledge doing nothing while they recover safely. Usually: ledge trap hitbox, not full offstage dive.'},
+
+  {cat:'subgame',abbr:'EscG',name:'Escape game (disadvantage)',short:'Surviving and returning to neutral from bad positions',
+   def:`The often-ignored fourth sub-game: escaping disadvantage. When recovering offstage, tumbling from a combo, or cornered, your job is to survive and return to neutral — not to attack randomly.
+
+Escape game skills: survival DI, tech, varying recovery angles, using platforms to land safely, air dodging unpredictably, and knowing when to take a small hit instead of a bigger one.
+
+Players who never train escape game lose stocks they could have saved.`,
+   ex:'You\'re sent off the left side at 90%. Instead of panicking and jumping immediately, you drop lower (avoiding the ledge trap), use your recovery at an angle, then air dodge past the opponent\'s ledge attack at the last moment. Escaped.',
+   tip:'When recovering, ask: "What would I do if I were trying to edgeguard me right now?" Then do something different from that.'},
+
+  {cat:'mind',abbr:'Yomi',name:'Yomi',short:'Reading your opponent\'s read — countering their counter',
+   def:`Yomi (from the Japanese word for "reading") is the layered mind game above simple mix-ups.
+
+Level 0: you do a move.
+Level 1: they read the move and dodge it.
+Level 2: you know they read it — you fake the move and punish their dodge.
+Level 3: they know you know — they stop dodging this time.
+Level 4: you know they stopped — so you just do the move for real.
+
+High-level Brawlhalla is a constant yomi war. The key is tracking which level your opponent is currently on.`,
+   ex:'You\'ve been throwing SSig on approach. Opponent starts rolling through it (level 1). Next approach you fake the SSig — they roll anyway. You punish the roll. You were at level 2, they were stuck at level 1.',
+   tip:'Most players are stuck at level 1 — they react to what you literally do. The jump to level 2 (predicting reactions) is what makes neutral feel easy against most opponents.'},
+
+  {cat:'mind',abbr:'Cond2',name:'Conditioning (deep)',short:'Building patterns over a set to exploit later',
+   def:`Conditioning is investing in a pattern now so you can cash it out for a punish later. Repeat something until the opponent's nervous system builds a reflex — then break the pattern.
+
+Advanced conditioning: you can condition entire behaviors, not just specific moves. Condition them to always dodge on your approach → then walk in slowly without attacking → punish the premature dodge.
+
+Advanced conditioning shapes habits over a full set, not just single exchanges.`,
+   ex:'Game 1: always throw NSig after DLight. Opponent learns to air dodge it. Game 2: you land DLight, they air dodge — you timed the follow-up to catch the dodge. You cashed out game 1 conditioning.',
+   tip:'Conditioning only works across sets. In single games you may not have enough time. This is why set play rewards smarter players more than one-game formats do.'},
+
+  {cat:'mind',abbr:'FlowC',name:'Flowchart breaking',short:'Escaping your own predictable decision patterns',
+   def:`A flowchart is when your own decisions become so predictable that a smart opponent can script a counter. "Whenever X happens, I do Y" — if that's always true, the opponent just triggers X and counters Y.
+
+Breaking your flowchart: notice when you're doing the same thing in the same situation, and deliberately introduce variation even when the automatic choice feels correct.
+
+Hard because the automatic choice is often correct — you trained it because it works. The discipline is varying it to stay unpredictable.`,
+   ex:'You always throw GP after NAir. A smart opponent notices, starts up-DIing and jumping after NAir to escape the GP. Your flowchart got scouted. Fix: mix in SAir or chase to the other side 30% of the time.',
+   tip:'Review replays and ask: "What did I do every time in situation X?" That consistent answer is your flowchart. Fix isn\'t to stop doing it — it\'s to do something else 30% of the time.'},
+
+  {cat:'mind',abbr:'MStack',name:'Mental stack',short:'How many threats you force the opponent to track at once',
+   def:`Mental stack is the total cognitive load you impose on your opponent. The more simultaneous threats they track, the more likely they misread or react slowly.
+
+Low stack: "I have one combo, one approach." Easy to read, easy to defend.
+High stack: "I can approach from air or ground, throw weapon or hold it, spike or send sideways, bait or commit." All options are genuine threats.
+
+Building stack means expanding your move set AND using all options so the opponent has to respect each one.`,
+   ex:'You only ever throw SAir from the air — low stack. Add DAir spike + weapon throw + gravity cancel into NAir. They now track four things. One slips past their defense.',
+   tip:'A threat only counts if the opponent has been hit by it before. You must demonstrate every tool before it applies real mental pressure.'},
+
+  {cat:'mind',abbr:'Adapt',name:'Mid-set adaptation',short:'Updating your gameplan game by game',
+   def:`Consciously tracking what you've learned about the opponent over a set and updating decisions accordingly.
+
+What to track:
+— Which of your approaches are they defending consistently?
+— What do they always do after landing a hit?
+— Do they always recover the same way?
+— What patterns are they conditioning in you?
+
+Most players improve between games by accident. High-level players improve deliberately — specific adjustments for game 2 based on game 1 observations.`,
+   ex:'Game 1: you get hit by their SSig 4 times approaching from the right. Between games you recognize the pattern. Game 2: you approach from the air or fake right entries. Their SSig never lands again.',
+   tip:'Take 15 seconds between games — before the next loads — and identify one specific thing the opponent did that worked on you. That\'s your one adjustment. Don\'t try to fix everything at once.'},
+
+  {cat:'matchup',abbr:'WepMU',name:'Weapon matchup',short:'How your weapons interact with the opponent\'s weapons',
+   def:`Different weapon combinations have structural advantages and disadvantages.
+
+Key dimensions:
+— Range: longer weapons outspace shorter ones. Spear and bow outrange gauntlets and katars.
+— Speed: fast weapons (sword, gauntlets) interrupt slow weapons during startup.
+— Projectile: bow and some legends force approaches with ranged tools.
+— Coverage: wide hitboxes beat precise ones in scrambles.
+
+Knowing the matchup tells you: what range should you fight at? What moves are safe vs. this weapon? Where should you position?`,
+   ex:'You play spear vs. a bow user. Bow has projectile pressure from range. Your advantage: get inside their range and the bow becomes weak. Gameplan: close the gap as fast as possible and don\'t fight at long range.',
+   tip:'For each matchup ask: "Where does my weapon win? Where does theirs?" Then spend the whole game fighting at YOUR range, not theirs.'},
+
+  {cat:'matchup',abbr:'StageMU',name:'Stage counterpicking',short:'Choosing stages that benefit your legend',
+   def:`Different stages have different blast zone distances, platform layouts, and ceiling heights.
+
+High ceiling stages (Brawlhaven, Icefall) = harder to vertical KO. Good for legends with horizontal kill power.
+Close side blast zones (Small Brawlhalla, Thundergard) = easier horizontal KOs. Good for strong side sigs.
+Many platforms = vertical movement advantages. Good for agile legends.
+Flat stages = pure ground game. Good for ground string-focused legends.
+
+Stage choice can shift kill percents by 20–30%.`,
+   ex:'You play Nix (scythe/spear) with strong vertical kill potential. You ban high-ceiling stages and pick a low-ceiling stage. Your vertical kills happen 20% earlier just from stage choice.',
+   tip:'At minimum, know your best stage, your worst stage, and your opponent weapon\'s best stage. That covers 90% of stage decisions in a set.'},
+
+  {cat:'matchup',abbr:'WeightMU',name:'Weight matchup adjustment',short:'Recalibrate kill percents per opponent weight',
+   def:`KO percent depends on opponent weight, so your kill confirms and combo routes shift against different weight classes.
+
+Against lightweights: kill confirms activate earlier. Go for the kill sooner. Combos may be shorter because they fly farther per hit.
+Against heavyweights: combos are longer (more hits before knockback ends them). Kill confirms activate later. Be patient — don't go for early kills that aren't there yet.
+
+Not adjusting for weight = suboptimal decisions every game.`,
+   ex:'Used to killing at 110% from side sig. Against a heavy legend you try the kill at 110% — they survive to 135%. You wasted the opportunity. Against heavies, save kill confirm attempts for 130%+.',
+   tip:'Quick mental check before a match: light, medium, or heavy? That alone tells you when your kill percents activate.'},
+
+  {cat:'matchup',abbr:'CharMU',name:'Character counterpick',short:'Some legends structurally hard-counter specific styles',
+   def:`Certain legends have tools that hard-counter specific playstyles or weapons. Knowing matchups tells you when you're at a structural disadvantage and what to compensate.
+
+Common patterns:
+— Long-range legends (spear, bow) beat short-range legends (gauntlets, katars) in neutral unless short-range closes the gap.
+— Legends with armored sigs beat all-in aggressive legends.
+— High-dexterity legends with fast aerials disrupt slower legends' recovery timing.
+
+If you always lose to a specific weapon type, it may be a matchup problem, not purely a skill problem.`,
+   ex:'Every fight against spear + bow: you can\'t get in. Both weapons have long range, the bow forces approaches, your katars have no range. This is a structural counterpick — adjust your approach angle, stage choice, or consider a secondary legend.',
+   tip:'Having one secondary legend that covers your main\'s hardest matchup doubles your competitive viability. You don\'t need equal skill with both — just enough to avoid being counterpicked into helplessness.'},
+
+  {cat:'ranked',abbr:'Tiers',name:'Rank tiers',short:'Tin → Bronze → Silver → Gold → Plat → Diamond → Legend',
+   def:`Brawlhalla's ranked ladder from lowest to highest:
+
+Tin → Bronze → Silver → Gold → Platinum → Diamond → Legend
+
+Each tier has sub-divisions (1–4). The majority of the player base sits in Gold 1–4. Platinum is roughly top 20%. Diamond is top ~5%. Legend rank is the very top.
+
+What each tier generally represents:
+— Tin/Bronze: learning basic mechanics, no consistent combos
+— Silver: some combos, basic neutral awareness
+— Gold: consistent strings, basic edgeguard, understanding the phases
+— Platinum: strong punish game, reading patterns, some matchup knowledge
+— Diamond: all fundamentals, mid-set adaptation, deep matchup knowledge
+— Legend rank: near-flawless execution + full mental game`,
+   ex:'You\'re at Gold 3. That means your strings are reliable and you understand neutral exists, but your edgeguard game is likely weak and mid-set adaptation is minimal. The gap to Platinum: punish game consistency + beginning to edgeguard intentionally.',
+   tip:'The biggest rank-up moments usually come from fixing one specific weakness, not small improvements everywhere. Identify your current ceiling — the one thing costing you the most losses — and drill that specifically.'},
+
+  {cat:'ranked',abbr:'Bo3',name:'Set play (Bo3/Bo5)',short:'Adapting across multiple games in a set',
+   def:`Competitive matches are played as sets — best of 3 (Bo3) or best of 5 (Bo5). This changes the dynamic entirely from individual games.
+
+Game 1 is information gathering. Play your gameplan and observe theirs.
+Game 2 is the adaptation game. Adjust based on game 1 reads.
+Game 3 (if it happens) is the war — both players have adapted once. The player who adapted better wins.
+
+Set play rewards patient, analytical players who observe and adjust. It punishes players who repeat the same gameplan regardless of results.`,
+   ex:'Game 1: you win but they hit you with DSig 5 times. Game 2: you stay airborne more to reduce DSig setups. They adapt to compensate. Game 3: both players are one adaptation ahead of where you started.',
+   tip:'After game 1, identify: (1) what did they do that consistently worked on me? (2) what did I do that consistently worked on them? Game 2 strategy: stop giving them #1, do more of #2.'},
+
+  {cat:'ranked',abbr:'SStrike',name:'Stage striking',short:'Banning stages before a set to force favorable territory',
+   def:`In competitive sets, players take turns banning stages before agreeing on which one to play. Strategy: ban stages worst for your legend or best for theirs. Force them onto a stage that benefits your playstyle.
+
+In casual ranked, stages are random. In tournament and private matches, stage striking is standard. Knowing which stages to ban is part of tournament preparation.`,
+   ex:'You play a vertical kill legend vs. a horizontal kill legend. You ban the stage with closest side blast zones (favors them). They ban your preferred vertical-kill stage. The remaining stage is the battleground.',
+   tip:'At minimum, know your best stage, your worst stage, and your opponent weapon\'s best stage. That covers 90% of stage striking decisions.'},
+
+  {cat:'ranked',abbr:'Tilt',name:'Tilt',short:'Emotional state that degrades decision quality',
+   def:`Tilt is when frustration or fatigue starts degrading your decisions. Signs: taking risks you normally wouldn't, playing faster and sloppier, stopping adaptation, blaming the game or opponent instead of yourself.
+
+Tilt is common and extremely damaging. One tilted session can erase hours of rank progress.
+
+Recognizing tilt early and stopping is a meta-skill above all game mechanics.`,
+   ex:'You lose three games in a row. Game 4 you approach more recklessly, miss combos you normally land, and get hit by things you\'d normally dodge. You\'re tilted. Playing 5 more games in this state likely means 5 more losses.',
+   tip:'Set a hard rule: if you lose 2 games in a row in ranked, close the client for 15 minutes. This one rule will improve your rank over a season more than almost any technical skill.'},
+
+  {cat:'habit',abbr:'HabDodge',name:'Panic dodge habit',short:'Dodging from instinct instead of from reads',
+   def:`One of the most common bad habits at Gold–Platinum: dodging reflexively whenever the opponent gets close, without a specific read on what they're about to throw.
+
+The problem: panic dodges often mistime and fire at the wrong moment, leaving you in dodge cooldown at the worst time. Or they dodge in the direction the opponent already predicted, running into the follow-up.
+
+The fix: only dodge when you have a specific read. "They always throw SLight on approach — I will dodge that." Not "they're near me — dodge."`,
+   ex:'Opponent approaches. You panic dodge before they threw a move. Now you\'re in dodge cooldown. They waited, saw the premature dodge, and hit you during cooldown. Your panic dodge caused the hit, not their attack.',
+   tip:'In training, try playing 30 seconds without dodging at all. Just move and attack. You\'ll take some hits — but you\'ll notice most could have been avoided with footwork, not dodge.'},
+
+  {cat:'habit',abbr:'HabAttk',name:'Random attacking habit',short:'Throwing moves without a clear reason',
+   def:`Attacking in neutral without a specific purpose — no read, no whiff punish, no kill confirm — just attacking because it feels like you should be doing something.
+
+Every attack you throw should have a reason: whiff punish, bait follow-up, kill confirm, or committed read. If you can't articulate why you threw it, you probably shouldn't have.
+
+This is mentally hard because neutral can feel uncomfortable without attacking. Train the patience.`,
+   ex:'30 seconds into neutral you realize you\'ve thrown 8 attacks and none landed. You were attacking out of impatience. The opponent dodged them all and waited for your recovery windows. You gave away 8 punish opportunities.',
+   tip:'Count your neutral attacks in a replay. If more than half aren\'t landing AND aren\'t creating purposeful pressure, you have the random attacking habit.'},
+
+  {cat:'habit',abbr:'HabRecov',name:'Predictable recovery habit',short:'Always recovering the same way',
+   def:`Recovering the same way every time — same angle, same timing, same height — is one of the most punishable habits in the game. High-level players read recovery patterns within 2–3 stocks and edgeguard you every time after.
+
+The fix: vary at least three things about your recovery each time. Vary: the height (low, mid, high), the timing of your double jump (early vs. late), whether you use your recovery ability early or late, and whether you snap to ledge or go above it.
+
+A recovery with three variables becomes exponentially harder to edgeguard than one with zero.`,
+   ex:'Stock 1: you recover mid-height, double jump first. Opponent notes it. Stock 2: they wait at exactly that height. You die at 60% because you recovered identically. Solution: stock 2, recover low with delayed recovery ability. Different path entirely.',
+   tip:'Record yourself and watch specifically how you recover. If your recoveries look the same in the video, they look the same to the opponent.'},
+
+  {cat:'habit',abbr:'HabNeutral',name:'Neutral avoidance habit',short:'Running instead of contesting space',
+   def:`Jumping away, retreating to platforms, running to corners, or stalling whenever the opponent approaches. Instead of engaging neutral, you're avoiding it — giving the opponent free stage control.
+
+Avoiding neutral doesn't make you safer. It gives them free stage control, backs you toward blast zones, and means you never build the reads needed to win.
+
+The fix: hold your ground, contest space, and force the opponent to engage on your terms.`,
+   ex:'Every time the opponent enters your half of the stage, you jump to a platform or retreat. They follow you everywhere. You end up at the corner at 60% damage, never having made them respect your space. Neutral avoidance lost you stage control.',
+   tip:'If you find yourself at the blast zone edge more than once per stock without being hit there, you\'re avoiding neutral. Stop retreating before the threat is real.'},
+];
+
+let activeCat='all';
+const openMap={};
+
+function render(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  const terms=TERMS.filter(t=>{
+    const matchCat=activeCat==='all'||t.cat===activeCat;
+    const matchQ=!q||(t.name.toLowerCase().includes(q)||t.abbr.toLowerCase().includes(q)||(t.short&&t.short.toLowerCase().includes(q))||(t.def&&t.def.toLowerCase().includes(q)));
+    return matchCat&&matchQ;
+  });
+
+  document.getElementById('catNav').innerHTML=CATS.map(c=>`<button class="cat-btn ${c.cls||''}${activeCat===c.id?' active':''}" onclick="setCat('${c.id}')">${c.label}</button>`).join('');
+
+  const catOrder=['tech','subgame','mind','matchup','ranked','habit'];
+  const grouped={};
+  if(activeCat==='all'){catOrder.forEach(c=>{grouped[c]=terms.filter(t=>t.cat===c);});}
+  else{grouped[activeCat]=terms;}
+
+  let html='',total=0;
+  if(activeCat==='all'){
+    catOrder.forEach(cat=>{
+      const list=grouped[cat];
+      if(!list||!list.length)return;
+      total+=list.length;
+      html+=`<p class="section-label">${CAT_NAMES[cat]}</p>`;
+      list.forEach(t=>{html+=termHTML(t);});
+    });
+  } else {
+    const list=grouped[activeCat]||[];
+    total=list.length;
+    list.forEach(t=>{html+=termHTML(t);});
+  }
+
+  if(!total) html=`<div class="no-results">No terms match "${q}"</div>`;
+  document.getElementById('content').innerHTML=html;
+}
+
+function termHTML(t){
+  const key=t.cat+'_'+t.abbr;
+  const isOpen=!!openMap[key];
+  return `<div class="term-row${isOpen?' open':''}" id="tr_${key}" onclick="toggle('${key}')">
+    <div class="term-head">
+      <span class="abbr" style="${ABBR_COLORS[t.cat]}">${t.abbr}</span>
+      <span class="term-name">${t.name}</span>
+      <span class="term-short">${t.short}</span>
+      <span class="chevron">&#8964;</span>
+    </div>
+    <div class="term-body${isOpen?' open':''}">
+      <div class="def">${t.def}</div>
+      <div class="ex"><strong>Example:</strong> ${t.ex}</div>
+      ${t.tip?`<div class="tip"><strong>Key insight:</strong> ${t.tip}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function toggle(key){
+  openMap[key]=!openMap[key];
+  render();
+  if(openMap[key]) setTimeout(()=>document.getElementById('tr_'+key)?.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+
+function setCat(id){activeCat=id;render();}
+
+render();
+</script>
+</body>
+</html>

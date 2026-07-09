@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["C:/Users/Alioune/Downloads/elearning_palier2/elearning/backend/laravel/artisan", "serve", "--port=8000"],
+      "port": 8000
+    },
+    {
+      "name": "frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:/Users/Alioune/Downloads/elearning_palier2/elearning/frontend-app", "run", "dev"],
+      "port": 5173
+    }
+  ]
+}

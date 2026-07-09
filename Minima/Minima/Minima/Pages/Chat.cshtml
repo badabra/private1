@@ -1,0 +1,310 @@
+@page
+@model Minima.Pages.ChatModel
+@{
+    ViewData["Title"] = "Discussion";
+}
+
+<div class="flex items-start justify-center py-8 px-4">
+    <div class="w-full max-w-2xl bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col" style="height: 80vh;">
+
+        <!-- Entête de la conversation -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <span class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center">
+                    @(Model.OtherUser!.Username.Substring(0, 1).ToUpper())
+                </span>
+                <div>
+                    <h2 class="text-base font-bold text-gray-900 leading-tight">@(Model.OtherUser!.Username)</h2>
+                    <p class="text-xs text-gray-500 flex items-center gap-1">
+                        <span id="status-dot" class="inline-block w-2 h-2 rounded-full bg-gray-300"></span>
+                        <span id="status-text">hors ligne</span>
+                        <span id="typing" class="italic text-blue-500 hidden">— en train d'écrire...</span>
+                    </p>
+                </div>
+            </div>
+            <a asp-page="/Contacts" class="text-sm text-blue-600 hover:underline">&larr; Contacts</a>
+        </div>
+
+        <!-- Messages -->
+        <div id="messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-3"></div>
+
+        <!-- Saisie -->
+        <form id="send-form" class="flex items-center gap-2 px-4 py-3 border-t border-gray-100" autocomplete="off">
+            @Html.AntiForgeryToken()
+
+            <!-- MSG-04 : bouton pièce jointe -->
+            <input type="file" id="file-input" class="hidden"
+                   accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.zip,.docx,.xlsx,.pptx" />
+            <button type="button" id="attach-btn" title="Joindre un fichier (max 10 Mo)"
+                    class="shrink-0 w-10 h-10 rounded-xl text-gray-500 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
+                </svg>
+            </button>
+
+            <input id="message-input" maxlength="2000"
+                   class="flex-1 bg-gray-50 text-gray-700 border border-gray-200 rounded-xl py-2.5 px-4 focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                   placeholder="Écrire un message..." />
+            <button type="submit"
+                    class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-5 rounded-xl transition duration-150">
+                Envoyer
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        const myId = @Model.MyId;
+        const otherId = @(Model.OtherUser!.Id);
+        const history = @Html.Raw(Model.HistoryJson);
+        const PALETTE = ['👍', '❤️', '😂', '😮', '😢'];
+
+        const box = document.getElementById('messages');
+        const typingEl = document.getElementById('typing');
+        const afToken = document.querySelector('#send-form input[name="__RequestVerificationToken"]').value;
+
+        function fmtTime(iso) {
+            const d = new Date(iso);
+            return d.toLocaleString('fr-CA', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        }
+
+        // ----- Réactions (MSG-05) -----
+
+        function renderReactions(msgId, reactions) {
+            const row = document.getElementById('rx-' + msgId);
+            if (!row) return;
+            row.innerHTML = '';
+            (reactions || []).forEach(r => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                const mine = r.users.includes(myId);
+                chip.className = 'text-xs rounded-full px-2 py-0.5 border transition ' +
+                    (mine ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300');
+                chip.textContent = r.emoji + ' ' + r.count;
+                chip.onclick = () => connection.invoke('ToggleReaction', msgId, r.emoji).catch(console.error);
+                row.appendChild(chip);
+            });
+        }
+
+        function togglePalette(msgId) {
+            const existing = document.getElementById('pal-' + msgId);
+            if (existing) { existing.remove(); return; }
+            document.querySelectorAll('[id^="pal-"]').forEach(p => p.remove());
+
+            const pal = document.createElement('div');
+            pal.id = 'pal-' + msgId;
+            pal.className = 'flex gap-1 mt-1 bg-white border border-gray-200 rounded-full px-2 py-1 shadow-sm';
+            PALETTE.forEach(e => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = e;
+                btn.className = 'hover:scale-125 transition-transform';
+                btn.onclick = () => {
+                    connection.invoke('ToggleReaction', msgId, e).catch(console.error);
+                    pal.remove();
+                };
+                pal.appendChild(btn);
+            });
+            const wrap = document.getElementById('msg-' + msgId);
+            if (wrap) wrap.appendChild(pal);
+        }
+
+        // ----- Bulles de message -----
+
+        function bubble(m) {
+            const mine = m.senderId === myId;
+            const wrap = document.createElement('div');
+            wrap.id = 'msg-' + m.id;
+            wrap.className = 'flex flex-col ' + (mine ? 'items-end' : 'items-start');
+
+            const b = document.createElement('div');
+            b.className = 'px-4 py-2 text-sm ' +
+                (mine ? 'bg-blue-600 text-white rounded-2xl rounded-br-md' : 'bg-gray-100 text-gray-900 rounded-2xl rounded-bl-md');
+            b.style.maxWidth = '75%';
+
+            if (m.isDeleted) {
+                b.classList.add('italic', 'opacity-60');
+                b.textContent = 'Message supprimé';
+                wrap.appendChild(b);
+                return wrap;
+            }
+
+            if (m.content) {
+                const t = document.createElement('div');
+                t.textContent = m.content; // textContent = protection contre le XSS
+                b.appendChild(t);
+            }
+
+            // MSG-04 : pièce jointe (image affichée, autre fichier téléchargeable)
+            if (m.attachmentName) {
+                const url = '/Chat?handler=Download&messageId=' + m.id;
+                if ((m.attachmentContentType || '').startsWith('image/')) {
+                    const a = document.createElement('a');
+                    a.href = url; a.target = '_blank';
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = m.attachmentName;
+                    img.className = 'rounded-xl mt-1';
+                    img.style.maxHeight = '220px';
+                    a.appendChild(img);
+                    b.appendChild(a);
+                } else {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.className = 'flex items-center gap-1 mt-1 underline font-medium';
+                    a.textContent = '📎 ' + m.attachmentName;
+                    b.appendChild(a);
+                }
+            }
+
+            const meta = document.createElement('div');
+            meta.className = 'mt-1 text-xs ' + (mine ? 'text-blue-100' : 'text-gray-400');
+            meta.textContent = fmtTime(m.sentAt);
+
+            const react = document.createElement('button');
+            react.type = 'button';
+            react.textContent = '🙂';
+            react.title = 'Réagir';
+            react.className = 'ml-2 opacity-70 hover:opacity-100';
+            react.onclick = () => togglePalette(m.id);
+            meta.appendChild(react);
+
+            if (mine) {
+                const del = document.createElement('button');
+                del.type = 'button';
+                del.textContent = 'Supprimer';
+                del.className = 'ml-2 underline';
+                del.onclick = () => connection.invoke('DeleteMessage', m.id).catch(console.error);
+                meta.appendChild(del);
+            }
+            b.appendChild(meta);
+            wrap.appendChild(b);
+
+            // Rangée des réactions
+            const rx = document.createElement('div');
+            rx.id = 'rx-' + m.id;
+            rx.className = 'flex gap-1 mt-1';
+            wrap.appendChild(rx);
+
+            return wrap;
+        }
+
+        function append(m) {
+            box.appendChild(bubble(m));
+            renderReactions(m.id, m.reactions);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        history.forEach(append);
+
+        // ----- SignalR -----
+
+        function setOnline(on) {
+            document.getElementById('status-dot').className =
+                'inline-block w-2 h-2 rounded-full ' + (on ? 'bg-green-500' : 'bg-gray-300');
+            document.getElementById('status-text').textContent = on ? 'en ligne' : 'hors ligne';
+        }
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl('/chatHub')
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on('ReceiveMessage', m => {
+            if (m.senderId === otherId) append(m);
+        });
+
+        connection.on('MessageDeleted', id => {
+            const el = document.getElementById('msg-' + id);
+            if (el) {
+                const mine = el.className.includes('items-end');
+                el.replaceWith(bubble({ id: id, senderId: mine ? myId : otherId, isDeleted: true }));
+            }
+        });
+
+        connection.on('ReactionsUpdated', data => {
+            renderReactions(data.messageId, data.reactions);
+        });
+
+        connection.on('Typing', senderId => {
+            if (senderId !== otherId) return;
+            typingEl.classList.remove('hidden');
+            clearTimeout(typingEl._t);
+            typingEl._t = setTimeout(() => typingEl.classList.add('hidden'), 3000);
+        });
+
+        connection.on('UserOnline', id => { if (id === otherId) setOnline(true); });
+        connection.on('UserOffline', id => { if (id === otherId) setOnline(false); });
+
+        async function start() {
+            await connection.start();
+            const online = await connection.invoke('GetOnlineUsers');
+            setOnline(online.includes(otherId));
+        }
+        start().catch(console.error);
+
+        // MSG-01 : envoi de texte
+        document.getElementById('send-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (!text) return;
+            try {
+                const m = await connection.invoke('SendMessage', otherId, text);
+                append(m);
+                input.value = '';
+                input.focus();
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // MSG-04 : envoi de fichier (fetch multipart + jeton antiforgery)
+        const fileInput = document.getElementById('file-input');
+        const attachBtn = document.getElementById('attach-btn');
+        attachBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', async () => {
+            const f = fileInput.files[0];
+            if (!f) return;
+            if (f.size > 10 * 1024 * 1024) {
+                alert('Fichier trop volumineux (max 10 Mo).');
+                fileInput.value = '';
+                return;
+            }
+            const fd = new FormData();
+            fd.append('file', f);
+            fd.append('receiverId', otherId);
+            attachBtn.disabled = true;
+            try {
+                const r = await fetch('/Chat?handler=Upload', {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'RequestVerificationToken': afToken }
+                });
+                if (r.ok) {
+                    append(await r.json());
+                } else {
+                    alert('Envoi refusé : ' + await r.text());
+                }
+            } catch (err) {
+                console.error(err);
+            }
+            attachBtn.disabled = false;
+            fileInput.value = '';
+        });
+
+        // MSG-06 : notifier « en train d'écrire » (au plus une fois toutes les 2 s)
+        let lastTyping = 0;
+        document.getElementById('message-input').addEventListener('input', () => {
+            const now = Date.now();
+            if (now - lastTyping > 2000) {
+                lastTyping = now;
+                connection.invoke('Typing', otherId).catch(() => { });
+            }
+        });
+    </script>
+}

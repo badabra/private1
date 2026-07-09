@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+*{box-sizing:border-box;margin:0;padding:0}
+.search-wrap{position:relative;margin-bottom:1.25rem}
+#searchInput{width:100%;padding:9px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg,12px);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;outline:none}
+#searchInput:focus{border-color:var(--color-border-primary)}
+.cat-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cat-btn{padding:5px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;font-size:12px;color:var(--color-text-secondary);white-space:nowrap;transition:all 0.15s}
+.cat-btn:hover:not(.active){background:var(--color-background-secondary)}
+.cat-btn.active{font-weight:500;border-color:transparent}
+.c-timing.active{background:#E1F5EE;color:#085041}
+.c-attack.active{background:#EEEDFE;color:#3C3489}
+.c-bait.active{background:#FAEEDA;color:#633806}
+.c-pattern.active{background:#FAECE7;color:#993C1D}
+.c-opening.active{background:#E6F1FB;color:#0C447C}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-text-tertiary);margin:1.5rem 0 0.5rem}
+.term-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md,8px);margin-bottom:6px;overflow:hidden;cursor:pointer;transition:border-color 0.12s}
+.term-row:hover{border-color:var(--color-border-secondary)}
+.term-row.open{border-color:var(--color-border-primary)}
+.term-head{display:flex;align-items:center;gap:10px;padding:9px 12px}
+.abbr{font-size:11px;font-weight:500;padding:2px 7px;border-radius:8px;white-space:nowrap;min-width:40px;text-align:center;flex-shrink:0}
+.term-name{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1;min-width:0}
+.term-short{font-size:12px;color:var(--color-text-tertiary);flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chevron{font-size:14px;color:var(--color-text-tertiary);transition:transform 0.18s;flex-shrink:0}
+.term-row.open .chevron{transform:rotate(180deg)}
+.term-body{display:none;padding:10px 12px 14px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.term-body.open{display:block}
+.def{font-size:13px;color:var(--color-text-secondary);line-height:1.7;white-space:pre-line}
+.ex{margin-top:10px;font-size:12px;color:var(--color-text-secondary);border-left:2px solid var(--color-border-info);padding-left:10px;line-height:1.65}
+.ex strong{color:var(--color-text-info);font-weight:500}
+.warn{margin-top:8px;font-size:12px;border-left:2px solid var(--color-border-warning);padding:6px 10px;background:var(--color-background-warning);color:var(--color-text-warning);border-radius:0 var(--border-radius-md,8px) var(--border-radius-md,8px) 0;line-height:1.6}
+.warn strong{font-weight:500}
+.loop-box{margin-top:12px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md,8px);padding:10px 14px}
+.loop-title{font-size:12px;font-weight:600;color:var(--color-text-primary);margin-bottom:8px}
+.loop-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.loop-num{font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.loop-text{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.loop-text strong{color:var(--color-text-primary);font-weight:600}
+.no-results{padding:2rem;text-align:center;color:var(--color-text-tertiary);font-size:14px}
+@media(max-width:500px){.term-short{display:none}}
+</style>
+
+<h2 class="sr-only">Brawlhalla guide 7 — timing system, attack decisions, bait types, pattern exploitation, opening creation</h2>
+
+<div style="padding:1rem 0">
+<div class="search-wrap"><input id="searchInput" placeholder="Search timing, baits, openings, patterns..." oninput="render()"></div>
+<div class="cat-nav" id="catNav"></div>
+<div id="content"></div>
+</div>
+
+<script>
+const CATS=[
+  {id:"all",label:"All",cls:""},
+  {id:"timing",label:"Timing system",cls:"c-timing"},
+  {id:"attack",label:"Attack decisions",cls:"c-attack"},
+  {id:"bait",label:"Bait types",cls:"c-bait"},
+  {id:"pattern",label:"Pattern exploitation",cls:"c-pattern"},
+  {id:"opening",label:"Creating openings",cls:"c-opening"},
+];
+const COLORS={
+  timing:"background:#E1F5EE;color:#085041",
+  attack:"background:#EEEDFE;color:#3C3489",
+  bait:"background:#FAEEDA;color:#633806",
+  pattern:"background:#FAECE7;color:#993C1D",
+  opening:"background:#E6F1FB;color:#0C447C",
+};
+const CAT_NAMES={timing:"Timing system",attack:"Attack decisions",bait:"Bait types",pattern:"Pattern exploitation",opening:"Creating openings"};
+const CAT_ORDER=["timing","attack","bait","pattern","opening"];
+
+const TERMS=[
+
+// TIMING SYSTEM
+{cat:"timing",abbr:"T01",name:"The three timing contexts",short:"Neutral timing, combo timing, and defensive timing are different skills",
+def:`Timing in Brawlhalla is not one skill. It is three completely different contexts, each trained separately:
+
+NEUTRAL TIMING — when to throw your attack during the neutral phase.
+This is about reading the opponent\'s movement and throwing your attack at the exact moment their movement creates a hitbox gap or commits them. The timing is relative to what THEY are doing, not to a fixed clock. This is the hardest timing to train because it is always changing.
+
+COMBO TIMING — how fast to press the next button after each hit.
+This is about feel — the kinesthetic sense of when the previous hit\'s hitstun is at the right window for the follow-up to connect. Fixed per combo, trainable in isolation. Once correct, it never changes unless percent changes.
+
+DEFENSIVE TIMING — when to dodge relative to the opponent\'s attack.
+This is about reading startup animation and pressing dodge at the right moment to use i-frames. Not too early (dodge before the hitbox) and not too late (dodge after the hitbox already hit you). Reaction-based or read-based.
+
+Why this matters: most players train only combo timing (drilling in training mode) and ignore neutral timing completely. Neutral timing is what actually determines whether your attack lands in a real match. Combo timing determines what you do after. Both matter, but they are trained differently.`,
+loops:[
+  {n:"1",col:"#085041",bg:"#E1F5EE",title:"Neutral timing","text":"Relative to opponent movement. Changes every exchange. Trained through match reps and pattern recognition."},
+  {n:"2",col:"#3C3489",bg:"#EEEDFE",title:"Combo timing","text":"Fixed per combo at each percent. Trained in isolation in training mode. Transfers directly."},
+  {n:"3",col:"#633806",bg:"#FAEEDA",title:"Defensive timing","text":"Relative to attack startup. Reaction or read based. Trained by watching animation triggers."},
+],
+ex:`You drill DL → NAir → GP in training mode until it is perfect (combo timing mastered). In ranked the DL never lands because you are throwing it at the wrong moment in neutral (neutral timing not trained). The combo timing is irrelevant if the opening is never created. This is why drilling combos alone does not translate to rank gains.`},
+
+{cat:"timing",abbr:"T02",name:"Neutral attack timing",short:"The exact moment to throw — not when you feel like it",
+def:`The correct moment to throw an attack in neutral is always one of these four situations. Not a feeling. A specific observable trigger:
+
+TRIGGER 1 — COMMITMENT PUNISH: the opponent just committed to an action (started a dash, jumped, threw an attack). Their startup or recovery frames are active. You attack into that window. This is the most reliable neutral timing — you are reacting to what you see.
+
+TRIGGER 2 — LANDING PUNISH: the opponent is about to land from the air and you are already in range. You time your attack to be active as they touch the ground, hitting them during their landing lag.
+
+TRIGGER 3 — DODGE PUNISH: you baited or observed a dodge. Their dodge cooldown is active. You are in range. You attack into the cooldown window. This timing requires knowing approximately how long dodge cooldown lasts (roughly 30-40 frames).
+
+TRIGGER 4 — READ: you predicted what the opponent will do before they do it. You throw the attack pre-emptively at the location they will be. This is not reaction-based — it is pattern-based. You have seen them do this action before and you are attacking where the pattern leads.
+
+Every attack that does not fall into one of these four categories is a random swing. Random swings lose to any opponent who is actively thinking.`,
+ex:`You are in neutral. Opponent dash dances. No trigger — do not attack. They commit to a run-in. TRIGGER 1 active — commitment in progress. You backdash their run-in and throw DL into their forward momentum as they enter recovery. The trigger determined the timing. You did not "decide to attack" — the trigger told you when.`,
+warn:`Most Gold players attack on Trigger 5: "I have been waiting and feel like doing something." This is not a trigger. It is impatience. Training yourself to only attack on one of the four real triggers is the single biggest neutral timing upgrade available.`},
+
+{cat:"timing",abbr:"T03",name:"Combo timing by feel",short:"Training the kinesthetic sense, not counting frames",
+def:`Combo timing is not about knowing the frame numbers. It is about developing a kinesthetic feel — the physical sense in your hands of when the next button needs to be pressed.
+
+HOW TO BUILD THE FEEL:
+Step 1 — slow first. In training mode, run the combo at 50% speed if available. Feel the rhythm between hits. Notice the small gap between each.
+Step 2 — speed up gradually. Run at 75%, then 100%. The feel should carry across speeds.
+Step 3 — do not think. The moment you start counting in your head ("one, two, three") you have broken the feel. Combo timing is subconscious or it does not transfer to real matches.
+Step 4 — anchor to audio. The hit sound of each attack is a timing cue. Train yourself to press the next button in response to hearing the previous hit connect. Audio anchoring is more reliable than visual during fast sequences.
+
+TIMING WINDOWS BY COMBO TYPE:
+Tight window (1-3 frames): CDC chains, some recovery attack links. These feel "immediate" — you press the next input before the previous animation visually ends.
+Medium window (4-8 frames): most aerial follow-ups at low-mid percent. These feel like "right after" — a very short but perceptible gap.
+Generous window (8+ frames): combo starters into aerials at low percent. These feel almost casual — there is real time between hits.`,
+ex:`DL → NAir has a generous window. You press NAir and it feels like you had time. DL → CDC → NAir has a tight window. The CDC input has to happen before your brain registers that DL connected. That difference in feel is what you are training. After 200 reps of each, your hands know which is which without any conscious timing calculation.`},
+
+{cat:"timing",abbr:"T04",name:"Defensive timing — dodge windows",short:"When to dodge relative to startup, active, and recovery",
+def:`Dodging at the right time is a timing skill. Dodging at the wrong time wastes i-frames or burns cooldown with no protection.
+
+THE THREE WRONG TIMINGS:
+Too early: you dodge before the hitbox is active. Your dodge ends, you are in dodge cooldown, the hitbox is now active and hits you in cooldown. Worst case.
+On reaction to hit: you dodge after the hitbox already hit you. The attack connected and you are in hitstun before you can dodge. Impossible to dodge a hit you are reacting to — reactions are 100-200ms, hitboxes are active for 3-10 frames (50-170ms). You cannot react to the hit itself.
+Too late: you dodge during recovery frames. The attack missed already — you burned dodge unnecessarily.
+
+THE CORRECT TIMING:
+You dodge during late startup or early active frames. The hitbox either has not reached you yet (late startup) or just arrived (early active) and your i-frames are active during both.
+
+How to achieve correct timing: you cannot react to the hitbox. You react to the ANIMATION STARTUP. Visually, every attack has a tell — a specific frame or motion that precedes the active frames. You learn the startup animation of each attack and dodge in response to seeing that animation, not in response to the hitbox itself.`,
+ex:`Opponent starts the animation for their NSig. You have seen this animation 20 times this match. You know from training that NSig has 18 frames of startup. You dodge 8 frames after seeing the startup begin — your i-frames are active during the active frames of the sig. The sig passes through you. You dodged the animation, not the hitbox.`,
+warn:`The most common timing error: dodging in response to seeing the opponent move toward you rather than in response to a specific attack startup. This produces random dodge timing that sometimes works and sometimes does not. Train specific animation recognition, not general "they are close" awareness.`},
+
+{cat:"timing",abbr:"T05",name:"Timing as an offensive weapon",short:"Vary YOUR attack timing to break the opponent\'s reactions",
+def:`Everything above is about YOUR timing. But timing is also something you use offensively — varying when your attacks arrive to break the opponent\'s defensive timing.
+
+If you always throw DL at the same timing in the same situation, an opponent who has seen it once can dodge it every time after. They have calibrated their defensive timing to yours.
+
+The counter: variable attack timing.
+
+DELAY: in a situation where you normally attack immediately, wait one extra beat. The opponent\'s dodge triggers early, hits cooldown, and your delayed attack lands into their cooldown.
+
+EARLY: in a situation where you normally approach then attack, attack from slightly farther than usual. Their dodge timing was set for your normal range — they dodge too late.
+
+RHYTHM BREAK: you have established a rhythm of attacks (attack, pause, attack, pause at consistent intervals). Then attack twice in a row without the pause. Or pause three times without attacking. Rhythm breaks reset their defensive calibration.
+
+TEMPO MISMATCH: approach slowly when they expect fast. Approach fast when they have calibrated to your slow approach. Speed itself becomes a timing tool.`,
+ex:`You normally throw DL 12 frames after your wavedash ends. Opponent has seen this 8 times and is now dodging at frame 12. You wavedash in but wait until frame 18 to throw DL. They dodged at frame 12. Their dodge cooldown starts at frame 12 and ends around frame 42. Your DL at frame 18 hits directly into their dodge cooldown. Same move, different timing, completely different result.`},
+
+{cat:"timing",abbr:"T06",name:"Edgeguard timing",short:"Pre-positioning the hitbox where the recovery will be",
+def:`Edgeguard timing is fundamentally different from neutral timing. In neutral, you react to or read the opponent\'s movement. In edgeguarding, you pre-position a hitbox where the opponent will be — you cannot react to their arrival in time.
+
+THE TIMING CHALLENGE: a recovering opponent arrives at a specific point in space at a specific moment. If your hitbox is not active at that point at that moment, you miss. The opponent\'s recovery has a trajectory and a speed. You have to calculate where they will be and have your hitbox there ahead of time.
+
+TWO EDGEGUARD TIMING APPROACHES:
+
+EARLY HITBOX: throw your attack before the opponent arrives. The hitbox is active when they enter the zone. Risk: they delay their recovery and your hitbox expires before they arrive.
+
+REACTION WINDOW: for recoveries that have a visual tell (the recovery move animation is clearly visible), you can react to the animation and throw your attack with enough lead time to intercept. This works on recoveries with long travel time.
+
+THE TIMING RULE: if you keep missing edgeguards by going slightly too early, delay your attack by 5 frames. If you keep missing by going slightly too late, throw it 5 frames earlier. Adjust in small increments until the hitbox consistently meets the recovery.`,
+ex:`Opponent always uses their recovery ability at the same point — about one character length below the ledge. You know this. You jump off the ledge and throw DAir timed to be active at exactly that height at exactly the moment their recovery animation peaks. You do not wait to see them arrive — you are already there. The hitbox and the opponent arrive at the same point simultaneously.`},
+
+// ATTACK DECISIONS
+{cat:"attack",abbr:"A01",name:"The attack decision tree",short:"How to choose which attack and when in real time",
+def:`Every attack in neutral should pass through a decision tree. This sounds slow but with practice it becomes instantaneous — the tree runs subconsciously in under 100ms.
+
+THE TREE:
+
+STEP 1 — IS THERE A TRIGGER? (from T02)
+No trigger → do not attack. Move, bait, wait.
+Trigger present → continue to step 2.
+
+STEP 2 — WHAT RANGE AM I AT?
+Close range (inside their attack range): use fast, low-commitment attacks. DL, NL, NAir. Speed matters more than power.
+Mid range (at the edge of both weapons): use mid-range pokes or wavedash in first. SL at tip, NL at max range.
+Far range: do not attack — you will whiff. Close distance first or throw a projectile if you have one.
+
+STEP 3 — WHAT IS THEIR POSITION?
+Grounded: grounded attacks or short hop aerials. Avoid high aerials.
+Airborne: anti-air with upward attacks or wait for their landing.
+Recovering: edgeguard toolkit. Do not use grounded combo tools.
+In dodge cooldown: any attack in range. They cannot dodge.
+
+STEP 4 — WHAT IS THEIR PERCENT?
+Under 60%: combo starters (DL, NL). Output: combo damage.
+60-80%: combo or direct kill confirm setup.
+80%+: kill confirm only. DL → SSig or equivalent. Do not waste time building damage.
+
+STEP 5 — WHAT HAVE THEY NOT SEEN YET?
+If you have thrown DL 4 times already: consider SL or NL for variation.
+If you have only approached from the ground: consider aerial approach.
+Novel attacks are harder to react to than repeated patterns.
+
+The output of this tree is your specific attack choice. Not a feeling. A decision with a reason.`,
+loops:[
+  {n:"1",col:"#085041",bg:"#E1F5EE",title:"Trigger check","text":"No trigger = no attack. Only continue if a real trigger exists."},
+  {n:"2",col:"#3C3489",bg:"#EEEDFE",title:"Range assessment","text":"What range are you at right now? Choose attack that fits the range."},
+  {n:"3",col:"#633806",bg:"#FAEEDA",title:"Their position","text":"Grounded, airborne, recovering, or in cooldown? Each needs a different attack."},
+  {n:"4",col:"#993C1D",bg:"#FAECE7",title:"Their percent","text":"Under 60% combo. Over 80% kill confirm only."},
+  {n:"5",col:"#0C447C",bg:"#E6F1FB",title:"Novelty check","text":"What have they NOT seen yet? That is your best option."},
+],
+ex:`Trigger: opponent just whiffed SLight — commitment punish trigger active. Range: you are at mid range, step in needed. Their position: grounded, in recovery. Their percent: 85%. Decision: dash in → DL → SSig kill confirm. Every step of the tree pointed to the same answer. The attack was not chosen — it was derived.`},
+
+{cat:"attack",abbr:"A02",name:"Attack commitment levels",short:"Every attack has a risk level — match it to the situation",
+def:`Not all attacks are equal risk. Every move has a commitment level — how much you are risking if it misses or gets dodged.
+
+LOW COMMITMENT attacks: fast startup, short recovery frames. You throw these freely in neutral because even if they miss, the punish window is small. Examples: NL grounded, short hop NAir fast falled, DL.
+
+MID COMMITMENT attacks: medium startup or longer recovery. Throw these only when you have a read or a clear trigger. Examples: SL, SAir, GP in neutral.
+
+HIGH COMMITMENT attacks: slow startup, long recovery, or you move your body significantly (forward dash attacks, some sigs). Throw these only as confirms from a setup or as hard reads. Examples: NSig, SSig, DSig, run-in SL.
+
+THE RULE: in neutral, default to low commitment attacks. Mid and high commitment attacks are confirmations — you throw them after a low commitment attack has already created the opening.
+
+This is why DL → SSig works: DL is low commitment (fast, short recovery if dodged). If DL lands, SSig is a high commitment attack thrown as a CONFIRM — the DL already created the safe window. Without the DL, a raw SSig in neutral gets punished every time.`,
+ex:`You want to KO the opponent at 90%. Wrong approach: throw raw SSig in neutral hoping it lands. They dodge it, punish you for 40 damage. Correct approach: low commitment DL in neutral. If DL lands (trigger confirmed), immediately SSig. DL was cheap — it either created the SSig window or it missed and your recovery is short enough that punishment is unlikely. Commitment level matching saves stocks.`},
+
+{cat:"attack",abbr:"A03",name:"The confirmation habit",short:"Only go big after a setup confirms it is safe",
+def:`The confirmation habit is simple in principle and very hard to build in practice: you only throw high-commitment attacks when a previous action has confirmed the window is safe.
+
+WHAT CONFIRMATION MEANS:
+A confirm is a lower-commitment action that lands and creates a guaranteed or highly reliable window for a follow-up. The confirm is the lock that opens the door. The high-commitment attack is what goes through the door.
+
+LEVELS OF CONFIRMATION:
+Hard confirm: a true combo setup. DL lands → NAir is guaranteed. You confirmed into a true combo.
+Soft confirm: a hit that creates a reliable but not guaranteed follow-up window. SAir lands → SSig usually connects at 80%+ but can be DI\'d.
+Read confirm: you predicted they would dodge in a specific direction. Your read was that their dodge would put them in SSig range. If the read is right, SSig is confirmed. If wrong, you are punished.
+
+THE HABIT:
+Before every sig or high-commitment attack: ask — what is my confirmation? If the answer is "nothing, I just feel like it" — do not throw the move. Wait for the confirm.`,
+ex:`You are fighting at 85%. You want to throw NSig to KO. Unconfirmed NSig: you throw it raw. They dodge. You fly forward in recovery. They punish you for a stock-ending combo. Confirmed NSig: you throw NL first. It pops them up. From the NL pop-up, NSig connects before they recover. NL was the confirmation. Same NSig, confirmed vs unconfirmed, completely different result.`,
+warn:`The confirmation habit feels slow at first because you are forcing yourself to wait. After a few weeks it becomes faster than the alternative — because you stop getting punished for random sigs, which means fewer stocks lost to self-inflicted mistakes.`},
+
+// BAIT TYPES
+{cat:"bait",abbr:"B01",name:"The 6 bait types",short:"Overview — each targets a different opponent tendency",
+def:`A bait is any action designed to make the opponent commit to a specific response, which you then exploit. There are 6 distinct bait types, each targeting a different opponent tendency.
+
+BAIT 1 — MOVEMENT BAIT: fake an approach to make them throw a preemptive attack. (Targets: opponents who throw attacks when they see you move toward them.)
+
+BAIT 2 — TIMING BAIT: establish a rhythm then break it. (Targets: opponents who calibrate their dodge to your attack rhythm.)
+
+BAIT 3 — WHIFF BAIT: throw a move you know they will dodge, then punish the dodge cooldown. (Targets: opponents who dodge on a specific trigger reliably.)
+
+BAIT 4 — OPTION COVERAGE BAIT: show one option repeatedly until they specifically counter it, then use the counter to that counter. (Targets: opponents who adapt intelligently — actually a compliment.)
+
+BAIT 5 — RESOURCE BAIT: make them use a resource (dodge, double jump, recovery) before you need it. (Targets: opponents who use resources reactively rather than strategically.)
+
+BAIT 6 — ATTENTION BAIT: create a threat in one location to make them focus there, then attack from a different location. (Targets: everyone — attention is finite.)
+
+Each bait is covered in detail in its own entry. Start with Bait 1 and 2 — they are the most immediately applicable at Gold-Plat.`,
+ex:`You have 6 tools in the bait toolkit. Most Gold players have one (movement bait, half-used). Adding one new bait type per week until all 6 are natural gives you a layered offensive toolkit that is very difficult to defend against because the opponent cannot know which bait is coming.`},
+
+{cat:"bait",abbr:"B02",name:"Bait 1 — movement bait",short:"Fake approach to trigger a preemptive attack",
+def:`TARGET: opponents who throw preemptive attacks when they see you move toward them.
+
+HOW IT WORKS: you dash toward the opponent aggressively, making it look like you will attack. They respond by throwing a preemptive attack to hit you before you arrive. You were never going to arrive — you stop short or backdash. Their attack whiffs. You punish during their recovery.
+
+REQUIREMENTS:
+1. You need to have actually attacked during run-ins before — otherwise they have no reason to throw the preemptive attack.
+2. Your stop or backdash must happen before entering their attack range.
+3. Your punish must begin the moment their attack starts — not after you see the whiff, but as you see the startup.
+
+VARIATIONS:
+Short stop: dash forward, stop at max range. Even a short movement triggers the response.
+Pass-through: dash completely through them (if they are at edge) and punish from behind.
+Low-to-high: wavedash forward (low) then jump over their grounded preemptive attack.
+
+WHEN TO USE: after you have run-in attacked 2-3 times and the opponent is starting to time your approach. The movement bait works best when your real run-in attack is feared.`,
+loops:[
+  {n:"1",col:"#633806",bg:"#FAEEDA",title:"Show the real attack","text":"Run-in DL 2-3 times. Make them fear the run-in."},
+  {n:"2",col:"#633806",bg:"#FAEEDA",title:"Execute the bait","text":"Run-in to the same distance. Stop short or backdash."},
+  {n:"3",col:"#633806",bg:"#FAEEDA",title:"Read their response","text":"They throw a preemptive attack. It whiffs."},
+  {n:"4",col:"#633806",bg:"#FAEEDA",title:"Punish","text":"Attack into their recovery frames. Full combo."},
+],
+ex:`3 times you run in and DL. They are now throwing a preemptive DLight every time you run in. 4th time: you run to the same distance, backdash. Their DLight fires into empty space. 30 frames of recovery. You step back in and DL → full combo. The preemptive attack they developed as a defense became the source of your free punish.`},
+
+{cat:"bait",abbr:"B03",name:"Bait 2 — timing bait",short:"Establish a rhythm then break it at the key moment",
+def:`TARGET: opponents who calibrate their defensive timing to your attack rhythm.
+
+HOW IT WORKS: you throw attacks at consistent intervals, training the opponent\'s dodge reflex to your rhythm. Then you attack either earlier or later than the rhythm, hitting them as their dodge fires at the wrong moment.
+
+THE RHYTHM PATTERN: attack — pause — attack — pause — attack. Same interval each time. 3-5 repetitions to establish.
+
+THE BREAK: either attack twice in a row (no pause) OR extend the pause significantly before attacking. Both break the calibrated timing.
+
+EARLY BREAK (double attack): they dodge in anticipation of your next attack at the usual interval. You attack again before the interval ends. Their dodge fires late and your attack lands before it.
+
+LATE BREAK (long pause): they get impatient during the extended pause and attack or move forward. You were waiting for exactly this — punish their impatient action.
+
+This bait requires patience. You have to actually commit to showing the rhythm multiple times before breaking it. Most players break the rhythm too early out of impatience themselves.`,
+ex:`Attack at 0:00, 0:40, 1:20, 2:00 (consistent 40-frame rhythm). Opponent times their dodge to land at frame 38 each time. They dodge your last 3 attacks. 5th attack: you throw at frame 20 instead of frame 40. They dodge at frame 38. Their dodge fires into nothing. Your attack at frame 20 hits them before their dodge starts. Timing bait. The rhythm was the setup. The break was the weapon.`},
+
+{cat:"bait",abbr:"B04",name:"Bait 3 — whiff bait",short:"Throw a bait-able move, punish the dodge",
+def:`TARGET: opponents who dodge in response to a specific move or situation reliably.
+
+HOW IT WORKS: you identify a move the opponent always dodges. Then you throw that move deliberately — not to hit them, but to make them dodge. You position so that after their dodge, they land in range of your punish. You were never trying to hit with the baited move.
+
+REQUIREMENTS:
+1. You must have identified that they dodge this specific move consistently.
+2. The move you bait with must have short enough recovery that you can still act after they dodge it.
+3. Your punish must be positioned to catch the dodge landing.
+
+DODGE LANDING EXPLOITATION: when someone dodges, they move in a direction and then land with dodge cooldown active. If you know which direction they dodge (forward, backward, or neutral), you can position your follow-up attack exactly where they will land.
+
+FORWARD DODGER: they dodge through your attack. Position your follow-up attack behind yourself — where they arrive after passing through.
+BACKWARD DODGER: they dodge away from your attack. Follow them with a dash-in attack immediately after your bait move.`,
+loops:[
+  {n:"1",col:"#993C1D",bg:"#FAECE7",title:"Identify the trigger","text":"Which specific move makes them dodge every time?"},
+  {n:"2",col:"#993C1D",bg:"#FAECE7",title:"Map the dodge direction","text":"Where do they land after the dodge?"},
+  {n:"3",col:"#993C1D",bg:"#FAECE7",title:"Throw the bait move","text":"Not to hit — to trigger the dodge."},
+  {n:"4",col:"#993C1D",bg:"#FAECE7",title:"Attack the landing spot","text":"Your follow-up is already positioned for where they land."},
+],
+ex:`Every time you throw SAir, the opponent dodges backward. You have noted this 4 times. 5th time: you throw SAir (not to hit — to trigger the dodge). They dodge backward. You already dashed backward before throwing SAir, positioning yourself where they will land. They arrive in your range with dodge cooldown. DL → full combo. The SAir was never meant to hit.`},
+
+{cat:"bait",abbr:"B05",name:"Bait 4 — option coverage bait",short:"Show X until they counter X, then punish the counter",
+def:`TARGET: opponents who adapt intelligently mid-match. Paradoxically, this bait works better against smarter opponents.
+
+HOW IT WORKS: this is the full conditioning loop taken to its conclusion.
+Step 1: show pattern X until they learn to counter it.
+Step 2: they commit to countering X.
+Step 3: you use the attack that beats their counter.
+
+This is different from simple conditioning (showing X then doing Y). Here, you actually WANT them to counter X — because their counter to X requires a commitment from them, and that commitment is what you punish.
+
+EXAMPLE STRUCTURE:
+You always DL on run-in (pattern X).
+They learn to dodge forward through your DL (counter to X).
+Their forward dodge puts them behind you — you pivot and SSig (beats the counter).
+
+The pivot SSig only works because they committed to the forward dodge. If they had stayed neutral, the SSig would miss. Their intelligent adaptation created the opening you needed.`,
+ex:`Stock 1: you DL on every run-in. They dodge forward through it 3 times and punish from behind. Your DL is solved. Stock 2: same run-in. They dodge forward. You do not DL — instead you dash through with nothing, spin, and throw SSig backward as they arrive from the forward dodge. They ran directly into your SSig. Their solution to your DL created the exact opening for SSig. The smarter the opponent, the better this bait works.`},
+
+{cat:"bait",abbr:"B06",name:"Bait 5 — resource bait",short:"Make them spend a resource before you need it gone",
+def:`TARGET: opponents who use their defensive resources (dodge, double jump, recovery move) reactively.
+
+HOW IT WORKS: you create a threat that forces the opponent to use a defensive resource. After they use it, you attack with the approach that resource would have stopped.
+
+DODGE RESOURCE BAIT: throw a low-commitment move from range, forcing a preemptive dodge. Now their dodge is on cooldown. Immediately approach with your real attack. They cannot dodge the real attack.
+
+DOUBLE JUMP RESOURCE BAIT: create an aerial threat that forces them to use their double jump to escape. Now they are airborne with no second jump. Attack their aerial disadvantage state.
+
+RECOVERY RESOURCE BAIT: offstage, make them use their recovery move early. They used it to avoid your first edgeguard threat. Now their recovery is spent. Your second edgeguard attempt cannot be answered.
+
+The key: the bait action must feel threatening enough that not using the resource is risky. If the bait looks harmless, they will not spend the resource. Low-commitment but visually threatening moves work best as resource baits.`,
+ex:`Opponent offstage at 70%. You jump off and throw SAir from far away — too far to hit, but it looks like it might. They use their double jump to go higher to avoid it. Double jump spent. Now you throw your real edgeguard — DAir aimed at their recovery ability trajectory. They have no double jump to escape. The SAir they dodged was never a real edgeguard — it was bait to spend their double jump.`},
+
+{cat:"bait",abbr:"B07",name:"Bait 6 — attention bait",short:"Threaten in one place, attack from another",
+def:`TARGET: everyone. Attention is finite for all players at all levels.
+
+HOW IT WORKS: you create a credible threat in one location that pulls the opponent\'s attention there. While their attention is focused on that threat, you attack from a different location or angle.
+
+This is why weapon throws are powerful as setups: you throw the weapon toward them (attention goes to the weapon trajectory) and then you approach from the other side. They are tracking the weapon. You arrive from an angle they are not watching.
+
+ATTENTION BAIT STRUCTURES:
+Weapon throw + body approach: weapon goes right, you go left or from above.
+Platform presence + ground attack: you are on the platform (they watch above), you platform drop and attack from above unexpectedly.
+Projectile + wavedash: fire a projectile (attention to the projectile) then immediately wavedash forward. They dodged or tracked the projectile and are not prepared for your body.
+Feint + real attack: aggressive movement in one direction (attention pulled that way), then change direction and attack from the other side.
+
+The split attention principle: when two threats come from different locations simultaneously, the opponent can only properly respond to one.`,
+ex:`You throw your spear forward (opponent tracks the spear flying at them). Simultaneously you jump forward from above — arriving from a completely different angle. They dodged the spear. They were not looking up. You DAir from above hits them during their dodge recovery. Two threats, two locations, they could only handle one. Attention bait.`},
+
+{cat:"bait",abbr:"B08",name:"Counter-baiting",short:"Recognizing when YOU are being baited and not taking it",
+def:`Baiting works in both directions. Your opponent is also trying to bait you. Recognizing when you are being baited and choosing not to take it is as important as deploying your own baits.
+
+SIGNS YOU ARE BEING BAITED:
+The move feels too easy: they threw a move that seems very punishable. An experienced opponent leaving obvious openings is often deliberate.
+You keep getting punished after a "free" hit: the free hit was bait. What came after was the real plan.
+They are standing still and doing nothing: this is often bait for your impatience. They are waiting for you to attack out of boredom.
+They keep doing the same thing that you keep countering: if the same option keeps showing up and you keep beating it, they may be showing it deliberately to condition you.
+
+HOW TO NOT TAKE THE BAIT:
+See something that seems free → pause. Ask: why is this free? What happens after I take it?
+If you take a "free" hit and get punished immediately after → that sequence is their bait-and-punish. Stop taking the hit.
+When in doubt: do nothing. An opponent who is baiting needs you to act. Not acting breaks the bait.
+Vary your responses: if you always respond to a specific action the same way, you are predictable. Varying your response to bait attempts makes your counter-response un-counterable.`,
+ex:`Opponent keeps doing a run-in that stops short. Every time you throw a preemptive DL. Every time your DL whiffs and they punish the recovery. The run-in-that-stops is their movement bait. You are taking it every time. Fix: the next time they do the same run-in, do nothing. Do not throw the preemptive DL. They stop short, do nothing, both players are neutral. You broke their bait by recognizing you were the one being conditioned.`},
+
+// PATTERN EXPLOITATION
+{cat:"pattern",abbr:"P01",name:"The observe-identify-show-exploit loop",short:"The complete 4-step system for pattern exploitation",
+def:`Pattern exploitation is a complete loop with 4 steps. Most players do step 4 (exploit) without doing steps 1-3 (observe, identify, show). Without the preparation, the exploitation is just guessing.
+
+STEP 1 — OBSERVE: in the first stock, your primary job is not to win. It is to collect data. What does this specific opponent do in these specific situations?
+Observe: how do they recover? What do they do after getting hit? What is their preferred neutral tool? What do they do when pressured at the edge?
+
+STEP 2 — IDENTIFY: from your observations, identify the most exploitable habit. Not all habits are equally exploitable. Look for: consistent, predictable, happens in high-stakes moments (high percent, edge situations).
+
+STEP 3 — SHOW: sometimes you need to show a pattern yourself before you can exploit their response to it. You cannot bait a counter to something they have not seen. This step is about deliberate pattern-showing.
+
+STEP 4 — EXPLOIT: once you have observed their habit, identified the most valuable one, and shown what triggers it — execute the exploitation. This is the only step most players do, and without steps 1-3 it relies on luck.
+
+THE LOOP IS CONTINUOUS: after exploiting a pattern, the opponent adapts. You go back to step 1 and observe their adaptation. The loop never ends.`,
+loops:[
+  {n:"1",col:"#993C1D",bg:"#FAECE7",title:"Observe","text":"First stock: collect data. What does this person do in specific situations?"},
+  {n:"2",col:"#993C1D",bg:"#FAECE7",title:"Identify","text":"Find the most exploitable habit. Consistent, predictable, high-stakes."},
+  {n:"3",col:"#993C1D",bg:"#FAECE7",title:"Show","text":"Show the pattern that triggers their habit. Make them commit."},
+  {n:"4",col:"#993C1D",bg:"#FAECE7",title:"Exploit","text":"Execute the counter to their committed response."},
+],
+ex:`Stock 1 (observe): you notice they always air dodge downward when pressured in the air — 3 times. Identify: air dodge downward is their escape. Consistent and happens when you jump at them. Show: jump at them again as if pressuring. They air dodge downward (as expected). Exploit: you timed a GP to be active where they land after the downward dodge. They dodged into your ground pound. All 4 steps executed in 2 stocks.`},
+
+{cat:"pattern",abbr:"P02",name:"The 5 most common exploitable patterns",short:"What most Gold-Plat players do that you can exploit",
+def:`These are the 5 habits most prevalent at Gold and Platinum that are directly exploitable with specific counters:
+
+PATTERN 1 — ALWAYS DODGE ON RUN-IN: they dodge every time you run toward them. Exploit: movement bait (run in, stop, punish the dodge cooldown) or option coverage (run in, they dodge forward, pivot SSig).
+
+PATTERN 2 — SAME RECOVERY TRAJECTORY EVERY STOCK: they recover at the same angle and height every time. Exploit: map the recovery in stock 1, punish the exact angle in stock 2 and 3.
+
+PATTERN 3 — THROW NSig/SSig AFTER LANDING A HIT: they always follow their first hit with a sig. Exploit: DI away from where the sig will fire and punish the sig recovery from outside its range.
+
+PATTERN 4 — PANIC DODGE WHEN AT HIGH PERCENT: they get nervous at 90%+ and dodge constantly. Exploit: throw low-commitment moves to bait dodges, then attack into the cooldown. At high percent they burn dodge constantly.
+
+PATTERN 5 — ALWAYS ATTACK AFTER LANDING FROM A JUMP: when they land from a jump, they immediately throw a grounded attack. Exploit: back off as they land, let the attack whiff, punish the recovery. Every time they jump at you: step back, watch them land-and-attack, punish.`,
+ex:`Pattern 5 in action: opponent jumps at you. Instead of blocking or dodging, you simply walk backward. They land next to you and throw DL (habit). You were already outside DL range. Their DL whiffs. You step back in and punish. No bait needed. No setup needed. Just recognition of the pattern and a simple counter (walk backward). This works in Gold all the way to mid-Plat.`},
+
+{cat:"pattern",abbr:"P03",name:"Habit mapping in real time",short:"What to track during a match and how to remember it",
+def:`Habit mapping is the skill of building a mental file on your opponent during the match itself. The problem: you are also fighting, so dedicated observation competes with execution.
+
+HOW TO REDUCE THE COGNITIVE LOAD:
+Track only one thing per stock. Not everything — one thing.
+Stock 1: track only their recovery. Do they go high, low, or snap to ledge?
+Stock 2: track only what they do when you run in at them.
+Stock 3: you now have two data points. Use them.
+
+THE MINIMUM VIABLE FILE (what you need to know):
+1. Recovery angle (the most immediately valuable)
+2. Their response to your approach (dodge forward, dodge backward, counter-attack, or stand still)
+3. When they throw their sig (after landing a hit, randomly in neutral, or as a punish)
+
+These three data points are enough to significantly change your gameplan. You do not need a complete psychological profile — three reliable habits is sufficient.
+
+MEMORY AID: between stocks, say the habits you noticed out loud. Verbal encoding is stronger than visual memory for in-game information.`,
+ex:`Stock 1 ends. You say out loud: "they go high on recovery, they dodge forward when I run in." That\'s your file. Stock 2: you approach from above to punish the high recovery. You run in and stop short knowing they will dodge forward — you punish the forward dodge landing. Two observations, two specific exploits. Simple file, directly applied.`},
+
+{cat:"pattern",abbr:"P04",name:"When patterns break — opponent adaptation",short:"What to do when they figure out you are exploiting them",
+def:`A smart opponent will eventually notice you are exploiting their pattern and change their behavior. When this happens:
+
+SIGN THEY ADAPTED: the exploit that worked 3 times in a row suddenly stops working. They are now doing something different in the same situation.
+
+DO NOT KEEP TRYING THE SAME EXPLOIT: if it stopped working, the pattern changed. Continuing to exploit the old pattern is itself a pattern — now you are on flowchart.
+
+WHAT TO DO:
+Go back to step 1 of the observe-identify-show-exploit loop.
+Observe their new behavior in the situation you were exploiting.
+They changed from behavior A to behavior B. What counters behavior B?
+Show the pattern again (or simply wait for them to show their new habit) then exploit the new pattern.
+
+THE META-GAME OF ADAPTATION: if you are adapting to their adaptation, you are one step ahead. If they are adapting to your adaptation, they are one step ahead. The match becomes a chess game of who reads the next level more accurately. This is what Valhallan play looks like.`,
+ex:`You were exploiting their forward dodge on run-in for 4 hits. They stop dodging forward. Now they back-dodge instead. Old exploit fails. You observe: they back-dodge. New exploit: wavedash approach (you slide forward low) → they back-dodge → you follow the back-dodge and punish from behind. They adapted from forward dodge to back dodge. You adapted the exploit from punishing forward to following backward. Loop continued.`},
+
+// CREATING OPENINGS
+{cat:"opening",abbr:"O01",name:"Manufactured vs reactive openings",short:"Creating openings vs waiting for them — know which you are doing",
+def:`There are two ways to get an opening in neutral. Most players only know one.
+
+REACTIVE OPENING: you wait for the opponent to make a mistake and punish it. This is the safer, lower-risk approach. It relies on the opponent doing something wrong.
+
+MANUFACTURED OPENING: you actively create the conditions for an opening through movement, baiting, and pattern exploitation. You do not wait for them to make a mistake — you engineer a situation where their correct response creates an opening.
+
+THE DIFFERENCE IN PRACTICE:
+Reactive player: dash dances and waits. Eventually punishes a whiff. Gets 30 damage per minute.
+Manufactured opening player: runs through the bait→pattern→exploit loop actively. Creates openings every 10-15 seconds. Gets 60 damage per minute.
+
+WHICH TO USE WHEN:
+Against impatient opponents: be reactive. They will give you openings freely.
+Against patient opponents: be manufactured. They will never give you free openings.
+When you have a damage lead: be reactive. Do not risk the lead.
+When you are behind: manufacture. You need something to happen.
+
+At Gold-Plat, most opponents are impatient enough that reactive play works most of the time. At Diamond+, almost everyone is patient. You have to manufacture.`,
+ex:`You are playing a Diamond player. You dash dance for 15 seconds. They do nothing. You can wait forever — they will not give you free openings. Reactive play against this opponent gives you zero damage. Switch to manufactured: movement bait (they ignore it), timing bait (they are too patient to rhythm), resource bait (throw SAir to spend their dodge). Finally: resource bait works, their dodge is spent, you DL into cooldown. 15 seconds of manufacturing created one opening. That is the correct exchange against a patient opponent.`},
+
+{cat:"opening",abbr:"O02",name:"The pressure cycle",short:"How to apply pressure that creates openings rather than just looks threatening",
+def:`Pressure is only useful if it creates a specific exploitable response. Random pressure (attacking frequently near the opponent) does nothing except deplete your own resources.
+
+USEFUL PRESSURE creates one of these responses:
+Resource expenditure: they use a dodge, jump, or recovery to escape. Now you have an opening.
+Positional concession: they back away from your pressure and end up cornered. Now their movement is limited.
+Panic response: they throw a move they would not normally throw (a preemptive attack, a panic dodge, a raw sig). Now you have a trigger.
+Commitment: they commit to an aggressive response to stop your pressure. Now they are in startup or recovery.
+
+HOW TO BUILD THE PRESSURE CYCLE:
+Stage 1: approach with low-commitment attacks at a pace that forces responses (not so fast they can just block everything, not so slow they can sit comfortably).
+Stage 2: read which response they give. Resource spent? Positional retreat? Panic?
+Stage 3: exploit the specific response they gave.
+Stage 4: reset. You have a damage lead from the exploit. Return to neutral and start the cycle again.
+
+The pressure cycle is not about landing every hit in stage 1. It is about making stage 1 uncomfortable enough that stage 2 gives you something to work with.`,
+loops:[
+  {n:"1",col:"#0C447C",bg:"#E6F1FB",title:"Apply pressure","text":"Low-commitment attacks at pace. Force a response without overcommitting."},
+  {n:"2",col:"#0C447C",bg:"#E6F1FB",title:"Read the response","text":"Resource spent? Retreat? Panic attack? Commitment?"},
+  {n:"3",col:"#0C447C",bg:"#E6F1FB",title:"Exploit the response","text":"Each response type has a specific counter. Apply it."},
+  {n:"4",col:"#0C447C",bg:"#E6F1FB",title:"Reset","text":"Damage banked. Return to neutral. Repeat."},
+],
+ex:`You throw 3 short-hop NAirs in a row — low commitment, fast. Opponent starts panic-dodging backward. Their backward dodge is their response (stage 2). Now you know: short-hop NAir pressure makes them back-dodge. Stage 3: you throw a short-hop NAir but follow their expected back-dodge with a dash-in DL where they land. They back-dodged into your DL. Pressure cycle completed. Damage banked.`},
+
+{cat:"opening",abbr:"O03",name:"Corner trapping",short:"Using the edge as a weapon against them",
+def:`When the opponent is near the edge of the stage, their movement options are severely reduced. You can exploit this geometrically — the edge removes half their escape routes.
+
+HOW TO USE THE CORNER:
+Push them to the edge with knockback or pressure. Once they are within 2 character lengths of the edge, the corner trap is active.
+Stand between them and center stage. Now they must go through you to get back to safety.
+Their dodge options are limited: they cannot dodge backward (off the stage). They can only dodge through you (forward) or jump.
+Cover the two remaining escape options: position so your attack covers both their forward dodge and their jump.
+
+SPECIFIC CORNER TRAPS:
+SAir from ledge: covers forward dash and forward jump simultaneously.
+DL at max range: punishes their forward approach.
+Waiting at ledge level: covers snap-to-ledge recovery if they go off trying to escape.
+
+THE CORNER TRAP IS NOT FOREVER: they will eventually escape. The goal is to extract maximum damage while they are cornered, not hold them there indefinitely.`,
+ex:`You land a hit that sends them right toward the right edge. They land near the right wall. You immediately walk to center-right — between them and center stage. They are cornered. They try to dash toward you — you DL. They try to jump — you short hop NAir. They back-dodge off the edge — now they are recovering and you edgeguard. Every option they have is covered by your position. The corner did the work; your attacks just closed each escape route.`},
+
+{cat:"opening",abbr:"O04",name:"Creating openings with movement alone",short:"The approach where the attack almost picks itself",
+def:`This is the concept you described: movement is the strategy, attack is the conclusion.
+
+At the highest level, the attack is almost automatic — the work happens before the attack. The movement creates a situation where one specific attack is simply the correct closing action, and you throw it.
+
+THE COMPLETE SEQUENCE:
+
+PACING: you dash dance at variable speed to break their defensive timing calibration. They cannot time a defensive response because your tempo keeps shifting.
+
+SPACING: during the pacing, you are gradually working toward your optimal attack range. Not a single dash in — incremental positional pressure.
+
+ANGLE: as you approach optimal range, you choose the angle that removes their best escape option. Airborne opponents are anti-aired. Grounded opponents are approached from their weak side.
+
+TRIGGER: one of the 4 attack triggers fires (commitment, landing, cooldown, or read).
+
+ATTACK: you throw the specific attack that the trigger and angle have already set up. You are not deciding what to attack — the movement already decided it.
+
+WHY THIS WORKS: the opponent was responding to your movement at each stage. Each response to a stage created the conditions for the next stage. By the time the attack comes, they have already responded to 4 prior stimuli and their response capacity is saturated. The attack arrives in a window they created.`,
+loops:[
+  {n:"1",col:"#0C447C",bg:"#E6F1FB",title:"Pacing","text":"Variable tempo breaks their defensive timing. They cannot calibrate."},
+  {n:"2",col:"#0C447C",bg:"#E6F1FB",title:"Spacing","text":"Incremental position pressure toward your optimal attack range."},
+  {n:"3",col:"#0C447C",bg:"#E6F1FB",title:"Angle","text":"Choose approach direction that removes their best escape option."},
+  {n:"4",col:"#0C447C",bg:"#E6F1FB",title:"Trigger fires","text":"Commitment, landing, cooldown, or read. Attack is now set up."},
+  {n:"5",col:"#0C447C",bg:"#E6F1FB",title:"Attack","text":"The closing action. Not a decision — a conclusion."},
+],
+ex:`Full sequence in a real match: you dash dance right-left-right (pacing, tempo breaks). On the left dash you are now at mid-range (spacing work done). You short hop to change angle from ground to aerial. At peak of short hop, the opponent threw a preemptive grounded DL (trigger: commitment). Your NAir from above hits them during DL startup — a counter-hit. The 3 stages of movement created an angle where their best defensive tool (DL) had no hitbox above it. The NAir did not beat the DL by being faster. It beat it by arriving from above where the DL does not reach. Movement architecture.`,
+warn:`This does not happen automatically. You are building toward it by mastering each layer separately: drills for pacing (file 6 dash dance drill), drills for spacing (file 6 micro-spacing drill), approach variation (file 4), trigger recognition (T02 this file). Each layer is a separate skill. The full sequence is the integration of all of them.`},
+
+];
+
+let activeCat="all";
+let openMap={};
+
+function render(){
+  const q=document.getElementById("searchInput").value.toLowerCase().trim();
+  const terms=TERMS.filter(t=>{
+    const mc=activeCat==="all"||t.cat===activeCat;
+    const mq=!q||(t.name.toLowerCase().includes(q)||t.abbr.toLowerCase().includes(q)||t.short.toLowerCase().includes(q)||(t.def&&t.def.toLowerCase().includes(q)));
+    return mc&&mq;
+  });
+
+  document.getElementById("catNav").innerHTML=CATS.map(c=>
+    `<button class="cat-btn ${c.cls}${activeCat===c.id?" active":""}" onclick="setCat('${c.id}')">${c.label}</button>`
+  ).join("");
+
+  let html="";
+  if(activeCat==="all"){
+    CAT_ORDER.forEach(cat=>{
+      const list=terms.filter(t=>t.cat===cat);
+      if(!list.length)return;
+      html+=`<p class="section-label">${CAT_NAMES[cat]}</p>`;
+      list.forEach(t=>{html+=termHTML(t);});
+    });
+  } else {
+    terms.forEach(t=>{html+=termHTML(t);});
+  }
+
+  if(!html) html=`<div class="no-results">No results for "${q}"</div>`;
+  document.getElementById("content").innerHTML=html;
+}
+
+function loopHTML(items){
+  if(!items||!items.length) return "";
+  return `<div class="loop-box"><div class="loop-title">The loop</div>`+
+    items.map(s=>`<div class="loop-step">
+      <div class="loop-num" style="background:${s.bg};color:${s.col}">${s.n}</div>
+      <div class="loop-text"><strong>${s.title}:</strong> ${s.text}</div>
+    </div>`).join("")+`</div>`;
+}
+
+function termHTML(t){
+  const key=t.cat+"_"+t.abbr;
+  const isOpen=!!openMap[key];
+  const extra=(t.loops?loopHTML(t.loops):"");
+  return `<div class="term-row${isOpen?" open":""}" id="tr_${key}" onclick="toggle('${key}')">
+    <div class="term-head">
+      <span class="abbr" style="${COLORS[t.cat]}">${t.abbr}</span>
+      <span class="term-name">${t.name}</span>
+      <span class="term-short">${t.short}</span>
+      <span class="chevron">&#8964;</span>
+    </div>
+    <div class="term-body${isOpen?" open":""}">
+      <div class="def">${t.def}</div>
+      ${extra}
+      ${t.warn?`<div class="warn"><strong>Watch out:</strong> ${t.warn}</div>`:""}
+      <div class="ex"><strong>Example:</strong> ${t.ex}</div>
+    </div>
+  </div>`;
+}
+
+function toggle(key){
+  openMap[key]=!openMap[key];
+  render();
+  if(openMap[key]) setTimeout(()=>document.getElementById("tr_"+key)?.scrollIntoView({behavior:"smooth",block:"nearest"}),50);
+}
+function setCat(id){activeCat=id;render();}
+render();
+</script>

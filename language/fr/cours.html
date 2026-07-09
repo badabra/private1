@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L'Art Oral du Français — Cours de prononciation par niveaux</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#1a1e33; --panel2:#22274a; --panel3:#2b3160;
+    --text:#e8eaf6; --muted:#9aa0c3; --accent:#4f7cff; --accent2:#7d9bff;
+    --user:#43d9a3; --ref:#ffb84f; --danger:#ff5d73; --ok:#43d9a3;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Segoe UI",system-ui,sans-serif;line-height:1.6}
+  a{color:var(--accent2)}
+  .wrap{display:grid;grid-template-columns:260px 1fr;max-width:1180px;margin:0 auto;gap:24px;padding:24px}
+  /* --- Sidebar --- */
+  nav.toc{position:sticky;top:24px;align-self:start;background:var(--panel);
+    border-radius:var(--radius);padding:16px;max-height:calc(100vh - 48px);overflow:auto}
+  nav.toc h3{margin:0 0 10px;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  nav.toc a{display:block;color:var(--text);text-decoration:none;padding:6px 10px;border-radius:8px;font-size:.9rem}
+  nav.toc a:hover{background:var(--panel2)}
+  nav.toc a .n{color:var(--accent2);font-weight:700;margin-right:6px}
+  nav.toc .studio{margin-top:12px;display:block;text-align:center;background:var(--user);color:#0b0e1a;
+    font-weight:700;border-radius:10px;padding:9px}
+  /* --- Content --- */
+  main{min-width:0}
+  h1{font-size:1.9rem;margin:0 0 4px}
+  h1 span{color:var(--accent)}
+  .lead{color:var(--muted);margin:0 0 20px}
+  section{background:var(--panel);border-radius:var(--radius);padding:22px 24px;margin-bottom:20px;scroll-margin-top:16px}
+  section>h2{font-size:1.3rem;margin:0 0 4px;display:flex;align-items:baseline;gap:10px}
+  section>h2 .num{color:var(--accent);font-size:1rem;font-weight:800;background:var(--panel2);border-radius:8px;padding:2px 9px}
+  .tag{font-size:.72rem;color:var(--muted);border:1px solid var(--panel3);border-radius:20px;padding:2px 9px;margin-left:6px}
+  h3{font-size:1.05rem;margin:22px 0 8px;color:var(--accent2)}
+  h4{font-size:.95rem;margin:16px 0 6px;color:var(--text)}
+  p{margin:8px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:4px 0}
+  code{background:var(--panel2);padding:1px 6px;border-radius:5px;font-size:.9em}
+  .ipa{color:var(--ref);font-weight:600}
+  .theorie,.pratique{border-left:4px solid var(--accent);background:var(--panel2);
+    border-radius:8px;padding:12px 16px;margin:12px 0}
+  .pratique{border-left-color:var(--user)}
+  .pratique h4:first-child,.theorie h4:first-child{margin-top:0}
+  .pratique::before{content:"🏋️ PRATIQUE";display:block;font-size:.7rem;letter-spacing:.08em;color:var(--user);font-weight:800;margin-bottom:6px}
+  .theorie::before{content:"📖 THÉORIE";display:block;font-size:.7rem;letter-spacing:.08em;color:var(--accent2);font-weight:800;margin-bottom:6px}
+  .note{background:rgba(255,184,79,.10);border:1px solid rgba(255,184,79,.35);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:.92rem}
+  .note b{color:var(--ref)}
+  .wolof{background:rgba(255,93,115,.08);border:1px solid rgba(255,93,115,.30);border-radius:8px;padding:10px 14px;margin:10px 0;font-size:.9rem}
+  .wolof b{color:var(--danger)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--panel3);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.82rem;text-transform:uppercase;letter-spacing:.03em}
+  tr:hover td{background:var(--panel2)}
+  /* audio chips */
+  .say,.yg{cursor:pointer;border:none;border-radius:7px;font-size:.82rem;padding:3px 8px;font-family:inherit}
+  .say{background:var(--panel3);color:var(--text)}
+  .say:hover{background:var(--accent)}
+  .yg{background:transparent;color:var(--ref);border:1px solid var(--ref)}
+  .yg:hover{background:var(--ref);color:#0b0e1a}
+  .ex{white-space:nowrap;display:inline-flex;align-items:center;gap:5px;background:var(--panel2);
+    border-radius:8px;padding:3px 6px 3px 10px;margin:3px 4px 3px 0}
+  .ex b{font-weight:600}
+  /* audio bar */
+  .audiobar{position:sticky;top:0;z-index:20;background:linear-gradient(var(--bg),var(--bg) 70%,transparent);
+    padding:10px 0;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:.85rem}
+  .audiobar .pill{background:var(--panel);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:8px}
+  .audiobar input[type=range]{accent-color:var(--user)}
+  #voiceState{font-size:.82rem}
+  #voiceState.ok{color:var(--ok)}
+  #voiceState.no{color:var(--ref)}
+  details{margin:10px 0;background:var(--panel2);border-radius:8px;padding:0 14px}
+  details>summary{cursor:pointer;padding:12px 0;font-weight:600;color:var(--ref)}
+  details[open]{padding-bottom:14px}
+  .pyramid{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+  .pyramid div{background:var(--panel2);border-radius:8px;padding:10px 14px;text-align:center;margin:0 auto;border-left:4px solid var(--accent)}
+  .pyramid div b{color:var(--accent2)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:820px){.wrap{grid-template-columns:1fr}nav.toc{position:static;max-height:none}.grid2{grid-template-columns:1fr}}
+  .foot{color:var(--muted);font-size:.85rem;text-align:center;padding:20px}
+  kbd{background:var(--panel3);border-radius:4px;padding:1px 6px;font-size:.85em}
+  .chk{color:var(--user);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ================= SIDEBAR ================= -->
+<nav class="toc">
+  <h3>L'art oral du français</h3>
+  <a href="#intro"><span class="n">0</span>Comment utiliser ce cours</a>
+  <a href="#sons"><span class="n">1</span>Les sons (phonèmes)</a>
+  <a href="#syllabe"><span class="n">2</span>La syllabe</a>
+  <a href="#mot"><span class="n">3</span>Le mot</a>
+  <a href="#phrase"><span class="n">4</span>Le groupe &amp; la phrase</a>
+  <a href="#discours"><span class="n">5</span>Le discours</a>
+  <a href="#sombre"><span class="n">6</span>Les zones sombres</a>
+  <a href="#methodes"><span class="n">7</span>Les méthodes</a>
+  <a href="#plan"><span class="n">8</span>Plan d'entraînement</a>
+  <a href="#outils"><span class="n">9</span>Outils en ligne</a>
+  <a class="studio" href="index.html">🎙️ Ouvrir le Studio d'analyse</a>
+</nav>
+
+<!-- ================= MAIN ================= -->
+<main>
+<h1>L'Art Oral du <span>Français</span></h1>
+<p class="lead">Un cours complet, du plus petit son jusqu'au discours entier. Théorie + pratique à chaque niveau, avec de l'audio sur chaque exemple. Conçu pour passer d'un rythme saccadé à la fluidité parisienne.</p>
+
+<!-- barre audio -->
+<div class="audiobar">
+  <span class="pill">🔊 <span id="voiceState">…</span></span>
+  <span class="pill">Vitesse
+    <input type="range" id="rate" min="0.5" max="1.1" step="0.05" value="0.9">
+    <span id="rateVal">0.9×</span>
+  </span>
+  <span class="pill" style="color:var(--muted)"><b class="say" data-say="Bonjour, écoute cette phrase.">🔊 Tester</b> &nbsp;·&nbsp; <span style="color:var(--ref)">🎧 natif</span> = vrais Parisiens</span>
+</div>
+
+<!-- ============ 0 INTRO ============ -->
+<section id="intro">
+  <h2><span class="num">0</span> Comment utiliser ce cours</h2>
+  <p>La prononciation n'est pas « avoir un bon accent ». C'est un empilement de <b>6 niveaux</b>, du plus petit au plus grand. Chaque niveau repose sur le précédent : inutile de travailler la mélodie d'un discours si les voyelles de base sont fausses.</p>
+  <div class="pyramid">
+    <div style="width:40%"><b>1</b> · le SON <span style="color:var(--muted)">/y/, /ʁ/, /ɛ̃/…</span></div>
+    <div style="width:52%"><b>2</b> · la SYLLABE <span style="color:var(--muted)">ca-sse-tte</span></div>
+    <div style="width:64%"><b>3</b> · le MOT <span style="color:var(--muted)">e muet, pas d'accent</span></div>
+    <div style="width:76%"><b>4</b> · le GROUPE / la PHRASE <span style="color:var(--muted)">liaison, rythme</span></div>
+    <div style="width:88%"><b>5</b> · le DISCOURS <span style="color:var(--muted)">intonation, expression</span></div>
+    <div style="width:100%"><b>6</b> · l'ART ORAL <span style="color:var(--muted)">musicalité, « swing »</span></div>
+  </div>
+  <p><b>La boucle à répéter à chaque niveau :</b> lire la <span style="color:var(--accent2)">théorie</span> → écouter les exemples → faire la <span style="color:var(--user)">pratique</span> → t'enregistrer dans le <a href="index.html">Studio</a> → comparer → recommencer.</p>
+  <h4>Les boutons audio</h4>
+  <ul>
+    <li><b class="say" data-say="voici un exemple">🔊</b> = <b>synthèse vocale</b> : instantané, prononce le mot. <span style="color:var(--muted)">(Voix française à installer — voir l'encadré.)</span></li>
+    <li><b style="color:var(--ref)">🎧 natif</b> = ouvre <b>YouGlish/Forvo</b> : de <b>vrais locuteurs</b> disent ce mot dans des vidéos. C'est ta meilleure source pour l'accent réel.</li>
+  </ul>
+  <div class="note" id="installBox">
+    <b>Installer une voix française (5 min, gratuit)</b> — pour que les boutons 🔊 parlent français :
+    <br>Windows → <kbd>Paramètres</kbd> → <b>Heure et langue</b> → <b>Langue et région</b> → <b>Ajouter une langue</b> → « Français (France) » → coche <b>Voix</b> / <b>Synthèse vocale</b> → Installer. Recharge ensuite cette page.
+    <br><span style="color:var(--muted)">En attendant, utilise les boutons 🎧 natif : ils ne dépendent d'aucune installation.</span>
+  </div>
+</section>
+
+<!-- ============ 1 SONS ============ -->
+<section id="sons">
+  <h2><span class="num">1</span> Les sons — les phonèmes <span class="tag">le niveau des briques</span></h2>
+  <p>Le français a environ <b>36 phonèmes</b> : 12 voyelles orales, 3–4 nasales, 3 semi-voyelles, ~17 consonnes. On les note en <b>API</b> (Alphabet Phonétique International), entre crochets : <span class="ipa">[ty]</span> = « tu ». Chaque son est un geste précis de la bouche. Voici les gestes.</p>
+
+  <h3>1a · Les voyelles orales</h3>
+  <p>Règle d'or : en français, une voyelle est <b>pure et tendue</b> — un seul son, tenu, jamais glissé en diphtongue comme en anglais ou en wolof. Le « o » de <span class="ipa">[o]</span> ne devient jamais « ow ».</p>
+  <div id="tblVoyelles"></div>
+  <div class="wolof">
+    <b>Pièges pour un locuteur sénégalais</b> — trois sons n'existent pas en wolof et demandent un entraînement ciblé :
+    <ul>
+      <li><b>[y]</b> (tu, rue) → souvent prononcé <b>[u]</b> (« tou »). C'est le <b>n°1</b>. Dis [i] (« i »), garde la langue exactement là, et <b>arrondis les lèvres</b> comme pour siffler. La langue ne bouge PAS.</li>
+      <li><b>[ø] / [œ]</b> (peu / peur) → même truc : dis [e] ou [ɛ], puis arrondis les lèvres sans bouger la langue.</li>
+      <li><b>[ə]</b> le « e » muet (le, je) : son très bref, lèvres à peine arrondies. Souvent supprimé (voir niveau 3).</li>
+    </ul>
+  </div>
+
+  <h3>1b · Les voyelles nasales</h3>
+  <p>L'air passe <b>par le nez</b>. Piège classique : on <b>ne prononce pas</b> le « n » ou « m » écrit — <span class="ipa">[bɔ̃]</span> « bon » n'a pas de son « n » à la fin, juste une voyelle nasalisée.</p>
+  <div id="tblNasales"></div>
+  <div class="note">À Paris, <b>[œ̃]</b> (brun) a fusionné avec <b>[ɛ̃]</b> (brin) : « brun » et « brin » se disent pareil. Idem, la distinction « un » / « in » a disparu. Ne t'embête pas à les séparer.</div>
+
+  <h3>1c · Les semi-voyelles</h3>
+  <p>Des voyelles prononcées si vite qu'elles deviennent des consonnes. La paire piège : <span class="ex"><b>oui</b> <button class="say" data-say="oui">🔊</button></span> <span class="ipa">[wi]</span> contre <span class="ex"><b>huit</b> <button class="say" data-say="huit">🔊</button></span> <span class="ipa">[ɥit]</span>.</p>
+  <div id="tblSemi"></div>
+
+  <h3>1d · Les consonnes (et le fameux R)</h3>
+  <ul>
+    <li><b>Le R parisien</b> <span class="ipa">[ʁ]</span> est <b>uvulaire</b> : produit tout au fond, contre la luette, <b>doux</b>, presque un souffle. Ce n'est PAS le R roulé du bout de la langue.
+      <span class="ex"><b>Paris</b> <button class="say" data-say="Paris">🔊</button> <button class="yg" data-yg="Paris">🎧 natif</button></span>
+      <span class="ex"><b>rare</b> <button class="say" data-say="rare">🔊</button> <button class="yg" data-yg="rare">🎧 natif</button></span></li>
+    <li><b>p / t / k non aspirés</b> : contrairement à l'anglais, pas de souffle après. « Paris » ≠ « P-h-aris ».</li>
+    <li><b>Consonnes finales souvent muettes</b> : <i>petit</i> → [pəti], <i>grand</i> → [gʁɑ̃], <i>vous</i> → [vu]. Sauf devant liaison (niveau 4).</li>
+  </ul>
+  <div class="wolof"><b>Sénégalais :</b> le R apical (roulé) est le marqueur le plus reconnaissable. Exercice : dis « ga-ga-ga » très vite en reculant le point de contact vers la gorge jusqu'à sentir une vibration douce au fond → c'est le [ʁ]. Le gargarisme (eau au fond de la gorge) travaille exactement ce muscle.</div>
+
+  <div class="pratique">
+    <h4>Drill : paires minimales</h4>
+    <p>Écoute puis répète en exagérant la différence. Enregistre-toi dans le <a href="index.html">Studio</a> et vérifie qu'on entend deux sons distincts.</p>
+    <div id="tblPaires"></div>
+  </div>
+</section>
+
+<!-- ============ 2 SYLLABE ============ -->
+<section id="syllabe">
+  <h2><span class="num">2</span> La syllabe <span class="tag">le rythme dans le mot</span></h2>
+  <div class="theorie">
+    <h4>Le français est une langue « à syllabes égales »</h4>
+    <p>C'est <b>LE</b> point qui explique ta « voix qui casse ». Compare deux familles de langues :</p>
+    <ul>
+      <li><b>Anglais, wolof</b> = rythme <i>accentuel</i> : quelques syllabes fortes et longues, les autres écrasées. Rythme « BOUM-ta-ta-BOUM ».</li>
+      <li><b>Français</b> = rythme <i>syllabique</i> : toutes les syllabes ont <b>presque la même durée et la même force</b>, comme un métronome régulier. Seule la <b>dernière</b> du groupe est un peu allongée. Rythme « ta-ta-ta-ta-<b>TAA</b> ».</li>
+    </ul>
+    <p>Si tu appliques le rythme wolof (accent sur le début des mots) au français, chaque mot « rebondit » et crée des micro-arrêts → l'oreille entend une voix hachée, saccadée.</p>
+  </div>
+  <h4>Syllabe ouverte</h4>
+  <p>Le français adore finir les syllabes par une <b>voyelle</b> (syllabe « ouverte »). On découpe <i>cassette</i> en <b>ca-sse-tte</b>, pas « cass-ette ». Cette tendance à ouvrir prépare l'enchaînement entre les mots (niveau 4).</p>
+  <p>
+    <span class="ex"><b>photographie</b> = pho-to-gra-phie <button class="say" data-say="photographie">🔊</button></span>
+    <span class="ex"><b>université</b> = u-ni-ver-si-té <button class="say" data-say="université">🔊</button></span>
+    <span class="ex"><b>gouvernement</b> = gou-ver-ne-ment <button class="say" data-say="gouvernement">🔊</button></span>
+  </p>
+  <p><b>Tension :</b> chaque voyelle reste claire jusqu'au bout. En anglais on réduit (« phoTOGraphy » → les autres voyelles deviennent des « e » vagues). En français, <b>non</b> : le « o », le « a » de « photographie » sonnent pleinement.</p>
+
+  <div class="pratique">
+    <h4>Exercice du métronome</h4>
+    <ol>
+      <li>Prends un mot long ci-dessus. Tape dans tes mains une fois <b>par syllabe</b>, à vitesse régulière et égale — comme une horloge.</li>
+      <li>Interdit : taper plus fort sur une syllabe. Toutes pareilles, sauf un léger appui sur la dernière.</li>
+      <li>Passe à une phrase : « Je-vais-au-mar-ché » — 5 tapes égales, montée sur « ché ».</li>
+      <li>Enregistre dans le Studio : si la forme d'onde montre des « bosses » régulières et pas de trous, c'est gagné.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 3 MOT ============ -->
+<section id="mot">
+  <h2><span class="num">3</span> Le mot <span class="tag">ce qui se passe à l'intérieur d'un mot</span></h2>
+  <div class="theorie">
+    <h4>Surprise : le français n'a pas d'accent de mot</h4>
+    <p>En wolof (et en anglais), chaque mot porte un accent fixe. <b>En français, non.</b> Un mot dit seul semble accentué sur la dernière syllabe — mais uniquement parce qu'il forme à lui seul un groupe. Dès qu'il entre dans une phrase, il <b>perd</b> son accent, qui migre à la fin du groupe entier.</p>
+    <p>Exemple : <i>« chocolat »</i> seul = choco-<b>LAT</b>. Mais dans <i>« un chocolat chaud »</i>, l'accent quitte « chocolat » et va sur <b>CHAUD</b> : choco-lat-<b>CHAUD</b> (un seul bloc). C'est pour ça qu'accentuer chaque mot casse le rythme.</p>
+  </div>
+
+  <h3>Le « e » muet (schwa) — le grand secret du débit parisien</h3>
+  <p>Le « e » sans accent (<span class="ipa">[ə]</span>) se <b>supprime</b> très souvent, surtout à Paris. C'est ce qui rend le débit rapide et « avalé ».</p>
+  <table>
+    <tr><th>Écrit</th><th>Parisien réel</th><th>Écoute</th></tr>
+    <tr><td>je ne sais pas</td><td>« chais pas » / « j'sais pas »</td><td><button class="say" data-say="je sais pas">🔊</button> <button class="yg" data-yg="je sais pas">🎧</button></td></tr>
+    <tr><td>je te le dis</td><td>« jtel dis »</td><td><button class="say" data-say="je te le dis">🔊</button></td></tr>
+    <tr><td>samedi</td><td>« sam'di »</td><td><button class="say" data-say="samedi">🔊</button> <button class="yg" data-yg="samedi">🎧</button></td></tr>
+    <tr><td>maintenant</td><td>« maint'nant »</td><td><button class="say" data-say="maintenant">🔊</button> <button class="yg" data-yg="maintenant">🎧</button></td></tr>
+    <tr><td>la petite</td><td>« la p'tite »</td><td><button class="say" data-say="la petite">🔊</button></td></tr>
+  </table>
+  <div class="note"><b>La loi des trois consonnes :</b> on garde le « e » si le supprimer collerait <b>3 consonnes</b> imprononçables. « vendredi » ne devient pas « vendrdi » (ndr+d) → on garde le e. Mais « samedi » → « sam'di » marche (m+d, seulement 2). En cas de doute : écoute un natif (🎧) et copie.</div>
+
+  <details>
+    <summary>Bonus : h muet vs h aspiré (ça bloque les liaisons)</summary>
+    <p>Le « h » ne se prononce jamais, mais il existe deux types :</p>
+    <ul>
+      <li><b>h muet</b> : se comporte comme une voyelle → liaison OK. <i>les hôtels</i> = « les-<b>z</b>-ôtels ».</li>
+      <li><b>h aspiré</b> : bloque la liaison et l'élision. <i>les héros</i> = « les | héros » (pas de z), <i>le hibou</i> (pas « l'hibou »).</li>
+    </ul>
+    <p>Il n'y a pas de règle logique, c'est du vocabulaire à mémoriser (souvent mots d'origine germanique/étrangère : haricot, hache, honte, hall…).</p>
+  </details>
+
+  <div class="pratique">
+    <h4>Exercice : chasse au « e »</h4>
+    <p>Prends 3 phrases que tu dis souvent. Réécris-les en barrant les « e » supprimables. Dis-les <b>collées</b>. Enregistre → l'objectif dans le Studio est <b>0 cassure</b>.</p>
+  </div>
+</section>
+
+<!-- ============ 4 PHRASE ============ -->
+<section id="phrase">
+  <h2><span class="num">4</span> Le groupe rythmique &amp; la phrase <span class="tag">là où ta voix arrête de casser</span></h2>
+  <div class="theorie">
+    <h4>La vraie unité du français : le groupe rythmique</h4>
+    <p>On ne parle pas mot par mot, mais par <b>groupes de sens</b> dits d'un seul souffle. Dans chaque groupe : les syllabes sont égales et rapides, et <b>seule la dernière</b> est allongée + montée/descente de voix.</p>
+    <p><i>« Le petit chat | dort sur le canapé »</i> = 2 groupes. Accent sur « chat » (montée, ça continue) et sur « pé » (descente, c'est fini).</p>
+  </div>
+
+  <h3>Enchaînement — coller les mots</h3>
+  <p>La consonne finale d'un mot se recolle à la voyelle du mot suivant. Les frontières de mots <b>disparaissent</b> à l'oreille.</p>
+  <p>
+    <span class="ex"><b>elle est ici</b> = e-lè-ti-ci <button class="say" data-say="elle est ici">🔊</button></span>
+    <span class="ex"><b>une amie</b> = u-na-mie <button class="say" data-say="une amie">🔊</button></span>
+    <span class="ex"><b>il a une idée</b> = i-la-u-ni-dée <button class="say" data-say="il a une idée">🔊</button></span>
+  </p>
+
+  <h3>Liaison — la consonne muette qui se réveille</h3>
+  <p>Une consonne finale normalement muette se prononce devant une voyelle. <i>« les amis »</i> → « les-<b>z</b>-amis ».</p>
+  <table>
+    <tr><th>Type</th><th>Exemple</th><th>Règle</th><th></th></tr>
+    <tr><td class="chk">Obligatoire</td><td>les&nbsp;amis, un&nbsp;avion, très&nbsp;important, nous&nbsp;avons, ils&nbsp;ont</td><td>déterminant+nom, pronom+verbe, adverbe court+adj</td><td><button class="say" data-say="les amis, un avion, très important, nous avons">🔊</button></td></tr>
+    <tr><td style="color:var(--ref)">Facultative</td><td>je suis&nbsp;allé, pas&nbsp;encore</td><td>selon le registre : plus tu la fais, plus c'est soutenu</td><td><button class="say" data-say="je suis allé, pas encore">🔊</button></td></tr>
+    <tr><td style="color:var(--danger)">Interdite</td><td>et&nbsp;| alors, un garçon&nbsp;| intelligent, les&nbsp;| héros</td><td>après « et », après nom singulier, devant h aspiré</td><td><button class="say" data-say="et alors, un garçon intelligent">🔊</button></td></tr>
+  </table>
+  <div class="note">Sons de liaison : <b>s / x → [z]</b> (les‑z‑amis), <b>d → [t]</b> (un grand‑t‑homme), <b>n</b> se prononce (un‑n‑avion), <b>f → [v]</b> dans « neuf‑v‑heures ».</div>
+
+  <h3>L'intonation — la mélodie de la phrase</h3>
+  <p>La voix <b>monte</b> ou <b>descend</b> sur la dernière syllabe de chaque groupe, et ça a un sens :</p>
+  <ul>
+    <li><b>↗ Montée</b> = « ça continue » (fin d'un groupe non final) ou <b>question</b> fermée.
+      <span class="ex"><b>Tu viens ?</b> ↗ <button class="say" data-say="Tu viens ?">🔊</button></span></li>
+    <li><b>↘ Descente</b> = affirmation, c'est fini.
+      <span class="ex"><b>Je viens.</b> ↘ <button class="say" data-say="Je viens.">🔊</button></span></li>
+    <li><b>↗…↘</b> phrase longue : monte à chaque virgule, descend à la fin.
+      <span class="ex"><button class="say" data-say="Quand il fait beau, je vais me promener dans le parc.">🔊 phrase entière</button></span></li>
+  </ul>
+
+  <div class="pratique">
+    <h4>Exercice « un souffle par groupe »</h4>
+    <ol>
+      <li>Prends une phrase. Trace un <b>|</b> à chaque frontière de groupe de sens.</li>
+      <li>Dis chaque groupe <b>sans respirer au milieu</b>, en collant tous les mots. Respire seulement aux <b>|</b>.</li>
+      <li>Fais monter la voix aux <b>|</b> internes, descendre à la fin.</li>
+      <li>Studio : compare ta courbe de mélodie à un natif (bouton 🎧). Ta ligne doit être plate puis monter/descendre <b>seulement en fin de groupe</b>.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 5 DISCOURS ============ -->
+<section id="discours">
+  <h2><span class="num">5</span> Le discours <span class="tag">l'expression, le paragraphe, le style</span></h2>
+  <p>Au-delà de la phrase, il y a la <b>manière de parler</b> : l'expression, le rythme d'un paragraphe, les registres, et les tics qui rendent un français « natif ».</p>
+
+  <h3>La mise en relief &amp; l'accent d'insistance</h3>
+  <p>Pour souligner un mot, le français a des outils grammaticaux plutôt que la seule intensité :</p>
+  <ul>
+    <li><b>C'est … que / qui</b> : « <b>C'est</b> Paris <b>que</b> je préfère. »
+      <span class="ex"><button class="say" data-say="C'est Paris que je préfère.">🔊</button></span></li>
+    <li><b>Accent d'insistance</b> : la <b>seule</b> fois où le français accentue le <b>début</b> d'un mot, pour l'emphase : « c'est <b>É</b>-pou-van-table ! »
+      <span class="ex"><button class="say" data-say="C'est épouvantable !">🔊</button></span></li>
+  </ul>
+
+  <h3>Le rythme du paragraphe : la ponctuation orale</h3>
+  <p>Les pauses sont ta ponctuation. Virgule = petite pause + montée. Point = pause plus longue + descente. On respire aux <b>points</b> et aux virgules, jamais au milieu d'un groupe. Un débutant respire trop souvent → haché. Un natif tient de longs groupes.</p>
+
+  <h3>Les registres (change tout selon le contexte)</h3>
+  <table>
+    <tr><th>Registre</th><th>Exemple « je ne sais pas ce que tu veux »</th></tr>
+    <tr><td>Soutenu</td><td>« je ne sais pas ce que vous voulez » (toutes liaisons, « ne » présent) <button class="say" data-say="je ne sais pas ce que vous voulez">🔊</button></td></tr>
+    <tr><td>Courant</td><td>« je sais pas ce que tu veux » (« ne » tombe) <button class="say" data-say="je sais pas ce que tu veux">🔊</button></td></tr>
+    <tr><td>Familier (parisien)</td><td>« chais pas c'que tu veux » <button class="say" data-say="chais pas c'que tu veux">🔊</button></td></tr>
+  </table>
+
+  <h3>Les marqueurs qui sonnent « natif »</h3>
+  <p>Ces petits mots ne veulent presque rien dire mais donnent le flux et le rythme parisien. À saupoudrer :</p>
+  <p>
+    <span class="ex"><b>du coup</b> <button class="say" data-say="du coup">🔊</button></span>
+    <span class="ex"><b>en fait</b> <button class="say" data-say="en fait">🔊</button></span>
+    <span class="ex"><b>genre</b> <button class="say" data-say="genre">🔊</button></span>
+    <span class="ex"><b>quoi</b> (fin de phrase) <button class="say" data-say="c'est bien, quoi">🔊</button></span>
+    <span class="ex"><b>bah</b> <button class="say" data-say="bah oui">🔊</button></span>
+    <span class="ex"><b>hein</b> <button class="say" data-say="c'est pas mal, hein">🔊</button></span>
+    <span class="ex"><b>voilà</b> <button class="say" data-say="voilà">🔊</button></span>
+  </p>
+  <div class="note"><b>L'allongement final parisien :</b> en fin de phrase explicative, on étire la dernière syllabe avec une petite montée : « du coup, j'y vais, quoi<b>~</b> ». Écoute des YouTubeurs (Hugo Décrypte, etc.) et repère ce « ~ » traînant.</div>
+
+  <div class="pratique">
+    <h4>Exercice : le même énoncé, 3 registres</h4>
+    <p>Prends une phrase et dis-la en soutenu, courant, puis familier. Enregistre les trois. Objectif : sentir dans ton corps ce qui change (les « e », les liaisons, le « ne », la vitesse).</p>
+  </div>
+</section>
+
+<!-- ============ 6 ZONES SOMBRES ============ -->
+<section id="sombre">
+  <h2><span class="num">6</span> Les zones sombres <span class="tag">ce qui ne se théorise pas — l'imitation pure</span></h2>
+  <p>Passé un certain point, la théorie s'arrête. Il reste des choses qu'on n'apprend <b>que par imprégnation</b> : la musicalité, le « swing », l'émotion, le sourire dans la voix, la nonchalance parisienne. On ne les explique pas — on les <b>copie</b>.</p>
+
+  <h3>Ce qui reste flou (et comment l'attraper)</h3>
+  <ul>
+    <li><b>Le « swing » prosodique</b> : la mélodie personnelle d'une communauté. → <b>Choisis 1 seul locuteur</b> parisien et deviens-le pendant un mois.</li>
+    <li><b>L'émotion &amp; l'ironie</b> : la même phrase dite sérieusement ou avec un sourire. → Imite des extraits <b>émotionnels</b> (comédie, colère jouée, tendresse).</li>
+    <li><b>La nonchalance / le « cool »</b> : débit relâché, voix un peu basse, fins qui traînent. → Shadowe des <b>podcasts décontractés</b>, pas des journaux formels.</li>
+    <li><b>Le timing des marqueurs</b> (« du coup », « quoi ») : impossible à mettre en règle. → Repère où le natif les place, copie exactement.</li>
+  </ul>
+
+  <div class="theorie">
+    <h4>La règle des zones sombres</h4>
+    <p><b>On ne théorise pas, on imite — massivement.</b> Ton oreille apprend des statistiques : plus tu écoutes et reproduis, plus ton cerveau extrait tout seul les règles invisibles. C'est là que le volume d'audio compte le plus.</p>
+  </div>
+
+  <div class="pratique">
+    <h4>Protocole d'imprégnation (le plus puissant)</h4>
+    <ol>
+      <li><b>Choisis un modèle</b> (un YouTubeur/podcasteur parisien dont la voix te plaît).</li>
+      <li>Prends <b>10–20 s</b> de son audio. Écoute 3 fois sans parler, juste ressentir la mélodie.</li>
+      <li><b>Shadowing</b> : parle EN MÊME TEMPS que lui, par-dessus sa voix, en copiant tout (vitesse, montées, hésitations).</li>
+      <li>Enregistre-toi seul sur le même texte → charge sa voix comme <b>référence</b> dans le Studio → superpose les deux courbes de mélodie.</li>
+      <li>Répète le même extrait jusqu'à ce que les deux courbes se ressemblent. Puis change d'extrait.</li>
+    </ol>
+    <p style="color:var(--muted)">C'est exactement l'usage du bouton « référence » du Studio : y déposer de vrais extraits et viser la même ligne mélodique.</p>
+  </div>
+
+  <h3>Où trouver du volume d'audio réel</h3>
+  <p>Cherche n'importe quel mot ou expression, écoute 10 natifs d'affilée :</p>
+  <p>
+    <button class="yg" data-yg="du coup">🎧 « du coup » sur YouGlish</button>
+    <button class="yg" data-yg="voilà quoi">🎧 « voilà quoi »</button>
+    <button class="yg" data-yg="je sais pas">🎧 « je sais pas »</button>
+    <button class="yg" data-yg="en fait">🎧 « en fait »</button>
+  </p>
+</section>
+
+<!-- ============ 7 METHODES ============ -->
+<section id="methodes">
+  <h2><span class="num">7</span> Les méthodes <span class="tag">théorie + comment faire</span></h2>
+
+  <div class="grid2">
+    <div class="theorie">
+      <h4>🌀 La sirène (glissando)</h4>
+      <p><b>Pourquoi :</b> ta glotte se ferme trop vite entre les mots → cassures. La sirène rééduque la continuité du souffle.</p>
+      <p><b>Comment :</b> prends « il fait beau », dis-le en <b>chantant</b>, voyelles étirées, sans jamais couper l'air : « iiiilfèèèèbooo ». Puis reviens au débit normal en gardant ce fil d'air invisible.</p>
+    </div>
+    <div class="theorie">
+      <h4>👂 Le shadowing (doublage)</h4>
+      <p><b>Pourquoi :</b> synchronise directement ta bouche sur un natif, court-circuite la traduction mentale.</p>
+      <p><b>Comment :</b> lance un audio et parle <b>par-dessus</b>, en léger décalage, en copiant tout. D'abord avec le texte sous les yeux, puis sans.</p>
+    </div>
+    <div class="theorie">
+      <h4>🪞 Le mirroring</h4>
+      <p><b>Pourquoi :</b> l'accent est aussi <b>visuel</b> (position des lèvres, mâchoire).</p>
+      <p><b>Comment :</b> vidéo d'un natif, regarde sa bouche, imite les mouvements devant un miroir. Essentiel pour [y], [ø], le R.</p>
+    </div>
+    <div class="theorie">
+      <h4>🗣️ La gym articulatoire</h4>
+      <p><b>Pourquoi :</b> échauffer les muscles avant de parler.</p>
+      <p><b>Comment :</b> 2 min : arrondir/étirer les lèvres à fond (u–i–u–i), rouler la mâchoire, « ba-be-bi-bo-bu », virelangues (« un chasseur sachant chasser »).</p>
+    </div>
+    <div class="theorie">
+      <h4>⌨️ La dictée-miroir</h4>
+      <p><b>Pourquoi :</b> test objectif de clarté. Si la machine te comprend, un humain aussi.</p>
+      <p><b>Comment :</b> ouvre la <b>dictée vocale</b> en français (Google Docs, Word, clavier tél.). Parle. Ce qui s'écrit de travers = tes sons flous. Voir Outils §9.</p>
+    </div>
+    <div class="theorie">
+      <h4>🎙️ Enregistre–compare</h4>
+      <p><b>Pourquoi :</b> tu n'entends pas tes propres erreurs en direct.</p>
+      <p><b>Comment :</b> le <a href="index.html">Studio</a>. Enregistre, repère les cassures rouges, compare ta mélodie à un natif, recommence.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 PLAN ============ -->
+<section id="plan">
+  <h2><span class="num">8</span> Plan d'entraînement — 15 min/jour <span class="tag">la routine</span></h2>
+  <p>Peu mais tous les jours. Une seule séance type :</p>
+  <table>
+    <tr><th>Min</th><th>Activité</th><th>Niveau visé</th></tr>
+    <tr><td>0–2</td><td>Gym articulatoire + sirène sur 1 phrase</td><td>sons / continuité</td></tr>
+    <tr><td>2–5</td><td>Drill de 3 paires minimales (dont [y]/[u] et le R)</td><td>1 · sons</td></tr>
+    <tr><td>5–9</td><td>Shadowing d'un extrait natif de 15 s (×4)</td><td>4–6 · phrase, discours, swing</td></tr>
+    <tr><td>9–13</td><td>Enregistre la même phrase dans le Studio → 0 cassure → mélodie proche du natif</td><td>2–4 · rythme</td></tr>
+    <tr><td>13–15</td><td>Dictée-miroir : dis 3 phrases, corrige les mots mal transcrits</td><td>test de clarté</td></tr>
+  </table>
+  <div class="note"><b>Progression sur 4 semaines :</b> S1 sons isolés ([y], [ø], [ʁ], nasales) · S2 syllabes égales + e muet · S3 groupes rythmiques + liaisons + une seule montée finale · S4 discours : registres, marqueurs, imitation d'un modèle unique. Refais un enregistrement témoin chaque dimanche pour mesurer les progrès.</div>
+</section>
+
+<!-- ============ 9 OUTILS ============ -->
+<section id="outils">
+  <h2><span class="num">9</span> Outils en ligne pour analyser ta voix <span class="tag">mesurer clarté &amp; accent</span></h2>
+  <table>
+    <tr><th>Outil</th><th>Ce que ça mesure / apporte</th><th>Gratuit ?</th></tr>
+    <tr>
+      <td><a href="https://youglish.com/pronounce/bonjour/french" target="_blank" rel="noopener">YouGlish</a></td>
+      <td><b>Le meilleur pour l'audio réel.</b> Tape un mot/une expression, entends des dizaines de vrais locuteurs le dire en contexte (extraits YouTube), avec transcription. Idéal pour shadowing et zones sombres.</td>
+      <td>Oui</td>
+    </tr>
+    <tr>
+      <td><a href="https://forvo.com/languages/fr/" target="_blank" rel="noopener">Forvo</a></td>
+      <td>Prononciation mot par mot par des natifs, <b>filtrable par région</b> (choisis Île-de-France). Parfait pour un mot précis.</td>
+      <td>Oui</td>
+    </tr>
+    <tr>
+      <td><a href="https://fonetix.fr" target="_blank" rel="noopener">Fonetix</a></td>
+      <td>Conçu par des profs de FLE : <b>IA qui note ton intelligibilité</b> et repère tes sons mal prononcés. Français, ciblé accent.</td>
+      <td>Partiel</td>
+    </tr>
+    <tr>
+      <td><a href="https://speechling.com/fr" target="_blank" rel="noopener">Speechling</a></td>
+      <td>Tu enregistres, un <b>coach humain</b> (ou l'IA) corrige ton rythme et ta prononciation. Bon pour un retour externe.</td>
+      <td>Freemium</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.fon.hum.uva.nl/praat/" target="_blank" rel="noopener">Praat</a></td>
+      <td><b>L'outil des pros</b> (phonéticiens). Logiciel gratuit : spectrogramme, courbe de <b>pitch</b> et de <b>formants</b>. Superpose ta voix et celle d'un natif, image scientifique de ton accent. Plus technique.</td>
+      <td>Oui</td>
+    </tr>
+    <tr>
+      <td>Dictée vocale <a href="https://docs.google.com" target="_blank" rel="noopener">Google Docs</a> (fr-FR)</td>
+      <td><b>Test de clarté malin :</b> Outils → Saisie vocale, en français. Parle. Les mots mal transcrits = tes sons flous. Gratuit, objectif, instantané.</td>
+      <td>Oui</td>
+    </tr>
+    <tr>
+      <td><a href="https://speechnotes.co" target="_blank" rel="noopener">Speechnotes</a></td>
+      <td>Même principe de dictée que ci-dessus, sans compte. Mets la langue sur français.</td>
+      <td>Oui</td>
+    </tr>
+    <tr>
+      <td>ELSA Speak / BoldVoice</td>
+      <td>Coaching de prononciation par IA très poussé, mais <b>centré sur l'anglais</b> — utile pour la méthode/le concept, pas pour le français. À connaître seulement.</td>
+      <td>Freemium</td>
+    </tr>
+    <tr>
+      <td>🎙️ <a href="index.html">Ton Studio local</a></td>
+      <td>Cassures, continuité, comparaison de mélodie avec un natif. Le tien, hors ligne, sans compte.</td>
+      <td>Oui</td>
+    </tr>
+  </table>
+  <p class="foot">Ordre conseillé : <b>YouGlish/Forvo</b> pour écouter → <b>ton Studio</b> pour t'enregistrer et comparer → <b>dictée vocale</b> comme test de clarté → <b>Fonetix/Speechling</b> pour un avis externe → <b>Praat</b> quand tu veux voir la science.</p>
+</section>
+
+<p class="foot">Bon courage, Alioune 🇸🇳→🇫🇷 — la fluidité, c'est de la continuité + de la répétition. <a href="index.html">→ Ouvrir le Studio d'analyse</a></p>
+</main>
+</div>
+
+<script>
+"use strict";
+/* ---------- Synthèse vocale FR ---------- */
+let frVoice=null, rate=0.9;
+const rateEl=document.getElementById("rate"), rateVal=document.getElementById("rateVal");
+const vState=document.getElementById("voiceState");
+rateEl.addEventListener("input",()=>{rate=parseFloat(rateEl.value);rateVal.textContent=rate.toFixed(2).replace(/0$/,"")+"×";});
+rateVal.textContent=rate+"×";
+
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();
+  frVoice=vs.find(v=>/^fr(-|_|$)/i.test(v.lang))||vs.find(v=>/fr/i.test(v.lang))||null;
+  if(frVoice){vState.textContent="Voix FR : "+frVoice.name;vState.className="ok";}
+  else{vState.textContent="Aucune voix FR — clique ici pour la procédure";vState.className="no";
+    vState.style.cursor="pointer";vState.onclick=()=>document.getElementById("installBox").scrollIntoView();}
+}
+speechSynthesis.onvoiceschanged=pickVoice; pickVoice(); setTimeout(pickVoice,600);
+
+let warned=false;
+function say(text){
+  if(!("speechSynthesis" in window))return;
+  if(!frVoice && !warned){warned=true;
+    alert("Aucune voix française n'est installée : le 🔊 va parler avec un accent anglais.\n\nInstalle une voix FR (Paramètres Windows → Heure et langue → Voix → Français), ou utilise les boutons 🎧 natif qui n'ont besoin de rien.");
+    document.getElementById("installBox").scrollIntoView();
+  }
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  if(frVoice)u.voice=frVoice;
+  u.lang="fr-FR"; u.rate=rate;
+  speechSynthesis.speak(u);
+}
+function yougl(term){
+  window.open("https://youglish.com/pronounce/"+encodeURIComponent(term)+"/french","_blank","noopener");
+}
+/* délégation de clics */
+document.addEventListener("click",e=>{
+  const s=e.target.closest("[data-say]"); if(s){say(s.getAttribute("data-say"));return;}
+  const y=e.target.closest("[data-yg]"); if(y){yougl(y.getAttribute("data-yg"));return;}
+});
+
+/* ---------- Tables générées ---------- */
+function chip(word){
+  return `<span class="ex"><b>${word}</b> <button class="say" data-say="${word.replace(/"/g,'')}">🔊</button> <button class="yg" data-yg="${word.replace(/"/g,'')}">🎧</button></span>`;
+}
+function buildSound(id,rows,headers){
+  const t=rows.map(r=>`<tr><td class="ipa">${r[0]}</td><td>${r.slice(1,-1).join("</td><td>")}</td><td>${chip(r[r.length-1])}</td></tr>`).join("");
+  document.getElementById(id).innerHTML=`<table><tr><th>${headers.join("</th><th>")}</th></tr>${t}</table>`;
+}
+// [API, exemples, astuce, mot-audio]
+buildSound("tblVoyelles",[
+  ["[i]","si, midi","sourire, langue haute en avant","midi"],
+  ["[e]","été, blé (fermé)","« é » tendu, coins des lèvres tirés","été"],
+  ["[ɛ]","père, mère (ouvert)","bouche plus ouverte que [e]","père"],
+  ["[a]","patte, ami","« a » clair, avant","ami"],
+  ["[ɑ]","pâte (arrière, rare)","fusionné avec [a] à Paris","pâte"],
+  ["[ɔ]","port, sol (ouvert)","« o » ouvert, bouche large","port"],
+  ["[o]","peau, mot (fermé)","« o » fermé, lèvres serrées","mot"],
+  ["[u]","fou, vous","« ou », lèvres très arrondies, langue arrière","vous"],
+  ["[y]","tu, rue","⚠️ dire [i] puis arrondir les lèvres","rue"],
+  ["[ø]","peu, deux (fermé)","dire [e] puis arrondir","deux"],
+  ["[œ]","peur, sœur (ouvert)","dire [ɛ] puis arrondir","peur"],
+  ["[ə]","le, je (schwa)","très bref, souvent supprimé","je"],
+],["API","Exemples","Astuce articulatoire","Écoute"]);
+
+buildSound("tblNasales",[
+  ["[ɛ̃]","brin, pain, vin","« in », air par le nez, pas de n","pain"],
+  ["[ɑ̃]","blanc, dans, temps","« an », bouche ouverte, nasal","blanc"],
+  ["[ɔ̃]","bon, non, monde","« on », lèvres arrondies, nasal","bon"],
+  ["[œ̃]","brun, un (→ [ɛ̃])","fusionné avec [ɛ̃] à Paris","brun"],
+],["API","Exemples","Astuce","Écoute"]);
+
+buildSound("tblSemi",[
+  ["[j]","yeux, travail, bien","« y », très rapide","yeux"],
+  ["[w]","oui, moi, jouer","« ou » ultra-rapide + voyelle","oui"],
+  ["[ɥ]","huit, lui, nuit","« u » [y] rapide + voyelle","huit"],
+],["API","Exemples","Astuce","Écoute"]);
+
+/* paires minimales */
+function buildPairs(){
+  const pairs=[
+    ["[y] / [u]","tu / tout","rue / roue","dessus / dessous"],
+    ["[e] / [ɛ]","été / était","les / lait",""],
+    ["[o] / [ɔ]","saut / sotte","paume / pomme",""],
+    ["[ø] / [œ]","jeûne / jeune","",""],
+    ["[ɛ̃]/[ɑ̃]/[ɔ̃]","brin / brun n'existe plus","pain / paon / pont",""],
+    ["[ʁ] final","par, mer, tour (R doux au fond)","",""],
+  ];
+  const rows=pairs.map(p=>{
+    const ex=p.slice(1).filter(Boolean).map(w=>chip(w)).join(" ");
+    return `<tr><td class="ipa">${p[0]}</td><td>${ex}</td></tr>`;
+  }).join("");
+  document.getElementById("tblPaires").innerHTML=`<table><tr><th>Contraste</th><th>Paires (écoute &amp; répète)</th></tr>${rows}</table>`;
+}
+buildPairs();
+</script>
+</body>
+</html>

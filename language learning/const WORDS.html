@@ -1,0 +1,2028 @@
+const WORDS = [ // ── ARTICLES & DETERMINERS
+────────────────────────────────────── {id:1,w:"el",pos:"Art",fr:"le",es:"El
+libro que leo es muy interesante.",fe:"Le livre que je lis est très
+intéressant."}, {id:2,w:"la",pos:"Art",fr:"la",es:"La ciudad donde vivo es
+Montréal.",fe:"La ville où j'habite est Montréal."},
+{id:3,w:"los",pos:"Art",fr:"les (masc.)",es:"Los estudiantes estudian
+mucho.",fe:"Les étudiants étudient beaucoup."}, {id:4,w:"las",pos:"Art",fr:"les
+(fém.)",es:"Las clases empiezan a las ocho.",fe:"Les cours commencent à huit
+heures."}, {id:5,w:"un",pos:"Art",fr:"un",es:"Tengo un trabajo de
+noche.",fe:"J'ai un travail de nuit."},
+{id:6,w:"una",pos:"Art",fr:"une",es:"Quiero una vida mejor.",fe:"Je veux une
+meilleure vie."}, {id:7,w:"unos",pos:"Art",fr:"des (masc.)",es:"Compré unos
+zapatos nuevos.",fe:"J'ai acheté des chaussures neuves."},
+{id:8,w:"unas",pos:"Art",fr:"des (fém.)",es:"Tengo unas ideas
+interesantes.",fe:"J'ai des idées intéressantes."}, // ── PRONOUNS
+────────────────────────────────────────────────────
+{id:9,w:"yo",pos:"Pron",fr:"je / moi",es:"Yo trabajo de noche en el
+supermercado.",fe:"Je travaille de nuit au supermarché."},
+{id:10,w:"tú",pos:"Pron",fr:"tu / toi",es:"¿Tú hablas español?",fe:"Est-ce que
+tu parles espagnol ?"}, {id:11,w:"él",pos:"Pron",fr:"il / lui",es:"Él es mi
+profesor de informática.",fe:"Il est mon professeur d'informatique."},
+{id:12,w:"ella",pos:"Pron",fr:"elle",es:"Ella vive cerca de mi casa.",fe:"Elle
+habite près de chez moi."},
+{id:13,w:"nosotros",pos:"Pron",fr:"nous",es:"Nosotros aprendemos
+juntos.",fe:"Nous apprenons ensemble."}, {id:14,w:"ellos",pos:"Pron",fr:"ils /
+eux",es:"Ellos llegan a las diez.",fe:"Ils arrivent à dix heures."},
+{id:15,w:"ellas",pos:"Pron",fr:"elles",es:"Ellas hablan muy rápido.",fe:"Elles
+parlent très vite."}, {id:16,w:"usted",pos:"Pron",fr:"vous (de
+politesse)",es:"¿Usted necesita ayuda?",fe:"Avez-vous besoin d'aide ?"},
+{id:17,w:"ustedes",pos:"Pron",fr:"vous (pluriel)",es:"¿Ustedes entienden la
+tarea?",fe:"Est-ce que vous comprenez le devoir ?"},
+{id:18,w:"me",pos:"Pron",fr:"me / moi",es:"Me gusta aprender
+idiomas.",fe:"J'aime apprendre les langues."}, {id:19,w:"te",pos:"Pron",fr:"te /
+toi",es:"Te llamo más tarde.",fe:"Je t'appelle plus tard."},
+{id:20,w:"se",pos:"Pron",fr:"se / soi",es:"Se levanta temprano todos los
+días.",fe:"Il se lève tôt tous les jours."}, {id:21,w:"le",pos:"Pron",fr:"lui /
+leur",es:"Le doy el libro a mi amigo.",fe:"Je donne le livre à mon ami."},
+{id:22,w:"lo",pos:"Pron",fr:"le (COD)",es:"Lo sé muy bien.",fe:"Je le sais très
+bien."}, {id:23,w:"la",pos:"Pron",fr:"la (COD)",es:"La veo todos los días en
+clase.",fe:"Je la vois tous les jours en cours."},
+{id:24,w:"nos",pos:"Pron",fr:"nous (réfl.)",es:"Nos vemos mañana.",fe:"On se
+voit demain."}, {id:25,w:"les",pos:"Pron",fr:"leur (COI)",es:"Les explico el
+problema.",fe:"Je leur explique le problème."},
+{id:26,w:"este",pos:"Pron/Dét",fr:"ce / cet / celui-ci",es:"Este curso es muy
+difícil.",fe:"Ce cours est très difficile."},
+{id:27,w:"esta",pos:"Pron/Dét",fr:"cette / celle-ci",es:"Esta semana trabajo
+mucho.",fe:"Cette semaine je travaille beaucoup."},
+{id:28,w:"esto",pos:"Pron",fr:"ceci / ça",es:"Esto no es fácil de
+entender.",fe:"Ça n'est pas facile à comprendre."},
+{id:29,w:"ese",pos:"Pron/Dét",fr:"ce / celui-là",es:"Ese problema tiene
+solución.",fe:"Ce problème a une solution."},
+{id:30,w:"esa",pos:"Pron/Dét",fr:"cette / celle-là",es:"Esa idea me parece
+buena.",fe:"Cette idée me semble bonne."}, {id:31,w:"eso",pos:"Pron",fr:"ça /
+cela",es:"Eso es exactamente lo que pienso.",fe:"C'est exactement ce que je
+pense."}, {id:32,w:"aquel",pos:"Pron/Dét",fr:"ce... là-bas (masc.)",es:"Aquel
+edificio es mi escuela.",fe:"Ce bâtiment là-bas est mon école."},
+{id:33,w:"aquella",pos:"Pron/Dét",fr:"ce... là-bas (fém.)",es:"Aquella ciudad es
+muy hermosa.",fe:"Cette ville là-bas est très belle."},
+{id:34,w:"algo",pos:"Pron",fr:"quelque chose",es:"Quiero aprender algo nuevo
+cada día.",fe:"Je veux apprendre quelque chose de nouveau chaque jour."},
+{id:35,w:"alguien",pos:"Pron",fr:"quelqu'un",es:"¿Alguien puede
+ayudarme?",fe:"Est-ce que quelqu'un peut m'aider ?"},
+{id:36,w:"nada",pos:"Pron",fr:"rien",es:"No tengo nada que perder.",fe:"Je n'ai
+rien à perdre."}, {id:37,w:"nadie",pos:"Pron",fr:"personne",es:"Nadie trabaja de
+noche por gusto.",fe:"Personne ne travaille de nuit par plaisir."},
+{id:38,w:"todo",pos:"Pron/Adj",fr:"tout / tout le monde",es:"Todo tiene un
+propósito en la vida.",fe:"Tout a un but dans la vie."},
+{id:39,w:"todos",pos:"Pron/Adj",fr:"tous",es:"Todos los días aprendo algo
+nuevo.",fe:"Tous les jours j'apprends quelque chose de nouveau."},
+{id:40,w:"cada",pos:"Dét",fr:"chaque",es:"Cada semana tengo nuevas
+metas.",fe:"Chaque semaine j'ai de nouveaux objectifs."},
+{id:41,w:"mismo",pos:"Pron/Adj",fr:"même / lui-même",es:"Yo mismo resolví el
+problema.",fe:"J'ai moi-même résolu le problème."},
+{id:42,w:"otro",pos:"Dét/Pron",fr:"autre / un autre",es:"Necesito otro intento
+para lograrlo.",fe:"J'ai besoin d'un autre essai pour y arriver."},
+{id:43,w:"cual",pos:"Pron",fr:"lequel / laquelle",es:"El libro del cual hablo es
+fascinante.",fe:"Le livre dont je parle est fascinant."},
+{id:44,w:"quien",pos:"Pron",fr:"qui (relatif)",es:"La persona con quien trabajo
+es amable.",fe:"La personne avec qui je travaille est gentille."},
+{id:45,w:"cuyo",pos:"Pron",fr:"dont (possessif)",es:"El estudiante cuyo proyecto
+ganó es mi amigo.",fe:"L'étudiant dont le projet a gagné est mon ami."},
+{id:46,w:"qué",pos:"Pron",fr:"que / quoi / quel",es:"¿Qué quieres hacer en el
+futuro?",fe:"Qu'est-ce que tu veux faire dans le futur ?"},
+{id:47,w:"quién",pos:"Pron",fr:"qui (interrogatif)",es:"¿Quién te enseñó a
+programar?",fe:"Qui t'a appris à programmer ?"},
+{id:48,w:"cuál",pos:"Pron",fr:"lequel (interrogatif)",es:"¿Cuál es tu idioma
+favorito?",fe:"Quelle est ta langue préférée ?"}, // ── CORE VERBS
+──────────────────────────────────────────────────
+{id:49,w:"ser",pos:"V",fr:"être (permanent)",es:"Soy estudiante de informática
+en Montréal.",fe:"Je suis étudiant en informatique à Montréal."},
+{id:50,w:"estar",pos:"V",fr:"être (état/lieu)",es:"Estoy cansado después del
+turno de noche.",fe:"Je suis fatigué après le quart de nuit."},
+{id:51,w:"haber",pos:"V",fr:"avoir (auxiliaire)",es:"He aprendido mucho este
+semestre.",fe:"J'ai beaucoup appris ce semestre."},
+{id:52,w:"tener",pos:"V",fr:"avoir / posséder",es:"Tengo tres meses para
+terminar el programa.",fe:"J'ai trois mois pour finir le programme."},
+{id:53,w:"hacer",pos:"V",fr:"faire / fabriquer",es:"Hago mi tarea después del
+trabajo.",fe:"Je fais mes devoirs après le travail."},
+{id:54,w:"ir",pos:"V",fr:"aller",es:"Voy a la universidad todos los
+días.",fe:"Je vais à l'université tous les jours."},
+{id:55,w:"poder",pos:"V",fr:"pouvoir",es:"Puedo hablar francés y aprendo
+español.",fe:"Je peux parler français et j'apprends l'espagnol."},
+{id:56,w:"decir",pos:"V",fr:"dire",es:"Siempre digo lo que pienso.",fe:"Je dis
+toujours ce que je pense."}, {id:57,w:"ver",pos:"V",fr:"voir",es:"Veo mi futuro
+muy claro.",fe:"Je vois mon avenir très clairement."},
+{id:58,w:"dar",pos:"V",fr:"donner",es:"Doy lo mejor de mí en todo.",fe:"Je donne
+le meilleur de moi-même en tout."}, {id:59,w:"saber",pos:"V",fr:"savoir",es:"Sé
+programar en Python y PHP.",fe:"Je sais programmer en Python et PHP."},
+{id:60,w:"querer",pos:"V",fr:"vouloir / aimer",es:"Quiero conseguir la
+residencia permanente.",fe:"Je veux obtenir la résidence permanente."},
+{id:61,w:"llegar",pos:"V",fr:"arriver / atteindre",es:"Llego al trabajo a las
+diez y media.",fe:"J'arrive au travail à dix heures et demie."},
+{id:62,w:"pasar",pos:"V",fr:"passer / se passer",es:"El tiempo pasa muy
+rápido.",fe:"Le temps passe très vite."},
+{id:63,w:"deber",pos:"V",fr:"devoir",es:"Debo terminar este proyecto esta
+semana.",fe:"Je dois terminer ce projet cette semaine."},
+{id:64,w:"poner",pos:"V",fr:"mettre / poser",es:"Pongo las cosas en su
+lugar.",fe:"Je mets les choses à leur place."},
+{id:65,w:"parecer",pos:"V",fr:"sembler / paraître",es:"Parece que va a llover
+hoy.",fe:"Il semble qu'il va pleuvoir aujourd'hui."},
+{id:66,w:"quedar",pos:"V",fr:"rester / se retrouver",es:"Quedamos en el café a
+las tres.",fe:"On se retrouve au café à trois heures."},
+{id:67,w:"creer",pos:"V",fr:"croire / penser",es:"Creo que puedo
+lograrlo.",fe:"Je crois que je peux y arriver."},
+{id:68,w:"hablar",pos:"V",fr:"parler",es:"Hablo árabe, francés y un poco de
+inglés.",fe:"Je parle arabe, français et un peu anglais."},
+{id:69,w:"llevar",pos:"V",fr:"porter / emmener",es:"Llevo tres meses trabajando
+en Maxi.",fe:"Ça fait trois mois que je travaille chez Maxi."},
+{id:70,w:"dejar",pos:"V",fr:"laisser / quitter",es:"No dejes para mañana lo que
+puedes hacer hoy.",fe:"Ne remets pas à demain ce que tu peux faire
+aujourd'hui."}, {id:71,w:"seguir",pos:"V",fr:"continuer / suivre",es:"Sigo
+aprendiendo aunque estoy cansado.",fe:"Je continue à apprendre même si je suis
+fatigué."}, {id:72,w:"encontrar",pos:"V",fr:"trouver / rencontrer",es:"Encontré
+un buen trabajo cerca de casa.",fe:"J'ai trouvé un bon travail près de chez
+moi."}, {id:73,w:"llamar",pos:"V",fr:"appeler",es:"Me llamo Badara y soy de
+Senegal.",fe:"Je m'appelle Badara et je suis du Sénégal."},
+{id:74,w:"venir",pos:"V",fr:"venir",es:"Vengo de África y vivo en
+Montréal.",fe:"Je viens d'Afrique et je vis à Montréal."},
+{id:75,w:"pensar",pos:"V",fr:"penser / réfléchir",es:"Pienso en mi futuro
+constantemente.",fe:"Je pense constamment à mon avenir."},
+{id:76,w:"salir",pos:"V",fr:"sortir / partir",es:"Salgo del trabajo a las siete
+de la mañana.",fe:"Je sors du travail à sept heures du matin."},
+{id:77,w:"volver",pos:"V",fr:"revenir / retourner",es:"Vuelvo a casa cuando
+amanece.",fe:"Je rentre chez moi au lever du jour."},
+{id:78,w:"tomar",pos:"V",fr:"prendre / boire",es:"Tomo café para mantenerme
+despierto.",fe:"Je prends un café pour rester éveillé."},
+{id:79,w:"conocer",pos:"V",fr:"connaître / rencontrer",es:"Conozco bien la
+ciudad de Montréal.",fe:"Je connais bien la ville de Montréal."},
+{id:80,w:"vivir",pos:"V",fr:"vivre / habiter",es:"Vivo en Montréal desde hace
+varios años.",fe:"Je vis à Montréal depuis plusieurs années."},
+{id:81,w:"sentir",pos:"V",fr:"sentir / ressentir",es:"Me siento orgulloso de mi
+progreso.",fe:"Je suis fier de mes progrès."},
+{id:82,w:"tratar",pos:"V",fr:"traiter / essayer",es:"Trato de mejorar cada
+día.",fe:"J'essaie de m'améliorer chaque jour."},
+{id:83,w:"mirar",pos:"V",fr:"regarder",es:"Miro el cielo y pienso en mi
+futuro.",fe:"Je regarde le ciel et je pense à mon avenir."},
+{id:84,w:"contar",pos:"V",fr:"compter / raconter",es:"Te cuento cómo llegué a
+Canadá.",fe:"Je te raconte comment je suis arrivé au Canada."},
+{id:85,w:"empezar",pos:"V",fr:"commencer",es:"Empecé a estudiar informática hace
+tres años.",fe:"J'ai commencé à étudier l'informatique il y a trois ans."},
+{id:86,w:"esperar",pos:"V",fr:"attendre / espérer",es:"Espero graduarme en
+agosto.",fe:"J'espère obtenir mon diplôme en août."},
+{id:87,w:"buscar",pos:"V",fr:"chercher",es:"Busco la mejor versión de mí
+mismo.",fe:"Je cherche la meilleure version de moi-même."},
+{id:88,w:"entrar",pos:"V",fr:"entrer",es:"Entro al turno a las diez y
+media.",fe:"Je commence le quart à dix heures et demie."},
+{id:89,w:"trabajar",pos:"V",fr:"travailler",es:"Trabajo de noche y estudio de
+día.",fe:"Je travaille la nuit et j'étudie le jour."},
+{id:90,w:"escribir",pos:"V",fr:"écrire",es:"Escribo código en Python y
+JavaScript.",fe:"J'écris du code en Python et JavaScript."},
+{id:91,w:"perder",pos:"V",fr:"perdre",es:"No quiero perder el tiempo.",fe:"Je ne
+veux pas perdre de temps."},
+{id:92,w:"entender",pos:"V",fr:"comprendre",es:"Entiendo francés mejor que
+inglés.",fe:"Je comprends le français mieux que l'anglais."},
+{id:93,w:"pedir",pos:"V",fr:"demander / commander",es:"Pido ayuda cuando no
+entiendo algo.",fe:"Je demande de l'aide quand je ne comprends pas quelque
+chose."}, {id:94,w:"recibir",pos:"V",fr:"recevoir",es:"Recibí una buena nota en
+el proyecto.",fe:"J'ai reçu une bonne note pour le projet."},
+{id:95,w:"recordar",pos:"V",fr:"se souvenir / rappeler",es:"Recuerdo el primer
+día de clases.",fe:"Je me souviens du premier jour de cours."},
+{id:96,w:"terminar",pos:"V",fr:"terminer / finir",es:"Terminé el proyecto a las
+seis de la mañana.",fe:"J'ai terminé le projet à six heures du matin."},
+{id:97,w:"permitir",pos:"V",fr:"permettre / autoriser",es:"Esto me permite
+mejorar mi español.",fe:"Ça me permet d'améliorer mon espagnol."},
+{id:98,w:"conseguir",pos:"V",fr:"obtenir / réussir à",es:"Conseguí el trabajo en
+Maxi.",fe:"J'ai obtenu le travail chez Maxi."},
+{id:99,w:"comenzar",pos:"V",fr:"commencer",es:"Comienzo cada día con
+gratitud.",fe:"Je commence chaque journée avec gratitude."},
+{id:100,w:"servir",pos:"V",fr:"servir / être utile",es:"Aprender idiomas sirve
+para toda la vida.",fe:"Apprendre les langues est utile toute la vie."},
+{id:101,w:"sacar",pos:"V",fr:"sortir / retirer / tirer",es:"Saqué una buena nota
+en el examen.",fe:"J'ai eu une bonne note à l'examen."},
+{id:102,w:"necesitar",pos:"V",fr:"avoir besoin de",es:"Necesito dormir más
+horas.",fe:"J'ai besoin de dormir plus d'heures."},
+{id:103,w:"mantener",pos:"V",fr:"maintenir / garder",es:"Mantengo una rutina de
+ejercicios.",fe:"Je maintiens une routine d'exercices."},
+{id:104,w:"leer",pos:"V",fr:"lire",es:"Leo libros de tecnología y
+filosofía.",fe:"Je lis des livres de technologie et de philosophie."},
+{id:105,w:"caer",pos:"V",fr:"tomber",es:"El invierno en Montréal hace caer la
+nieve.",fe:"L'hiver à Montréal fait tomber la neige."},
+{id:106,w:"cambiar",pos:"V",fr:"changer",es:"Mi vida ha cambiado mucho en los
+últimos años.",fe:"Ma vie a beaucoup changé ces dernières années."},
+{id:107,w:"presentar",pos:"V",fr:"présenter",es:"Presenté mi proyecto al
+profesor.",fe:"J'ai présenté mon projet au professeur."},
+{id:108,w:"crear",pos:"V",fr:"créer",es:"Creo aplicaciones web y
+móviles.",fe:"Je crée des applications web et mobiles."},
+{id:109,w:"abrir",pos:"V",fr:"ouvrir",es:"Abro el supermercado a las once de la
+noche.",fe:"J'ouvre le supermarché à onze heures du soir."},
+{id:110,w:"oír",pos:"V",fr:"entendre",es:"Oigo música mientras
+trabajo.",fe:"J'entends de la musique pendant que je travaille."},
+{id:111,w:"acabar",pos:"V",fr:"finir / terminer",es:"Acabo de terminar un
+proyecto importante.",fe:"Je viens de terminer un projet important."},
+{id:112,w:"ganar",pos:"V",fr:"gagner",es:"Gano dinero trabajando de
+noche.",fe:"Je gagne de l'argent en travaillant de nuit."},
+{id:113,w:"formar",pos:"V",fr:"former / constituer",es:"Me estoy formando como
+desarrollador.",fe:"Je me forme en tant que développeur."},
+{id:114,w:"traer",pos:"V",fr:"apporter / amener",es:"Traje mi computadora al
+trabajo.",fe:"J'ai apporté mon ordinateur au travail."},
+{id:115,w:"morir",pos:"V",fr:"mourir",es:"Las buenas ideas nunca
+mueren.",fe:"Les bonnes idées ne meurent jamais."},
+{id:116,w:"aceptar",pos:"V",fr:"accepter",es:"Acepto los desafíos con
+calma.",fe:"J'accepte les défis avec calme."},
+{id:117,w:"realizar",pos:"V",fr:"réaliser / effectuer",es:"Realizo mis proyectos
+con dedicación.",fe:"Je réalise mes projets avec dédication."},
+{id:118,w:"suponer",pos:"V",fr:"supposer / impliquer",es:"Supongo que llega
+mañana.",fe:"Je suppose qu'il arrive demain."},
+{id:119,w:"comprender",pos:"V",fr:"comprendre",es:"Comprendo la importancia de
+la disciplina.",fe:"Je comprends l'importance de la discipline."},
+{id:120,w:"lograr",pos:"V",fr:"réussir à / atteindre",es:"Lograré mis metas si
+trabajo duro.",fe:"J'atteindrai mes objectifs si je travaille dur."},
+{id:121,w:"explicar",pos:"V",fr:"expliquer",es:"El profesor explica los
+conceptos muy bien.",fe:"Le professeur explique très bien les concepts."},
+{id:122,w:"preguntar",pos:"V",fr:"demander / poser une question",es:"Pregunto
+cuando no entiendo algo.",fe:"Je pose des questions quand je ne comprends
+pas."}, {id:123,w:"reconocer",pos:"V",fr:"reconnaître",es:"Reconozco mis errores
+y los corrijo.",fe:"Je reconnais mes erreurs et je les corrige."},
+{id:124,w:"estudiar",pos:"V",fr:"étudier",es:"Estudio informática en
+Teccart.",fe:"J'étudie l'informatique à Teccart."},
+{id:125,w:"alcanzar",pos:"V",fr:"atteindre / rejoindre",es:"Voy a alcanzar mis
+metas.",fe:"Je vais atteindre mes objectifs."},
+{id:126,w:"nacer",pos:"V",fr:"naître",es:"Nací en Senegal y crecí con grandes
+sueños.",fe:"Je suis né au Sénégal et j'ai grandi avec de grands rêves."},
+{id:127,w:"dirigir",pos:"V",fr:"diriger / gérer",es:"Sueño con dirigir mi propia
+empresa.",fe:"Je rêve de diriger ma propre entreprise."},
+{id:128,w:"correr",pos:"V",fr:"courir",es:"Corro para mantenerme en
+forma.",fe:"Je cours pour rester en forme."},
+{id:129,w:"utilizar",pos:"V",fr:"utiliser",es:"Utilizo Python para proyectos de
+IA.",fe:"J'utilise Python pour des projets d'IA."},
+{id:130,w:"pagar",pos:"V",fr:"payer",es:"Pago el alquiler con mi sueldo.",fe:"Je
+paye le loyer avec mon salaire."}, {id:131,w:"ayudar",pos:"V",fr:"aider",es:"Me
+gusta ayudar a mis compañeros.",fe:"J'aime aider mes camarades."},
+{id:132,w:"gustar",pos:"V",fr:"plaire / aimer",es:"Me gustan los idiomas y la
+tecnología.",fe:"J'aime les langues et la technologie."},
+{id:133,w:"jugar",pos:"V",fr:"jouer",es:"Juego ajedrez para entrenar la
+mente.",fe:"Je joue aux échecs pour entraîner mon esprit."},
+{id:134,w:"escuchar",pos:"V",fr:"écouter",es:"Escucho música árabe mientras
+estudio.",fe:"J'écoute de la musique arabe pendant que j'étudie."},
+{id:135,w:"cumplir",pos:"V",fr:"accomplir / respecter",es:"Cumplo siempre mis
+promesas.",fe:"Je tiens toujours mes promesses."},
+{id:136,w:"ofrecer",pos:"V",fr:"offrir / proposer",es:"El mercado laboral ofrece
+muchas oportunidades.",fe:"Le marché du travail offre beaucoup
+d'opportunités."}, {id:137,w:"descubrir",pos:"V",fr:"découvrir",es:"Descubrí mi
+pasión por la programación.",fe:"J'ai découvert ma passion pour la
+programmation."}, {id:138,w:"intentar",pos:"V",fr:"essayer / tenter",es:"Intento
+aprender algo nuevo cada semana.",fe:"J'essaie d'apprendre quelque chose de
+nouveau chaque semaine."}, {id:139,w:"usar",pos:"V",fr:"utiliser /
+employer",es:"Uso mi bicicleta para hacer entregas.",fe:"J'utilise mon vélo pour
+faire des livraisons."},
+{id:140,w:"continuar",pos:"V",fr:"continuer",es:"Continúo estudiando aunque
+estoy cansado.",fe:"Je continue à étudier même si je suis fatigué."},
+{id:141,w:"crecer",pos:"V",fr:"grandir / croître",es:"Crecí en un ambiente
+humilde pero rico en valores.",fe:"J'ai grandi dans un environnement modeste
+mais riche en valeurs."},
+{id:142,w:"aprender",pos:"V",fr:"apprendre",es:"Aprendo algo nuevo cada
+día.",fe:"J'apprends quelque chose de nouveau chaque jour."},
+{id:143,w:"olvidar",pos:"V",fr:"oublier",es:"No olvido mis raíces
+africanas.",fe:"Je n'oublie pas mes racines africaines."},
+{id:144,w:"responder",pos:"V",fr:"répondre",es:"Respondo siempre los mensajes
+del profesor.",fe:"Je réponds toujours aux messages du professeur."},
+{id:145,w:"preparar",pos:"V",fr:"préparer",es:"Preparo mis proyectos con
+anticipación.",fe:"Je prépare mes projets à l'avance."},
+{id:146,w:"establecer",pos:"V",fr:"établir / fixer",es:"Establezco mis metas a
+principio de semana.",fe:"Je fixe mes objectifs en début de semaine."},
+{id:147,w:"obtener",pos:"V",fr:"obtenir",es:"Quiero obtener mi diploma en
+agosto.",fe:"Je veux obtenir mon diplôme en août."},
+{id:148,w:"enviar",pos:"V",fr:"envoyer",es:"Envío mi tarea antes del
+plazo.",fe:"J'envoie mon devoir avant la date limite."},
+{id:149,w:"decidir",pos:"V",fr:"décider",es:"Decidí aprender español por mis
+propios medios.",fe:"J'ai décidé d'apprendre l'espagnol par mes propres
+moyens."}, {id:150,w:"controlar",pos:"V",fr:"contrôler / maîtriser",es:"Controlo
+bien mi tiempo entre el trabajo y el estudio.",fe:"Je gère bien mon temps entre
+le travail et les études."}, {id:151,w:"bajar",pos:"V",fr:"descendre / baisser /
+télécharger",es:"Bajo las escaleras rápido en el supermercado.",fe:"Je descends
+les escaliers rapidement au supermarché."}, {id:152,w:"subir",pos:"V",fr:"monter
+/ augmenter / téléverser",es:"Subo los productos a los estantes.",fe:"Je monte
+les produits sur les étagères."}, {id:153,w:"comer",pos:"V",fr:"manger",es:"Como
+bien para tener energía.",fe:"Je mange bien pour avoir de l'énergie."},
+{id:154,w:"beber",pos:"V",fr:"boire",es:"Bebo agua para mantenerme
+hidratado.",fe:"Je bois de l'eau pour rester hydraté."},
+{id:155,w:"dormir",pos:"V",fr:"dormir",es:"Duermo seis horas después del
+turno.",fe:"Je dors six heures après le quart."},
+{id:156,w:"caminar",pos:"V",fr:"marcher / se promener",es:"Camino al trabajo
+cuando hace buen tiempo.",fe:"Je marche au travail quand il fait beau."},
+{id:157,w:"comprar",pos:"V",fr:"acheter",es:"Compro electrónicos usados para
+revenderlos.",fe:"J'achète des appareils électroniques d'occasion pour les
+revendre."}, {id:158,w:"vender",pos:"V",fr:"vendre",es:"Vendo teléfonos en
+Facebook Marketplace.",fe:"Je vends des téléphones sur Facebook Marketplace."},
+{id:159,w:"cocinar",pos:"V",fr:"cuisiner",es:"Cocino cuando tengo tiempo
+libre.",fe:"Je cuisine quand j'ai du temps libre."},
+{id:160,w:"limpiar",pos:"V",fr:"nettoyer",es:"Limpio mi habitación los fines de
+semana.",fe:"Je nettoie ma chambre les week-ends."},
+{id:161,w:"cerrar",pos:"V",fr:"fermer",es:"Cierro la tienda al final del
+turno.",fe:"Je ferme le magasin à la fin du quart."},
+{id:162,w:"parar",pos:"V",fr:"arrêter / s'arrêter",es:"No paro hasta terminar el
+trabajo.",fe:"Je ne m'arrête pas avant d'avoir terminé le travail."},
+{id:163,w:"girar",pos:"V",fr:"tourner",es:"La situación puede girar en cualquier
+momento.",fe:"La situation peut tourner à tout moment."},
+{id:164,w:"sentarse",pos:"V",fr:"s'asseoir",es:"Me siento cansado después de un
+turno largo.",fe:"Je suis assis fatigué après un long quart."},
+{id:165,w:"levantarse",pos:"V",fr:"se lever",es:"Me levanto a mediodía después
+de trabajar.",fe:"Je me lève à midi après avoir travaillé."},
+{id:166,w:"acostarse",pos:"V",fr:"se coucher",es:"Me acuesto cuando sale el
+sol.",fe:"Je me couche quand le soleil se lève."},
+{id:167,w:"cantar",pos:"V",fr:"chanter",es:"Canto solo en casa cuando estoy
+contento.",fe:"Je chante seul chez moi quand je suis content."},
+{id:168,w:"bailar",pos:"V",fr:"danser",es:"En Senegal, bailar es parte de la
+cultura.",fe:"Au Sénégal, danser fait partie de la culture."},
+{id:169,w:"reír",pos:"V",fr:"rire",es:"Me gusta reír con mis amigos.",fe:"J'aime
+rire avec mes amis."}, {id:170,w:"llorar",pos:"V",fr:"pleurer",es:"Llorar no es
+señal de debilidad.",fe:"Pleurer n'est pas un signe de faiblesse."},
+{id:171,w:"gritar",pos:"V",fr:"crier",es:"No hay que gritar para ser
+escuchado.",fe:"Il ne faut pas crier pour être entendu."},
+{id:172,w:"soñar",pos:"V",fr:"rêver",es:"Sueño con tener mi propia empresa
+tecnológica.",fe:"Je rêve d'avoir ma propre entreprise technologique."},
+{id:173,w:"imaginar",pos:"V",fr:"imaginer",es:"Imagina un futuro donde todo es
+posible.",fe:"Imagine un futur où tout est possible."},
+{id:174,w:"dudar",pos:"V",fr:"douter",es:"Dudo a veces, pero sigo
+adelante.",fe:"Je doute parfois, mais je continue."},
+{id:175,w:"confiar",pos:"V",fr:"faire confiance / se fier",es:"Confío en mi
+capacidad de aprender.",fe:"Je fais confiance à ma capacité d'apprendre."},
+{id:176,w:"desear",pos:"V",fr:"désirer / souhaiter",es:"Deseo un futuro estable
+y próspero.",fe:"Je souhaite un avenir stable et prospère."},
+{id:177,w:"amar",pos:"V",fr:"aimer (profondément)",es:"Amo aprender idiomas
+nuevos.",fe:"J'aime profondément apprendre de nouvelles langues."},
+{id:178,w:"temer",pos:"V",fr:"craindre / avoir peur",es:"No temo los
+desafíos.",fe:"Je ne crains pas les défis."},
+{id:179,w:"sorprender",pos:"V",fr:"surprendre",es:"Me sorprende lo rápido que
+aprendo.",fe:"Je suis surpris de la rapidité à laquelle j'apprends."},
+{id:180,w:"interesar",pos:"V",fr:"intéresser",es:"Me interesan la IA y el
+aprendizaje automático.",fe:"L'IA et l'apprentissage automatique
+m'intéressent."}, {id:181,w:"funcionar",pos:"V",fr:"fonctionner /
+marcher",es:"El código funciona perfectamente.",fe:"Le code fonctionne
+parfaitement."}, {id:182,w:"producir",pos:"V",fr:"produire",es:"Produzco
+resultados consistentes en mi trabajo.",fe:"Je produis des résultats cohérents
+dans mon travail."}, {id:183,w:"inventar",pos:"V",fr:"inventer",es:"Me gusta
+inventar soluciones creativas.",fe:"J'aime inventer des solutions créatives."},
+{id:184,w:"investigar",pos:"V",fr:"enquêter / faire des
+recherches",es:"Investigo las mejores formas de aprender.",fe:"Je fais des
+recherches sur les meilleures façons d'apprendre."},
+{id:185,w:"analizar",pos:"V",fr:"analyser",es:"Analizo los datos para tomar
+mejores decisiones.",fe:"J'analyse les données pour prendre de meilleures
+décisions."}, {id:186,w:"comparar",pos:"V",fr:"comparer",es:"Comparo diferentes
+métodos de aprendizaje.",fe:"Je compare différentes méthodes d'apprentissage."},
+{id:187,w:"elegir",pos:"V",fr:"choisir",es:"Elijo siempre la opción que me
+acerca a mis metas.",fe:"Je choisis toujours l'option qui me rapproche de mes
+objectifs."}, {id:188,w:"planear",pos:"V",fr:"planifier / prévoir",es:"Planeo mi
+semana cada domingo.",fe:"Je planifie ma semaine chaque dimanche."},
+{id:189,w:"organizar",pos:"V",fr:"organiser",es:"Organizo bien mi tiempo entre
+trabajo y estudio.",fe:"J'organise bien mon temps entre travail et études."},
+{id:190,w:"revisar",pos:"V",fr:"réviser / vérifier",es:"Reviso mi código antes
+de entregarlo.",fe:"Je révise mon code avant de le remettre."},
+{id:191,w:"corregir",pos:"V",fr:"corriger",es:"Corrijo mis errores para
+mejorar.",fe:"Je corrige mes erreurs pour m'améliorer."},
+{id:192,w:"mejorar",pos:"V",fr:"améliorer / s'améliorer",es:"Mejoro cada día un
+poco más.",fe:"Je m'améliore un peu plus chaque jour."},
+{id:193,w:"desarrollar",pos:"V",fr:"développer",es:"Desarrollo aplicaciones web
+como hobby.",fe:"Je développe des applications web comme hobby."},
+{id:194,w:"aumentar",pos:"V",fr:"augmenter",es:"Mi vocabulario aumenta con la
+práctica.",fe:"Mon vocabulaire augmente avec la pratique."},
+{id:195,w:"reducir",pos:"V",fr:"réduire",es:"Reduzco los gastos para
+ahorrar.",fe:"Je réduis les dépenses pour économiser."},
+{id:196,w:"eliminar",pos:"V",fr:"éliminer / supprimer",es:"Elimino los hábitos
+que no me ayudan.",fe:"J'élimine les habitudes qui ne m'aident pas."},
+{id:197,w:"añadir",pos:"V",fr:"ajouter",es:"Añado nuevas funciones al
+programa.",fe:"J'ajoute de nouvelles fonctions au programme."},
+{id:198,w:"incluir",pos:"V",fr:"inclure",es:"El proyecto incluye una base de
+datos.",fe:"Le projet inclut une base de données."},
+{id:199,w:"separar",pos:"V",fr:"séparer",es:"Separo el trabajo del
+estudio.",fe:"Je sépare le travail des études."},
+{id:200,w:"conectar",pos:"V",fr:"connecter / relier",es:"Conecto la Raspberry Pi
+al monitor.",fe:"Je connecte le Raspberry Pi au moniteur."},
+{id:201,w:"comunicar",pos:"V",fr:"communiquer",es:"Me comunico bien en
+francés.",fe:"Je communique bien en français."},
+{id:202,w:"informar",pos:"V",fr:"informer / rapporter",es:"Me informo sobre las
+noticias tecnológicas.",fe:"Je m'informe sur les actualités technologiques."},
+{id:203,w:"compartir",pos:"V",fr:"partager",es:"Comparto mis conocimientos con
+mis compañeros.",fe:"Je partage mes connaissances avec mes camarades."},
+{id:204,w:"mostrar",pos:"V",fr:"montrer",es:"Le muestro el proyecto al
+profesor.",fe:"Je montre le projet au professeur."},
+{id:205,w:"participar",pos:"V",fr:"participer",es:"Participo activamente en
+todas las clases.",fe:"Je participe activement à tous les cours."},
+{id:206,w:"colaborar",pos:"V",fr:"collaborer",es:"Colaboré con mi compañero en
+el proyecto.",fe:"J'ai collaboré avec mon camarade sur le projet."},
+{id:207,w:"competir",pos:"V",fr:"concourir / rivaliser",es:"Compito con la mejor
+versión de mí mismo.",fe:"Je rivalise avec la meilleure version de moi-même."},
+{id:208,w:"celebrar",pos:"V",fr:"célébrer / fêter",es:"Celebraré mi graduación
+con mi familia.",fe:"Je célébrerai ma remise de diplôme avec ma famille."},
+{id:209,w:"superar",pos:"V",fr:"surpasser / dépasser",es:"Quiero superar mis
+límites cada día.",fe:"Je veux dépasser mes limites chaque jour."},
+{id:210,w:"fallar",pos:"V",fr:"échouer / rater",es:"Fallar no es el fin, es una
+lección.",fe:"Échouer n'est pas la fin, c'est une leçon."},
+{id:211,w:"arriesgar",pos:"V",fr:"risquer",es:"Hay que arriesgar para lograr
+grandes cosas.",fe:"Il faut risquer pour accomplir de grandes choses."},
+{id:212,w:"evitar",pos:"V",fr:"éviter",es:"Evito las distracciones cuando
+estudio.",fe:"J'évite les distractions quand j'étudie."},
+{id:213,w:"proteger",pos:"V",fr:"protéger",es:"Protejo mis datos con contraseñas
+fuertes.",fe:"Je protège mes données avec des mots de passe forts."},
+{id:214,w:"resolver",pos:"V",fr:"résoudre",es:"Resuelvo los problemas con
+lógica.",fe:"Je résous les problèmes avec de la logique."},
+{id:215,w:"solucionar",pos:"V",fr:"résoudre / trouver une solution",es:"Buscamos
+solucionar el error en el código.",fe:"Nous cherchons à résoudre l'erreur dans
+le code."}, {id:216,w:"cobrar",pos:"V",fr:"percevoir / encaisser",es:"Cobro mi
+sueldo cada dos semanas.",fe:"Je perçois mon salaire toutes les deux
+semaines."}, {id:217,w:"ahorrar",pos:"V",fr:"économiser / épargner",es:"Ahorro
+parte de mi sueldo cada mes.",fe:"J'épargne une partie de mon salaire chaque
+mois."}, {id:218,w:"invertir",pos:"V",fr:"investir",es:"Quiero invertir en mi
+educación.",fe:"Je veux investir dans mon éducation."},
+{id:219,w:"gastar",pos:"V",fr:"dépenser",es:"No gasto dinero en cosas
+innecesarias.",fe:"Je ne dépense pas d'argent en choses inutiles."},
+{id:220,w:"prestar",pos:"V",fr:"prêter",es:"Me presté atención durante toda la
+clase.",fe:"J'ai fait attention pendant tout le cours."},
+{id:221,w:"devolver",pos:"V",fr:"rendre / retourner",es:"Devolví el libro a la
+biblioteca.",fe:"J'ai rendu le livre à la bibliothèque."},
+{id:222,w:"regalar",pos:"V",fr:"offrir (en cadeau)",es:"Me regalé un curso de
+español.",fe:"Je me suis offert un cours d'espagnol."},
+{id:223,w:"lanzar",pos:"V",fr:"lancer",es:"Lanzaré mi aplicación el próximo
+año.",fe:"Je lancerai mon application l'année prochaine."},
+{id:224,w:"construir",pos:"V",fr:"construire / bâtir",es:"Construyo proyectos
+desde cero.",fe:"Je construis des projets de zéro."},
+{id:225,w:"diseñar",pos:"V",fr:"concevoir / designer",es:"Diseño interfaces de
+usuario atractivas.",fe:"Je conçois des interfaces utilisateur attrayantes."},
+{id:226,w:"instalar",pos:"V",fr:"installer",es:"Instalo aplicaciones en la
+Raspberry Pi.",fe:"J'installe des applications sur le Raspberry Pi."},
+{id:227,w:"configurar",pos:"V",fr:"configurer",es:"Configuro la red del
+servidor.",fe:"Je configure le réseau du serveur."},
+{id:228,w:"programar",pos:"V",fr:"programmer / coder",es:"Programo aplicaciones
+para móviles y web.",fe:"Je programme des applications pour mobile et web."},
+{id:229,w:"depurar",pos:"V",fr:"déboguer",es:"Depurar código es parte del
+trabajo de programador.",fe:"Déboguer le code fait partie du travail de
+programmeur."}, {id:230,w:"probar",pos:"V",fr:"tester / essayer",es:"Pruebo el
+código antes de entregarlo.",fe:"Je teste le code avant de le remettre."},
+{id:231,w:"publicar",pos:"V",fr:"publier",es:"Publicaré mi portfolio en línea
+pronto.",fe:"Je publierai bientôt mon portfolio en ligne."},
+{id:232,w:"subir",pos:"V",fr:"uploader / mettre en ligne",es:"Subí el proyecto a
+GitLab.",fe:"J'ai mis le projet sur GitLab."},
+{id:233,w:"descargar",pos:"V",fr:"télécharger",es:"Descargué el último modelo de
+IA.",fe:"J'ai téléchargé le dernier modèle d'IA."},
+{id:234,w:"sincronizar",pos:"V",fr:"synchroniser",es:"Sincronizo los datos entre
+la app y la nube.",fe:"Je synchronise les données entre l'app et le cloud."},
+{id:235,w:"actualizar",pos:"V",fr:"mettre à jour",es:"Actualizo mi sistema
+operativo regularmente.",fe:"Je mets à jour mon système d'exploitation
+régulièrement."}, {id:236,w:"entrenar",pos:"V",fr:"entraîner /
+s'entraîner",es:"Entreno el modelo de IA con datos reales.",fe:"J'entraîne le
+modèle d'IA avec des données réelles."},
+{id:237,w:"clasificar",pos:"V",fr:"classer / classifier",es:"Clasifico los
+productos en el supermercado.",fe:"Je classe les produits dans le
+supermarché."}, {id:238,w:"detectar",pos:"V",fr:"détecter",es:"El sistema
+detecta anomalías en tiempo real.",fe:"Le système détecte les anomalies en temps
+réel."}, {id:239,w:"predecir",pos:"V",fr:"prédire",es:"El modelo predice el
+resultado con alta precisión.",fe:"Le modèle prédit le résultat avec haute
+précision."}, {id:240,w:"optimizar",pos:"V",fr:"optimiser",es:"Optimizo el
+código para que sea más rápido.",fe:"J'optimise le code pour qu'il soit plus
+rapide."}, // ── PREPOSITIONS ─────────────────────────────────────────────────
+{id:241,w:"de",pos:"Prép",fr:"de / du / des",es:"Vengo de Senegal y vivo en
+Canadá.",fe:"Je viens du Sénégal et je vis au Canada."},
+{id:242,w:"a",pos:"Prép",fr:"à / en direction de",es:"Voy a la universidad cada
+mañana.",fe:"Je vais à l'université chaque matin."},
+{id:243,w:"en",pos:"Prép",fr:"en / dans / à",es:"Trabajo en un
+supermercado.",fe:"Je travaille dans un supermarché."},
+{id:244,w:"con",pos:"Prép",fr:"avec",es:"Estudio con mi compañero de
+clase.",fe:"J'étudie avec mon camarade de classe."},
+{id:245,w:"por",pos:"Prép",fr:"par / pour / à travers",es:"Trabajo por las
+noches para ganar dinero.",fe:"Je travaille la nuit pour gagner de l'argent."},
+{id:246,w:"para",pos:"Prép",fr:"pour (but/destination)",es:"Aprendo español para
+viajar por el mundo.",fe:"J'apprends l'espagnol pour voyager dans le monde."},
+{id:247,w:"sin",pos:"Prép",fr:"sans",es:"No hay éxito sin esfuerzo.",fe:"Il n'y
+a pas de succès sans effort."}, {id:248,w:"sobre",pos:"Prép",fr:"sur / à propos
+de",es:"Leo libros sobre inteligencia artificial.",fe:"Je lis des livres sur
+l'intelligence artificielle."}, {id:249,w:"bajo",pos:"Prép",fr:"sous / en
+dessous de",es:"Trabajo bien bajo presión.",fe:"Je travaille bien sous
+pression."}, {id:250,w:"ante",pos:"Prép",fr:"face à / devant",es:"Ante los
+problemas, mantengo la calma.",fe:"Face aux problèmes, je garde mon calme."},
+{id:251,w:"desde",pos:"Prép",fr:"depuis / de (point de départ)",es:"Vivo en
+Montréal desde hace varios años.",fe:"Je vis à Montréal depuis plusieurs
+années."}, {id:252,w:"hasta",pos:"Prép",fr:"jusqu'à",es:"Trabajo hasta las siete
+de la mañana.",fe:"Je travaille jusqu'à sept heures du matin."},
+{id:253,w:"hacia",pos:"Prép",fr:"vers",es:"Camino hacia la estación de
+metro.",fe:"Je marche vers la station de métro."},
+{id:254,w:"entre",pos:"Prép",fr:"entre",es:"Divido el tiempo entre el trabajo y
+el estudio.",fe:"Je divise mon temps entre le travail et les études."},
+{id:255,w:"según",pos:"Prép",fr:"selon",es:"Según mi profesor, mi código es
+excelente.",fe:"Selon mon professeur, mon code est excellent."},
+{id:256,w:"durante",pos:"Prép",fr:"pendant / durant",es:"Escucho podcasts
+durante el turno de noche.",fe:"J'écoute des podcasts pendant le quart de
+nuit."}, {id:257,w:"mediante",pos:"Prép",fr:"au moyen de / grâce à",es:"Aprendo
+mediante la repetición.",fe:"J'apprends grâce à la répétition."},
+{id:258,w:"contra",pos:"Prép",fr:"contre",es:"Lucho contra la pereza cada
+día.",fe:"Je lutte contre la paresse chaque jour."},
+{id:259,w:"tras",pos:"Prép",fr:"après / derrière",es:"Tras el trabajo, duermo
+unas horas.",fe:"Après le travail, je dors quelques heures."},
+{id:260,w:"excepto",pos:"Prép",fr:"sauf / excepté",es:"Trabajo todos los días
+excepto los domingos.",fe:"Je travaille tous les jours sauf le dimanche."}, //
+── CONJUNCTIONS ─────────────────────────────────────────────────
+{id:261,w:"y",pos:"Conj",fr:"et",es:"Trabajo y estudio al mismo tiempo.",fe:"Je
+travaille et j'étudie en même temps."},
+{id:262,w:"o",pos:"Conj",fr:"ou",es:"¿Prefieres café o té?",fe:"Tu préfères le
+café ou le thé ?"}, {id:263,w:"pero",pos:"Conj",fr:"mais",es:"Estoy cansado,
+pero sigo adelante.",fe:"Je suis fatigué, mais je continue."},
+{id:264,w:"sino",pos:"Conj",fr:"mais (plutôt)",es:"No es difícil, sino
+diferente.",fe:"Ce n'est pas difficile, mais différent."},
+{id:265,w:"aunque",pos:"Conj",fr:"bien que / même si",es:"Aunque el invierno es
+duro, me gusta Montréal.",fe:"Bien que l'hiver soit dur, j'aime Montréal."},
+{id:266,w:"porque",pos:"Conj",fr:"parce que",es:"Estudio mucho porque quiero
+tener éxito.",fe:"J'étudie beaucoup parce que je veux réussir."},
+{id:267,w:"si",pos:"Conj",fr:"si",es:"Si trabajo duro, lograré mis
+metas.",fe:"Si je travaille dur, j'atteindrai mes objectifs."},
+{id:268,w:"cuando",pos:"Conj",fr:"quand / lorsque",es:"Cuando termine el
+programa, buscaré trabajo.",fe:"Quand j'aurai terminé le programme, je
+chercherai du travail."}, {id:269,w:"como",pos:"Conj",fr:"comme /
+comment",es:"Hago las cosas como me enseñaron.",fe:"Je fais les choses comme on
+me l'a appris."}, {id:270,w:"que",pos:"Conj",fr:"que",es:"Creo que puedo
+aprender cualquier cosa.",fe:"Je crois que je peux apprendre n'importe quoi."},
+{id:271,w:"ni",pos:"Conj",fr:"ni",es:"Ni el frío ni el cansancio me
+detienen.",fe:"Ni le froid ni la fatigue ne m'arrêtent."},
+{id:272,w:"pues",pos:"Conj",fr:"donc / eh bien",es:"Pues, tengo que estudiar
+ahora.",fe:"Eh bien, je dois étudier maintenant."},
+{id:273,w:"entonces",pos:"Conj/Adv",fr:"alors / donc",es:"Si quieres aprender,
+entonces practica.",fe:"Si tu veux apprendre, alors pratique."},
+{id:274,w:"además",pos:"Adv/Conj",fr:"en plus / de plus",es:"Además de
+programar, quiero aprender diseño.",fe:"En plus de programmer, je veux apprendre
+le design."}, {id:275,w:"también",pos:"Adv",fr:"aussi / également",es:"También
+aprendo árabe además del español.",fe:"J'apprends aussi l'arabe en plus de
+l'espagnol."}, {id:276,w:"tampoco",pos:"Adv",fr:"non plus",es:"Tampoco quiero
+desperdiciar el tiempo.",fe:"Je ne veux pas non plus gaspiller le temps."},
+{id:277,w:"sin embargo",pos:"Conj",fr:"cependant / pourtant",es:"Sin embargo,
+todo es posible con esfuerzo.",fe:"Cependant, tout est possible avec de
+l'effort."}, {id:278,w:"no obstante",pos:"Conj",fr:"néanmoins /
+toutefois",es:"No obstante, sigo con mi plan.",fe:"Néanmoins, je continue avec
+mon plan."}, {id:279,w:"por lo tanto",pos:"Conj",fr:"par conséquent /
+donc",es:"Trabajo duro; por lo tanto, obtengo resultados.",fe:"Je travaille dur
+; par conséquent, j'obtiens des résultats."}, {id:280,w:"en
+cambio",pos:"Conj",fr:"en revanche / par contre",es:"En invierno nieva; en
+cambio, en verano hace calor.",fe:"En hiver il neige ; en revanche, en été il
+fait chaud."}, // ── ADVERBS
+──────────────────────────────────────────────────────
+{id:281,w:"muy",pos:"Adv",fr:"très",es:"Soy muy disciplinado con mi
+horario.",fe:"Je suis très discipliné avec mon horaire."},
+{id:282,w:"más",pos:"Adv",fr:"plus",es:"Quiero aprender más idiomas.",fe:"Je
+veux apprendre plus de langues."},
+{id:283,w:"menos",pos:"Adv",fr:"moins",es:"Duermo menos de lo que
+quisiera.",fe:"Je dors moins que je ne le voudrais."},
+{id:284,w:"ya",pos:"Adv",fr:"déjà / maintenant",es:"Ya terminé el primer
+proyecto.",fe:"J'ai déjà terminé le premier projet."},
+{id:285,w:"todavía",pos:"Adv",fr:"encore / toujours",es:"Todavía tengo mucho que
+aprender.",fe:"J'ai encore beaucoup à apprendre."},
+{id:286,w:"aún",pos:"Adv",fr:"encore / toujours / même",es:"Aún no he visitado
+la Ciudad de México.",fe:"Je n'ai pas encore visité Mexico."},
+{id:287,w:"siempre",pos:"Adv",fr:"toujours",es:"Siempre cumplo con mis
+compromisos.",fe:"Je tiens toujours mes engagements."},
+{id:288,w:"nunca",pos:"Adv",fr:"jamais",es:"Nunca me rindo ante un
+problema.",fe:"Je ne renonce jamais face à un problème."},
+{id:289,w:"jamás",pos:"Adv",fr:"jamais (emphase)",es:"Jamás olvidaré de dónde
+vengo.",fe:"Je n'oublierai jamais d'où je viens."}, {id:290,w:"a
+veces",pos:"Adv",fr:"parfois",es:"A veces el camino es difícil, pero vale la
+pena.",fe:"Parfois le chemin est difficile, mais ça vaut la peine."},
+{id:291,w:"antes",pos:"Adv",fr:"avant / auparavant",es:"Antes vivía en África;
+ahora vivo en Canadá.",fe:"Avant je vivais en Afrique ; maintenant je vis au
+Canada."}, {id:292,w:"después",pos:"Adv",fr:"après / ensuite",es:"Después del
+trabajo, duermo y luego estudio.",fe:"Après le travail, je dors puis
+j'étudie."}, {id:293,w:"ahora",pos:"Adv",fr:"maintenant",es:"Ahora estudio y
+trabajo al mismo tiempo.",fe:"Maintenant j'étudie et je travaille en même
+temps."}, {id:294,w:"hoy",pos:"Adv",fr:"aujourd'hui",es:"Hoy tengo que entregar
+dos proyectos.",fe:"Aujourd'hui je dois remettre deux projets."},
+{id:295,w:"ayer",pos:"Adv",fr:"hier",es:"Ayer trabajé diez horas en el
+supermercado.",fe:"Hier j'ai travaillé dix heures au supermarché."},
+{id:296,w:"mañana",pos:"Adv/N",fr:"demain / matin",es:"Mañana tengo clase de
+bases de datos.",fe:"Demain j'ai cours de bases de données."},
+{id:297,w:"pronto",pos:"Adv",fr:"bientôt / tôt",es:"Pronto voy a
+graduarme.",fe:"Bientôt je vais obtenir mon diplôme."},
+{id:298,w:"tarde",pos:"Adv/N",fr:"tard / après-midi",es:"Llegué tarde a casa
+esta mañana.",fe:"Je suis rentré tard à la maison ce matin."},
+{id:299,w:"temprano",pos:"Adv",fr:"tôt / de bonne heure",es:"Me levanto temprano
+cuando no trabajo.",fe:"Je me lève tôt quand je ne travaille pas."},
+{id:300,w:"aquí",pos:"Adv",fr:"ici",es:"Aquí en Montréal, el invierno es
+largo.",fe:"Ici à Montréal, l'hiver est long."},
+{id:301,w:"allí",pos:"Adv",fr:"là / là-bas",es:"Allí está la salida del
+metro.",fe:"Là-bas se trouve la sortie du métro."},
+{id:302,w:"allá",pos:"Adv",fr:"là-bas (plus loin)",es:"Mi familia está allá, en
+Senegal.",fe:"Ma famille est là-bas, au Sénégal."},
+{id:303,w:"cerca",pos:"Adv",fr:"près / à proximité",es:"El supermercado está
+cerca de mi casa.",fe:"Le supermarché est près de chez moi."},
+{id:304,w:"lejos",pos:"Adv",fr:"loin",es:"Senegal está lejos, pero lo llevo en
+el corazón.",fe:"Le Sénégal est loin, mais je le porte dans mon cœur."},
+{id:305,w:"arriba",pos:"Adv",fr:"en haut / là-haut",es:"Los productos frescos
+están arriba.",fe:"Les produits frais sont en haut."},
+{id:306,w:"abajo",pos:"Adv",fr:"en bas / là-bas",es:"Las bebidas están abajo en
+el pasillo.",fe:"Les boissons sont en bas dans l'allée."},
+{id:307,w:"dentro",pos:"Adv",fr:"dedans / à l'intérieur",es:"Dentro de la tienda
+hace calor.",fe:"À l'intérieur du magasin, il fait chaud."},
+{id:308,w:"fuera",pos:"Adv",fr:"dehors / à l'extérieur",es:"Fuera de la tienda
+hace mucho frío.",fe:"Dehors du magasin il fait très froid."},
+{id:309,w:"adelante",pos:"Adv",fr:"en avant / devant",es:"Siempre miro hacia
+adelante.",fe:"Je regarde toujours vers l'avant."},
+{id:310,w:"atrás",pos:"Adv",fr:"en arrière / derrière",es:"No miro atrás, solo
+hacia el futuro.",fe:"Je ne regarde pas en arrière, seulement vers l'avenir."},
+{id:311,w:"bien",pos:"Adv",fr:"bien",es:"Hablo bien el francés y el
+árabe.",fe:"Je parle bien le français et l'arabe."},
+{id:312,w:"mal",pos:"Adv",fr:"mal",es:"Me siento mal cuando no duermo
+suficiente.",fe:"Je me sens mal quand je ne dors pas assez."},
+{id:313,w:"así",pos:"Adv",fr:"ainsi / comme ça",es:"Así es la vida del
+estudiante trabajador.",fe:"C'est ainsi la vie de l'étudiant travailleur."},
+{id:314,w:"solo",pos:"Adv",fr:"seulement / seul",es:"Solo quiero mejorar cada
+día.",fe:"Je veux seulement m'améliorer chaque jour."},
+{id:315,w:"casi",pos:"Adv",fr:"presque / quasi",es:"Casi termino el
+semestre.",fe:"J'ai presque terminé le semestre."},
+{id:316,w:"bastante",pos:"Adv",fr:"assez / plutôt",es:"Soy bastante bueno en
+programación.",fe:"Je suis plutôt bon en programmation."},
+{id:317,w:"demasiado",pos:"Adv",fr:"trop",es:"A veces trabajo
+demasiado.",fe:"Parfois je travaille trop."},
+{id:318,w:"suficiente",pos:"Adv/Adj",fr:"assez / suffisant",es:"Con esfuerzo
+suficiente, todo es posible.",fe:"Avec assez d'effort, tout est possible."},
+{id:319,w:"apenas",pos:"Adv",fr:"à peine / dès que",es:"Apenas llegué a casa, me
+dormí.",fe:"À peine arrivé chez moi, je me suis endormi."},
+{id:320,w:"exactamente",pos:"Adv",fr:"exactement",es:"Exactamente eso es lo que
+quiero lograr.",fe:"C'est exactement ça que je veux accomplir."},
+{id:321,w:"completamente",pos:"Adv",fr:"complètement / entièrement",es:"Estoy
+completamente enfocado en mis metas.",fe:"Je suis complètement concentré sur mes
+objectifs."},
+{id:322,w:"probablemente",pos:"Adv",fr:"probablement",es:"Probablemente viajaré
+a España el próximo año.",fe:"Je voyagerai probablement en Espagne l'année
+prochaine."},
+{id:323,w:"generalmente",pos:"Adv",fr:"généralement",es:"Generalmente como
+después de trabajar.",fe:"Généralement je mange après le travail."},
+{id:324,w:"finalmente",pos:"Adv",fr:"finalement",es:"Finalmente terminé el
+proyecto difícil.",fe:"Finalement j'ai terminé le projet difficile."},
+{id:325,w:"realmente",pos:"Adv",fr:"vraiment / réellement",es:"Realmente
+disfruto aprender idiomas.",fe:"J'apprécie vraiment apprendre les langues."},
+{id:326,w:"obviamente",pos:"Adv",fr:"évidemment / clairement",es:"Obviamente, la
+práctica hace al maestro.",fe:"Évidemment, la pratique fait le maître."},
+{id:327,w:"naturalmente",pos:"Adv",fr:"naturellement",es:"Naturalmente, aprendo
+mejor cuando estoy descansado.",fe:"Naturellement, j'apprends mieux quand je
+suis reposé."},
+{id:328,w:"inmediatamente",pos:"Adv",fr:"immédiatement",es:"Respondo
+inmediatamente a los mensajes.",fe:"Je réponds immédiatement aux messages."},
+{id:329,w:"lentamente",pos:"Adv",fr:"lentement",es:"El progreso ocurre
+lentamente pero de forma segura.",fe:"Le progrès se fait lentement mais
+sûrement."}, {id:330,w:"rápidamente",pos:"Adv",fr:"rapidement",es:"Aprendo
+rápidamente cuando me concentro.",fe:"J'apprends rapidement quand je me
+concentre."}, {id:331,w:"fácilmente",pos:"Adv",fr:"facilement",es:"No me rindo
+fácilmente ante los problemas.",fe:"Je ne cède pas facilement face aux
+problèmes."},
+{id:332,w:"difícilmente",pos:"Adv",fr:"difficilement",es:"Difícilmente olvido
+algo que aprendí bien.",fe:"J'oublie difficilement quelque chose que j'ai bien
+appris."}, {id:333,w:"especialmente",pos:"Adv",fr:"surtout /
+particulièrement",es:"Especialmente me gusta la programación.",fe:"La
+programmation me plaît particulièrement."},
+{id:334,w:"principalmente",pos:"Adv",fr:"principalement / surtout",es:"Trabajo
+principalmente para pagar mis estudios.",fe:"Je travaille principalement pour
+payer mes études."}, {id:335,w:"totalmente",pos:"Adv",fr:"totalement",es:"Estoy
+totalmente comprometido con mi educación.",fe:"Je suis totalement engagé dans
+mon éducation."},
+{id:336,w:"absolutamente",pos:"Adv",fr:"absolument",es:"Absolutamente nada me
+detiene cuando tengo un objetivo.",fe:"Absolument rien ne m'arrête quand j'ai un
+objectif."}, {id:337,w:"simplemente",pos:"Adv",fr:"simplement / tout
+simplement",es:"Simplemente hay que trabajar duro.",fe:"Il faut tout simplement
+travailler dur."}, {id:338,w:"incluso",pos:"Adv",fr:"même / y
+compris",es:"Incluso cuando estoy cansado, no me rindo.",fe:"Même quand je suis
+fatigué, je ne renonce pas."}, {id:339,w:"de repente",pos:"Adv",fr:"soudain /
+tout à coup",es:"De repente, tuve una gran idea.",fe:"Tout à coup, j'ai eu une
+grande idée."}, {id:340,w:"enseguida",pos:"Adv",fr:"aussitôt / tout de
+suite",es:"Enseguida terminé la tarea.",fe:"J'ai terminé le devoir tout de
+suite."}, // ── NOUNS — TIME ─────────────────────────────────────────────────
+{id:341,w:"tiempo",pos:"N",fr:"temps / météo",es:"El tiempo pasa rápido cuando
+estás ocupado.",fe:"Le temps passe vite quand on est occupé."},
+{id:342,w:"año",pos:"N",fr:"année / an",es:"Este año me graduaré del
+programa.",fe:"Cette année je vais obtenir mon diplôme du programme."},
+{id:343,w:"día",pos:"N",fr:"jour",es:"Cada día es una nueva
+oportunidad.",fe:"Chaque jour est une nouvelle opportunité."},
+{id:344,w:"vez",pos:"N",fr:"fois",es:"Esta vez voy a hacerlo mejor.",fe:"Cette
+fois je vais le faire mieux."}, {id:345,w:"semana",pos:"N",fr:"semaine",es:"Esta
+semana tengo tres exámenes.",fe:"Cette semaine j'ai trois examens."},
+{id:346,w:"mes",pos:"N",fr:"mois",es:"En tres meses termino el
+programa.",fe:"Dans trois mois je termine le programme."},
+{id:347,w:"hora",pos:"N",fr:"heure",es:"Trabajo ocho horas por noche.",fe:"Je
+travaille huit heures par nuit."},
+{id:348,w:"minuto",pos:"N",fr:"minute",es:"Cada minuto cuenta cuando quieres
+mejorar.",fe:"Chaque minute compte quand on veut s'améliorer."},
+{id:349,w:"segundo",pos:"N",fr:"seconde",es:"En un segundo, el código se
+ejecuta.",fe:"En une seconde, le code s'exécute."},
+{id:350,w:"momento",pos:"N",fr:"moment",es:"Vivo el momento presente con
+gratitud.",fe:"Je vis le moment présent avec gratitude."},
+{id:351,w:"época",pos:"N",fr:"époque / période",es:"Vivimos en la época de la
+inteligencia artificial.",fe:"Nous vivons à l'époque de l'intelligence
+artificielle."}, {id:352,w:"siglo",pos:"N",fr:"siècle",es:"El siglo XXI es el
+siglo de la tecnología.",fe:"Le XXIe siècle est le siècle de la technologie."},
+{id:353,w:"fecha",pos:"N",fr:"date",es:"La fecha de entrega es el
+viernes.",fe:"La date de remise est vendredi."},
+{id:354,w:"plazo",pos:"N",fr:"délai / date limite",es:"Entrego el proyecto antes
+del plazo.",fe:"Je remets le projet avant la date limite."},
+{id:355,w:"futuro",pos:"N",fr:"avenir / futur",es:"El futuro pertenece a quienes
+se preparan hoy.",fe:"L'avenir appartient à ceux qui se préparent
+aujourd'hui."}, {id:356,w:"pasado",pos:"N",fr:"passé",es:"El pasado me enseñó;
+el futuro me motiva.",fe:"Le passé m'a enseigné ; l'avenir me motive."},
+{id:357,w:"presente",pos:"N",fr:"présent",es:"El presente es el único momento en
+que puedo actuar.",fe:"Le présent est le seul moment où je peux agir."}, // ──
+NOUNS — PEOPLE ───────────────────────────────────────────────
+{id:358,w:"persona",pos:"N",fr:"personne",es:"Soy una persona disciplinada y
+ambiciosa.",fe:"Je suis une personne disciplinée et ambitieuse."},
+{id:359,w:"hombre",pos:"N",fr:"homme",es:"Un hombre que aprende nunca
+envejece.",fe:"Un homme qui apprend ne vieillit jamais."},
+{id:360,w:"mujer",pos:"N",fr:"femme",es:"La mujer que admiro más es mi
+madre.",fe:"La femme que j'admire le plus est ma mère."},
+{id:361,w:"niño",pos:"N",fr:"enfant / garçon",es:"De niño soñaba con ser
+ingeniero.",fe:"Enfant, je rêvais d'être ingénieur."},
+{id:362,w:"niña",pos:"N",fr:"petite fille / enfant",es:"La niña de mi vecina
+aprende a leer.",fe:"La petite fille de ma voisine apprend à lire."},
+{id:363,w:"joven",pos:"N/Adj",fr:"jeune / jeune homme",es:"Soy joven y tengo
+toda la vida por delante.",fe:"Je suis jeune et j'ai toute la vie devant moi."},
+{id:364,w:"adulto",pos:"N/Adj",fr:"adulte",es:"Como adulto, tomo mis propias
+decisiones.",fe:"En tant qu'adulte, je prends mes propres décisions."},
+{id:365,w:"padre",pos:"N",fr:"père / parent",es:"Mi padre me enseñó el valor del
+trabajo.",fe:"Mon père m'a appris la valeur du travail."},
+{id:366,w:"madre",pos:"N",fr:"mère",es:"Mi madre siempre me apoya.",fe:"Ma mère
+me soutient toujours."}, {id:367,w:"hijo",pos:"N",fr:"fils / enfant",es:"Soy el
+hijo de inmigrantes que soñaron con una vida mejor.",fe:"Je suis le fils
+d'immigrants qui ont rêvé d'une vie meilleure."},
+{id:368,w:"hija",pos:"N",fr:"fille",es:"La hija de mi vecino estudia
+medicina.",fe:"La fille de mon voisin étudie la médecine."},
+{id:369,w:"hermano",pos:"N",fr:"frère",es:"Mi hermano también vive en
+Montréal.",fe:"Mon frère vit aussi à Montréal."},
+{id:370,w:"hermana",pos:"N",fr:"sœur",es:"Mi hermana estudia en Senegal.",fe:"Ma
+sœur étudie au Sénégal."}, {id:371,w:"amigo",pos:"N",fr:"ami",es:"Mis amigos me
+apoyan en mis metas.",fe:"Mes amis me soutiennent dans mes objectifs."},
+{id:372,w:"familia",pos:"N",fr:"famille",es:"Mi familia es mi mayor
+motivación.",fe:"Ma famille est ma plus grande motivation."},
+{id:373,w:"estudiante",pos:"N",fr:"étudiant/e",es:"Soy un estudiante dedicado y
+trabajador.",fe:"Je suis un étudiant dévoué et travailleur."},
+{id:374,w:"profesor",pos:"N",fr:"professeur",es:"Mi profesor me da
+retroalimentación útil.",fe:"Mon professeur me donne des retours utiles."},
+{id:375,w:"compañero",pos:"N",fr:"camarade / collègue",es:"Trabajo con un buen
+compañero de clase.",fe:"Je travaille avec un bon camarade de classe."},
+{id:376,w:"vecino",pos:"N",fr:"voisin/e",es:"Mi vecino me presta herramientas a
+veces.",fe:"Mon voisin me prête parfois des outils."},
+{id:377,w:"jefe",pos:"N",fr:"chef / patron",es:"Mi jefe aprecia mi
+puntualidad.",fe:"Mon patron apprécie ma ponctualité."},
+{id:378,w:"cliente",pos:"N",fr:"client/e",es:"Atiendo a los clientes con
+amabilidad.",fe:"Je sers les clients avec amabilité."},
+{id:379,w:"médico",pos:"N",fr:"médecin",es:"Fui al médico por el cansancio
+extremo.",fe:"Je suis allé chez le médecin pour la fatigue extrême."},
+{id:380,w:"ingeniero",pos:"N",fr:"ingénieur",es:"Quiero trabajar como ingeniero
+en software.",fe:"Je veux travailler comme ingénieur en logiciel."},
+{id:381,w:"gente",pos:"N",fr:"gens / personnes",es:"La gente de Montréal es muy
+diversa.",fe:"Les gens de Montréal sont très diversifiés."},
+{id:382,w:"grupo",pos:"N",fr:"groupe",es:"Hacemos el proyecto en
+grupo.",fe:"Nous faisons le projet en groupe."},
+{id:383,w:"equipo",pos:"N",fr:"équipe",es:"Trabajamos en equipo para terminar
+antes.",fe:"Nous travaillons en équipe pour finir plus tôt."},
+{id:384,w:"comunidad",pos:"N",fr:"communauté",es:"La comunidad africana en
+Montréal es grande.",fe:"La communauté africaine à Montréal est grande."},
+{id:385,w:"sociedad",pos:"N",fr:"société",es:"La sociedad avanza gracias a la
+educación.",fe:"La société avance grâce à l'éducation."},
+{id:386,w:"pueblo",pos:"N",fr:"peuple / village",es:"El pueblo de Senegal es
+acogedor.",fe:"Le peuple du Sénégal est accueillant."}, // ── NOUNS — PLACE
+────────────────────────────────────────────────
+{id:387,w:"lugar",pos:"N",fr:"lieu / endroit",es:"Montréal es un lugar lleno de
+oportunidades.",fe:"Montréal est un endroit plein d'opportunités."},
+{id:388,w:"ciudad",pos:"N",fr:"ville",es:"Vivo en una ciudad multicultural y
+vibrante.",fe:"Je vis dans une ville multiculturelle et vibrante."},
+{id:389,w:"país",pos:"N",fr:"pays",es:"Canadá es un país muy acogedor.",fe:"Le
+Canada est un pays très accueillant."},
+{id:390,w:"mundo",pos:"N",fr:"monde",es:"Quiero viajar por el mundo.",fe:"Je
+veux voyager à travers le monde."}, {id:391,w:"tierra",pos:"N",fr:"terre /
+sol",es:"La tierra natal nunca se olvida.",fe:"La terre natale ne s'oublie
+jamais."}, {id:392,w:"casa",pos:"N",fr:"maison / chez soi",es:"Vuelvo a casa al
+amanecer.",fe:"Je rentre chez moi à l'aube."},
+{id:393,w:"habitación",pos:"N",fr:"chambre / pièce",es:"Tengo una habitación que
+rento para ingresos extra.",fe:"J'ai une chambre que je loue pour des revenus
+supplémentaires."}, {id:394,w:"calle",pos:"N",fr:"rue",es:"Las calles de
+Montréal están cubiertas de nieve en invierno.",fe:"Les rues de Montréal sont
+couvertes de neige en hiver."},
+{id:395,w:"barrio",pos:"N",fr:"quartier",es:"Vivo en un barrio tranquilo de
+Montréal.",fe:"Je vis dans un quartier tranquille de Montréal."},
+{id:396,w:"edificio",pos:"N",fr:"bâtiment / immeuble",es:"La universidad es un
+edificio moderno.",fe:"L'université est un immeuble moderne."},
+{id:397,w:"oficina",pos:"N",fr:"bureau",es:"El profesor tiene su oficina en el
+tercer piso.",fe:"Le professeur a son bureau au troisième étage."},
+{id:398,w:"escuela",pos:"N",fr:"école",es:"Voy a la escuela de lunes a
+viernes.",fe:"Je vais à l'école du lundi au vendredi."},
+{id:399,w:"universidad",pos:"N",fr:"université",es:"Mi universidad se llama
+Institut Teccart.",fe:"Mon université s'appelle Institut Teccart."},
+{id:400,w:"biblioteca",pos:"N",fr:"bibliothèque",es:"Voy a la biblioteca para
+estudiar en silencio.",fe:"Je vais à la bibliothèque pour étudier en silence."},
+{id:401,w:"mercado",pos:"N",fr:"marché",es:"Compro frutas en el mercado del
+barrio.",fe:"J'achète des fruits au marché du quartier."},
+{id:402,w:"tienda",pos:"N",fr:"magasin / boutique",es:"La tienda donde trabajo
+abre a las once.",fe:"Le magasin où je travaille ouvre à onze heures."},
+{id:403,w:"supermercado",pos:"N",fr:"supermarché",es:"Trabajo en el supermercado
+Maxi de noche.",fe:"Je travaille au supermarché Maxi la nuit."},
+{id:404,w:"hospital",pos:"N",fr:"hôpital",es:"El hospital está cerca de mi
+casa.",fe:"L'hôpital est près de chez moi."},
+{id:405,w:"aeropuerto",pos:"N",fr:"aéroport",es:"Llegué al aeropuerto con mucha
+emoción.",fe:"Je suis arrivé à l'aéroport avec beaucoup d'émotion."},
+{id:406,w:"estación",pos:"N",fr:"station / gare",es:"Tomo el metro desde la
+estación más cercana.",fe:"Je prends le métro depuis la station la plus
+proche."}, {id:407,w:"hotel",pos:"N",fr:"hôtel",es:"Hay muchos hoteles en el
+centro de Montréal.",fe:"Il y a beaucoup d'hôtels au centre-ville de
+Montréal."}, {id:408,w:"restaurante",pos:"N",fr:"restaurant",es:"Comemos en un
+restaurante africano.",fe:"Nous mangeons dans un restaurant africain."},
+{id:409,w:"parque",pos:"N",fr:"parc",es:"Corro en el parque los fines de
+semana.",fe:"Je cours dans le parc les week-ends."},
+{id:410,w:"país",pos:"N",fr:"pays",es:"Mi país de origen es Senegal.",fe:"Mon
+pays d'origine est le Sénégal."},
+{id:411,w:"frontera",pos:"N",fr:"frontière",es:"Crucé la frontera con mis
+documentos en orden.",fe:"J'ai traversé la frontière avec mes documents en
+ordre."}, {id:412,w:"región",pos:"N",fr:"région",es:"La región de Montréal tiene
+mucha diversidad.",fe:"La région de Montréal a beaucoup de diversité."},
+{id:413,w:"norte",pos:"N",fr:"nord",es:"Canadá está en el norte del
+continente.",fe:"Le Canada est au nord du continent."},
+{id:414,w:"sur",pos:"N",fr:"sud",es:"África está al sur de
+Europa.",fe:"L'Afrique est au sud de l'Europe."},
+{id:415,w:"este",pos:"N",fr:"est (direction)",es:"El sol sale por el
+este.",fe:"Le soleil se lève à l'est."},
+{id:416,w:"oeste",pos:"N",fr:"ouest",es:"Vancouver está en el oeste de
+Canadá.",fe:"Vancouver est à l'ouest du Canada."},
+{id:417,w:"campo",pos:"N",fr:"champ / campagne",es:"Me crié entre el campo y la
+ciudad.",fe:"J'ai grandi entre la campagne et la ville."},
+{id:418,w:"montaña",pos:"N",fr:"montagne",es:"Nunca he escalado una
+montaña.",fe:"Je n'ai jamais escaladé de montagne."},
+{id:419,w:"río",pos:"N",fr:"rivière / fleuve",es:"El río San Lorenzo pasa por
+Montréal.",fe:"Le fleuve Saint-Laurent passe par Montréal."},
+{id:420,w:"mar",pos:"N",fr:"mer",es:"Senegal tiene una hermosa costa en el
+mar.",fe:"Le Sénégal a une belle côte sur la mer."}, // ── NOUNS — WORK & STUDY
+─────────────────────────────────────────
+{id:421,w:"trabajo",pos:"N",fr:"travail / emploi",es:"Tengo un trabajo nocturno
+en el supermercado.",fe:"J'ai un travail de nuit au supermarché."},
+{id:422,w:"empleo",pos:"N",fr:"emploi / poste",es:"Busco un empleo en tecnología
+para después de graduarme.",fe:"Je cherche un emploi en technologie après
+l'obtention de mon diplôme."}, {id:423,w:"carrera",pos:"N",fr:"carrière /
+course",es:"Quiero construir una carrera en desarrollo de software.",fe:"Je veux
+bâtir une carrière dans le développement logiciel."},
+{id:424,w:"proyecto",pos:"N",fr:"projet",es:"Entrego un proyecto cada
+semana.",fe:"Je remets un projet chaque semaine."},
+{id:425,w:"tarea",pos:"N",fr:"devoir / tâche",es:"Hago mis tareas en el
+autobús.",fe:"Je fais mes devoirs dans le bus."},
+{id:426,w:"examen",pos:"N",fr:"examen",es:"Pasé el examen con una buena
+nota.",fe:"J'ai réussi l'examen avec une bonne note."},
+{id:427,w:"nota",pos:"N",fr:"note / résultat",es:"Mi nota en IA fue 95%.",fe:"Ma
+note en IA était 95%."}, {id:428,w:"clase",pos:"N",fr:"cours / classe",es:"Tengo
+seis clases este semestre.",fe:"J'ai six cours ce semestre."},
+{id:429,w:"curso",pos:"N",fr:"cours / formation",es:"Estoy en el quinto semestre
+de mi curso.",fe:"Je suis au cinquième semestre de ma formation."},
+{id:430,w:"semestre",pos:"N",fr:"semestre",es:"Este semestre es el más
+intenso.",fe:"Ce semestre est le plus intense."},
+{id:431,w:"programa",pos:"N",fr:"programme",es:"El programa dura tres
+años.",fe:"Le programme dure trois ans."},
+{id:432,w:"diploma",pos:"N",fr:"diplôme",es:"Mi diploma será en técnicas de
+informática.",fe:"Mon diplôme sera en techniques informatiques."},
+{id:433,w:"sueldo",pos:"N",fr:"salaire",es:"Mi sueldo nocturno me ayuda a pagar
+mis estudios.",fe:"Mon salaire de nuit m'aide à payer mes études."},
+{id:434,w:"turno",pos:"N",fr:"quart (de travail) / tour",es:"Mi turno empieza a
+las 22h30.",fe:"Mon quart commence à 22h30."},
+{id:435,w:"empresa",pos:"N",fr:"entreprise / société",es:"Sueño con crear mi
+propia empresa.",fe:"Je rêve de créer ma propre entreprise."},
+{id:436,w:"negocio",pos:"N",fr:"commerce / affaire",es:"Tengo un pequeño negocio
+de electrónicos.",fe:"J'ai un petit commerce d'électroniques."},
+{id:437,w:"reunión",pos:"N",fr:"réunion",es:"Tenemos una reunión de equipo cada
+semana.",fe:"Nous avons une réunion d'équipe chaque semaine."},
+{id:438,w:"contrato",pos:"N",fr:"contrat",es:"Firmé un contrato de trabajo de
+seis meses.",fe:"J'ai signé un contrat de travail de six mois."},
+{id:439,w:"horario",pos:"N",fr:"horaire / emploi du temps",es:"Mi horario es
+flexible para estudiar.",fe:"Mon horaire est flexible pour étudier."},
+{id:440,w:"experiencia",pos:"N",fr:"expérience",es:"Cada proyecto añade
+experiencia a mi currículum.",fe:"Chaque projet ajoute de l'expérience à mon
+CV."}, // ── NOUNS — TECHNOLOGY ───────────────────────────────────────────
+{id:441,w:"computadora",pos:"N",fr:"ordinateur",es:"Mi computadora es mi
+principal herramienta.",fe:"Mon ordinateur est mon principal outil."},
+{id:442,w:"teléfono",pos:"N",fr:"téléphone",es:"Compro y vendo teléfonos
+usados.",fe:"J'achète et revends des téléphones usagés."},
+{id:443,w:"internet",pos:"N",fr:"internet",es:"Sin internet, no puedo
+estudiar.",fe:"Sans internet, je ne peux pas étudier."},
+{id:444,w:"aplicación",pos:"N",fr:"application",es:"Creo aplicaciones web para
+mis proyectos.",fe:"Je crée des applications web pour mes projets."},
+{id:445,w:"código",pos:"N",fr:"code",es:"Escribo código todos los
+días.",fe:"J'écris du code tous les jours."},
+{id:446,w:"datos",pos:"N",fr:"données",es:"Analizo datos para mis proyectos de
+IA.",fe:"J'analyse des données pour mes projets d'IA."},
+{id:447,w:"red",pos:"N",fr:"réseau",es:"Configuré una red local para el
+proyecto.",fe:"J'ai configuré un réseau local pour le projet."},
+{id:448,w:"servidor",pos:"N",fr:"serveur",es:"El servidor responde en menos de
+un segundo.",fe:"Le serveur répond en moins d'une seconde."}, {id:449,w:"base de
+datos",pos:"N",fr:"base de données",es:"Trabajo con bases de datos MySQL y
+MongoDB.",fe:"Je travaille avec des bases de données MySQL et MongoDB."},
+{id:450,w:"algoritmo",pos:"N",fr:"algorithme",es:"Diseñé un algoritmo eficiente
+para el proyecto.",fe:"J'ai conçu un algorithme efficace pour le projet."},
+{id:451,w:"inteligencia artificial",pos:"N",fr:"intelligence
+artificielle",es:"La inteligencia artificial cambiará el
+mundo.",fe:"L'intelligence artificielle va changer le monde."},
+{id:452,w:"modelo",pos:"N",fr:"modèle",es:"Entrené un modelo de clasificación
+con Python.",fe:"J'ai entraîné un modèle de classification avec Python."},
+{id:453,w:"archivo",pos:"N",fr:"fichier",es:"Guardo todos mis archivos en la
+nube.",fe:"Je sauvegarde tous mes fichiers dans le nuage."},
+{id:454,w:"sistema",pos:"N",fr:"système",es:"El sistema operativo de mi
+computadora es Linux.",fe:"Le système d'exploitation de mon ordinateur est
+Linux."}, {id:455,w:"herramienta",pos:"N",fr:"outil",es:"Python es mi
+herramienta favorita.",fe:"Python est mon outil préféré."},
+{id:456,w:"pantalla",pos:"N",fr:"écran",es:"Paso horas mirando la
+pantalla.",fe:"Je passe des heures à regarder l'écran."},
+{id:457,w:"teclado",pos:"N",fr:"clavier",es:"Escribo rápido en el
+teclado.",fe:"Je tape rapidement sur le clavier."},
+{id:458,w:"ratón",pos:"N",fr:"souris (informatique)",es:"Uso el ratón para
+navegar la interfaz.",fe:"J'utilise la souris pour naviguer dans l'interface."},
+{id:459,w:"nube",pos:"N",fr:"nuage / cloud",es:"Guardo mis proyectos en la
+nube.",fe:"Je sauvegarde mes projets dans le cloud."},
+{id:460,w:"contraseña",pos:"N",fr:"mot de passe",es:"Uso contraseñas seguras
+para todos mis cuentas.",fe:"J'utilise des mots de passe sécurisés pour tous mes
+comptes."}, // ── NOUNS — MONEY & ECONOMY ──────────────────────────────────────
+{id:461,w:"dinero",pos:"N",fr:"argent",es:"El dinero no lo es todo, pero ayuda
+mucho.",fe:"L'argent n'est pas tout, mais ça aide beaucoup."},
+{id:462,w:"precio",pos:"N",fr:"prix",es:"El precio de los productos sube cada
+año.",fe:"Le prix des produits augmente chaque année."},
+{id:463,w:"costo",pos:"N",fr:"coût",es:"El costo de vida en Montréal es
+alto.",fe:"Le coût de la vie à Montréal est élevé."},
+{id:464,w:"gasto",pos:"N",fr:"dépense",es:"Controlo bien mis gastos
+mensuales.",fe:"Je contrôle bien mes dépenses mensuelles."},
+{id:465,w:"ingreso",pos:"N",fr:"revenu / entrée d'argent",es:"Tengo ingresos de
+varias fuentes.",fe:"J'ai des revenus de plusieurs sources."},
+{id:466,w:"ahorro",pos:"N",fr:"épargne",es:"Mis ahorros crecen cada
+mes.",fe:"Mes épargnes augmentent chaque mois."},
+{id:467,w:"deuda",pos:"N",fr:"dette",es:"Evito las deudas con una buena
+gestión.",fe:"J'évite les dettes avec une bonne gestion."},
+{id:468,w:"banco",pos:"N",fr:"banque",es:"Tengo una cuenta en el
+banco.",fe:"J'ai un compte en banque."}, {id:469,w:"mercado",pos:"N",fr:"marché
+(économique)",es:"El mercado laboral en tecnología es fuerte.",fe:"Le marché de
+l'emploi en technologie est fort."},
+{id:470,w:"inversión",pos:"N",fr:"investissement",es:"La educación es la mejor
+inversión.",fe:"L'éducation est le meilleur investissement."}, // ── NOUNS —
+FOOD & BODY ──────────────────────────────────────────
+{id:471,w:"comida",pos:"N",fr:"nourriture / repas",es:"La comida senegalesa es
+deliciosa.",fe:"La nourriture sénégalaise est délicieuse."},
+{id:472,w:"agua",pos:"N",fr:"eau",es:"Bebo dos litros de agua al día.",fe:"Je
+bois deux litres d'eau par jour."},
+{id:473,w:"cuerpo",pos:"N",fr:"corps",es:"Cuido mi cuerpo con ejercicio y buena
+alimentación.",fe:"Je prends soin de mon corps avec de l'exercice et une bonne
+alimentation."}, {id:474,w:"salud",pos:"N",fr:"santé",es:"La salud es la riqueza
+más importante.",fe:"La santé est la richesse la plus importante."},
+{id:475,w:"sueño",pos:"N",fr:"sommeil / rêve",es:"El sueño es esencial para el
+rendimiento.",fe:"Le sommeil est essentiel pour la performance."},
+{id:476,w:"energía",pos:"N",fr:"énergie",es:"Mantengo la energía con buena
+nutrición.",fe:"Je maintiens l'énergie avec une bonne nutrition."},
+{id:477,w:"proteína",pos:"N",fr:"protéine",es:"Como mucha proteína para mantener
+la masa muscular.",fe:"Je mange beaucoup de protéines pour maintenir la masse
+musculaire."}, {id:478,w:"músculo",pos:"N",fr:"muscle",es:"El entrenamiento
+desarrolla los músculos.",fe:"L'entraînement développe les muscles."},
+{id:479,w:"cabeza",pos:"N",fr:"tête",es:"Me duele la cabeza cuando no duermo
+bien.",fe:"J'ai mal à la tête quand je ne dors pas bien."},
+{id:480,w:"mano",pos:"N",fr:"main",es:"Uso las manos para acomodar los
+productos.",fe:"J'utilise mes mains pour ranger les produits."},
+{id:481,w:"ojo",pos:"N",fr:"œil",es:"Tengo los ojos secos de mirar la
+pantalla.",fe:"J'ai les yeux secs à force de regarder l'écran."},
+{id:482,w:"boca",pos:"N",fr:"bouche",es:"Abro la boca para aprender
+idiomas.",fe:"J'ouvre la bouche pour apprendre les langues."},
+{id:483,w:"corazón",pos:"N",fr:"cœur",es:"Hago todo con el corazón.",fe:"Je fais
+tout avec le cœur."}, {id:484,w:"mente",pos:"N",fr:"esprit / mental",es:"La
+mente es la herramienta más poderosa.",fe:"L'esprit est l'outil le plus
+puissant."}, {id:485,w:"cerebro",pos:"N",fr:"cerveau",es:"El cerebro aprende
+mejor cuando está descansado.",fe:"Le cerveau apprend mieux quand il est
+reposé."}, {id:486,w:"respiración",pos:"N",fr:"respiration",es:"La respiración
+profunda reduce el estrés.",fe:"La respiration profonde réduit le stress."},
+{id:487,w:"ejercicio",pos:"N",fr:"exercice",es:"Hago ejercicio para tener más
+energía.",fe:"Je fais de l'exercice pour avoir plus d'énergie."},
+{id:488,w:"descanso",pos:"N",fr:"repos",es:"El descanso es parte del
+progreso.",fe:"Le repos fait partie du progrès."}, // ── NOUNS — IDEAS &
+ABSTRACT ─────────────────────────────────────
+{id:489,w:"vida",pos:"N",fr:"vie",es:"La vida es corta; hay que
+aprovecharla.",fe:"La vie est courte ; il faut en profiter."},
+{id:490,w:"historia",pos:"N",fr:"histoire",es:"Mi historia es una de esfuerzo y
+perseverancia.",fe:"Mon histoire est une histoire d'effort et de
+persévérance."}, {id:491,w:"idea",pos:"N",fr:"idée",es:"Tengo muchas ideas para
+proyectos tecnológicos.",fe:"J'ai beaucoup d'idées pour des projets
+technologiques."}, {id:492,w:"problema",pos:"N",fr:"problème",es:"Cada problema
+tiene una solución.",fe:"Chaque problème a une solution."},
+{id:493,w:"solución",pos:"N",fr:"solution",es:"Busco la mejor solución antes de
+actuar.",fe:"Je cherche la meilleure solution avant d'agir."},
+{id:494,w:"razón",pos:"N",fr:"raison / raison (motif)",es:"Tengo mis razones
+para querer mejorar.",fe:"J'ai mes raisons de vouloir m'améliorer."},
+{id:495,w:"resultado",pos:"N",fr:"résultat",es:"Los resultados reflejan el
+esfuerzo.",fe:"Les résultats reflètent l'effort."},
+{id:496,w:"proceso",pos:"N",fr:"processus",es:"El aprendizaje es un proceso
+continuo.",fe:"L'apprentissage est un processus continu."},
+{id:497,w:"cambio",pos:"N",fr:"changement",es:"El cambio es la única constante
+en la vida.",fe:"Le changement est la seule constante dans la vie."},
+{id:498,w:"objetivo",pos:"N",fr:"objectif / but",es:"Mis objetivos están claros
+en mi mente.",fe:"Mes objectifs sont clairs dans mon esprit."},
+{id:499,w:"meta",pos:"N",fr:"objectif / but",es:"Tengo metas concretas para este
+año.",fe:"J'ai des objectifs concrets pour cette année."},
+{id:500,w:"sueño",pos:"N",fr:"rêve / sommeil",es:"Mi sueño es vivir de la
+tecnología.",fe:"Mon rêve est de vivre de la technologie."},
+{id:501,w:"éxito",pos:"N",fr:"succès / réussite",es:"El éxito es la suma de
+pequeños esfuerzos.",fe:"Le succès est la somme de petits efforts."},
+{id:502,w:"fracaso",pos:"N",fr:"échec",es:"El fracaso es un maestro si lo
+escuchas.",fe:"L'échec est un maître si on l'écoute."},
+{id:503,w:"esfuerzo",pos:"N",fr:"effort",es:"Cada resultado se construye con
+esfuerzo.",fe:"Chaque résultat se construit avec de l'effort."},
+{id:504,w:"valor",pos:"N",fr:"valeur / courage",es:"Tengo el valor de enfrentar
+los desafíos.",fe:"J'ai le courage d'affronter les défis."},
+{id:505,w:"libertad",pos:"N",fr:"liberté",es:"La educación te da
+libertad.",fe:"L'éducation te donne la liberté."},
+{id:506,w:"paz",pos:"N",fr:"paix",es:"Encuentro la paz en la oración.",fe:"Je
+trouve la paix dans la prière."}, {id:507,w:"fe",pos:"N",fr:"foi",es:"Tengo fe
+en mi capacidad de progresar.",fe:"J'ai foi en ma capacité de progresser."},
+{id:508,w:"esperanza",pos:"N",fr:"espoir",es:"La esperanza me mantiene
+motivado.",fe:"L'espoir me garde motivé."},
+{id:509,w:"conocimiento",pos:"N",fr:"connaissance / savoir",es:"El conocimiento
+es el poder más grande.",fe:"Le savoir est le pouvoir le plus grand."},
+{id:510,w:"información",pos:"N",fr:"information",es:"Proceso mucha información
+cada día.",fe:"Je traite beaucoup d'information chaque jour."},
+{id:511,w:"verdad",pos:"N",fr:"vérité",es:"La verdad siempre sale a la
+luz.",fe:"La vérité finit toujours par sortir."},
+{id:512,w:"mentira",pos:"N",fr:"mensonge",es:"Nunca digo mentiras.",fe:"Je ne
+mens jamais."}, {id:513,w:"opinión",pos:"N",fr:"opinion / avis",es:"Tengo una
+opinión clara sobre este tema.",fe:"J'ai un avis clair sur ce sujet."},
+{id:514,w:"cultura",pos:"N",fr:"culture",es:"La cultura senegalesa es rica y
+vibrante.",fe:"La culture sénégalaise est riche et vibrante."},
+{id:515,w:"tradición",pos:"N",fr:"tradition",es:"Respeto las tradiciones de mi
+país.",fe:"Je respecte les traditions de mon pays."},
+{id:516,w:"religión",pos:"N",fr:"religion",es:"La religión es una guía en mi
+vida.",fe:"La religion est un guide dans ma vie."},
+{id:517,w:"islam",pos:"N",fr:"islam",es:"El islam me da disciplina y
+enfoque.",fe:"L'islam me donne discipline et concentration."},
+{id:518,w:"oración",pos:"N",fr:"prière",es:"Hago mis oraciones cada día.",fe:"Je
+fais mes prières chaque jour."},
+{id:519,w:"principio",pos:"N",fr:"principe",es:"Tengo principios que no
+negocio.",fe:"J'ai des principes que je ne négocie pas."},
+{id:520,w:"disciplina",pos:"N",fr:"discipline",es:"La disciplina es mi mayor
+virtud.",fe:"La discipline est ma plus grande vertu."}, // ── NOUNS — NATURE &
+ENVIRONMENT ─────────────────────────────────
+{id:521,w:"sol",pos:"N",fr:"soleil",es:"El sol sale cuando termino el
+turno.",fe:"Le soleil se lève quand je termine le quart."},
+{id:522,w:"luna",pos:"N",fr:"lune",es:"La luna ilumina mi regreso a
+casa.",fe:"La lune éclaire mon retour chez moi."},
+{id:523,w:"cielo",pos:"N",fr:"ciel",es:"El cielo de Montréal es muy claro en
+verano.",fe:"Le ciel de Montréal est très clair en été."},
+{id:524,w:"nieve",pos:"N",fr:"neige",es:"La nieve de Montréal es hermosa pero
+fría.",fe:"La neige de Montréal est belle mais froide."},
+{id:525,w:"lluvia",pos:"N",fr:"pluie",es:"La lluvia en primavera es
+refrescante.",fe:"La pluie au printemps est rafraîchissante."},
+{id:526,w:"viento",pos:"N",fr:"vent",es:"El viento en invierno es muy
+fuerte.",fe:"Le vent en hiver est très fort."},
+{id:527,w:"temperatura",pos:"N",fr:"température",es:"La temperatura baja mucho
+en enero.",fe:"La température descend beaucoup en janvier."},
+{id:528,w:"estación",pos:"N",fr:"saison",es:"Mi estación favorita es el
+verano.",fe:"Ma saison préférée est l'été."},
+{id:529,w:"invierno",pos:"N",fr:"hiver",es:"El invierno aquí dura casi seis
+meses.",fe:"L'hiver ici dure presque six mois."},
+{id:530,w:"verano",pos:"N",fr:"été",es:"En verano, Montréal está lleno de
+vida.",fe:"En été, Montréal est plein de vie."},
+{id:531,w:"primavera",pos:"N",fr:"printemps",es:"La primavera trae energía y
+motivación.",fe:"Le printemps apporte énergie et motivation."},
+{id:532,w:"otoño",pos:"N",fr:"automne",es:"El otoño en Canadá es muy
+colorido.",fe:"L'automne au Canada est très coloré."},
+{id:533,w:"árbol",pos:"N",fr:"arbre",es:"Los árboles de Montréal son hermosos en
+otoño.",fe:"Les arbres de Montréal sont magnifiques en automne."},
+{id:534,w:"planta",pos:"N",fr:"plante",es:"Tengo algunas plantas en mi
+habitación.",fe:"J'ai quelques plantes dans ma chambre."},
+{id:535,w:"animal",pos:"N",fr:"animal",es:"Respeto a todos los animales.",fe:"Je
+respecte tous les animaux."}, {id:536,w:"fuego",pos:"N",fr:"feu",es:"El fuego de
+la ambición me mantiene activo.",fe:"Le feu de l'ambition me maintient actif."},
+{id:537,w:"aire",pos:"N",fr:"air",es:"El aire limpio me ayuda a pensar
+mejor.",fe:"L'air pur m'aide à mieux penser."},
+{id:538,w:"luz",pos:"N",fr:"lumière",es:"La luz del sol me da energía.",fe:"La
+lumière du soleil me donne de l'énergie."},
+{id:539,w:"oscuridad",pos:"N",fr:"obscurité / noirceur",es:"Trabajo en la
+oscuridad de la noche.",fe:"Je travaille dans l'obscurité de la nuit."},
+{id:540,w:"espacio",pos:"N",fr:"espace / place",es:"Necesito un espacio
+tranquilo para estudiar.",fe:"J'ai besoin d'un espace tranquille pour
+étudier."}, // ── NOUNS — TRANSPORT & MOVEMENT ─────────────────────────────────
+{id:541,w:"bicicleta",pos:"N",fr:"vélo",es:"Uso la bicicleta para hacer entregas
+con Uber Eats.",fe:"J'utilise le vélo pour faire des livraisons avec Uber
+Eats."}, {id:542,w:"metro",pos:"N",fr:"métro",es:"Tomo el metro para ir a
+clase.",fe:"Je prends le métro pour aller en cours."},
+{id:543,w:"autobús",pos:"N",fr:"autobus / bus",es:"A veces tomo el autobús en
+invierno.",fe:"Parfois je prends l'autobus en hiver."},
+{id:544,w:"tren",pos:"N",fr:"train",es:"Nunca he tomado el tren en
+Canadá.",fe:"Je n'ai jamais pris le train au Canada."},
+{id:545,w:"avión",pos:"N",fr:"avion",es:"Llegué a Canadá en avión.",fe:"Je suis
+arrivé au Canada en avion."}, {id:546,w:"coche",pos:"N",fr:"voiture /
+auto",es:"Aún no tengo coche, uso la bici.",fe:"Je n'ai pas encore de voiture,
+j'utilise le vélo."}, {id:547,w:"camino",pos:"N",fr:"chemin / voie",es:"El
+camino al éxito no es lineal.",fe:"Le chemin vers le succès n'est pas
+linéaire."}, {id:548,w:"ruta",pos:"N",fr:"route / trajet",es:"Conozco bien la
+ruta al trabajo.",fe:"Je connais bien le trajet vers le travail."},
+{id:549,w:"viaje",pos:"N",fr:"voyage",es:"Un día haré un gran viaje por América
+Latina.",fe:"Un jour je ferai un grand voyage en Amérique Latine."},
+{id:550,w:"distancia",pos:"N",fr:"distance",es:"La distancia entre el trabajo y
+casa es corta.",fe:"La distance entre le travail et chez moi est courte."}, //
+── NOUNS — LANGUAGE & COMMUNICATION ─────────────────────────────
+{id:551,w:"idioma",pos:"N",fr:"langue",es:"Aprendo varios idiomas a la
+vez.",fe:"J'apprends plusieurs langues en même temps."},
+{id:552,w:"lengua",pos:"N",fr:"langue / langage",es:"La lengua árabe es rica y
+poética.",fe:"La langue arabe est riche et poétique."},
+{id:553,w:"palabra",pos:"N",fr:"mot",es:"Aprendo cien palabras nuevas cada
+semana.",fe:"J'apprends cent nouveaux mots chaque semaine."},
+{id:554,w:"frase",pos:"N",fr:"phrase",es:"Practico construyendo frases
+propias.",fe:"Je pratique en construisant mes propres phrases."},
+{id:555,w:"libro",pos:"N",fr:"livre",es:"Leo un libro al mes.",fe:"Je lis un
+livre par mois."}, {id:556,w:"texto",pos:"N",fr:"texte",es:"Leo textos en
+español para practicar.",fe:"Je lis des textes en espagnol pour pratiquer."},
+{id:557,w:"mensaje",pos:"N",fr:"message",es:"Envío un mensaje a mi familia cada
+día.",fe:"J'envoie un message à ma famille chaque jour."},
+{id:558,w:"correo",pos:"N",fr:"courriel / courrier",es:"Recibo el correo del
+profesor en mi celular.",fe:"Je reçois le courriel du professeur sur mon
+portable."}, {id:559,w:"conversación",pos:"N",fr:"conversation",es:"Me gusta
+tener conversaciones profundas.",fe:"J'aime avoir des conversations
+profondes."}, {id:560,w:"pregunta",pos:"N",fr:"question",es:"Hago muchas
+preguntas en clase.",fe:"Je pose beaucoup de questions en cours."},
+{id:561,w:"respuesta",pos:"N",fr:"réponse",es:"Siempre tengo una respuesta para
+los problemas.",fe:"J'ai toujours une réponse aux problèmes."},
+{id:562,w:"explicación",pos:"N",fr:"explication",es:"El profesor da una
+explicación muy clara.",fe:"Le professeur donne une explication très claire."},
+{id:563,w:"vocabulario",pos:"N",fr:"vocabulaire",es:"Amplío mi vocabulario cada
+día.",fe:"J'élargis mon vocabulaire chaque jour."},
+{id:564,w:"gramática",pos:"N",fr:"grammaire",es:"La gramática española no es tan
+difícil.",fe:"La grammaire espagnole n'est pas si difficile."},
+{id:565,w:"pronunciación",pos:"N",fr:"prononciation",es:"Trabajo mi
+pronunciación con sombra fonética.",fe:"Je travaille ma prononciation avec
+l'ombre phonétique."}, {id:566,w:"traducción",pos:"N",fr:"traduction",es:"Uso el
+francés como lengua de referencia para las traducciones.",fe:"J'utilise le
+français comme langue de référence pour les traductions."},
+{id:567,w:"periódico",pos:"N",fr:"journal (presse)",es:"Leo el periódico en
+línea.",fe:"Je lis le journal en ligne."},
+{id:568,w:"noticia",pos:"N",fr:"nouvelle / actualité",es:"Me mantengo al tanto
+de las noticias tecnológicas.",fe:"Je me tiens au courant des actualités
+technologiques."}, {id:569,w:"historia",pos:"N",fr:"histoire / récit",es:"Me
+encanta escuchar historias de vida.",fe:"J'adore écouter des histoires de
+vie."}, {id:570,w:"cuento",pos:"N",fr:"conte / récit court",es:"Los cuentos me
+ayudan a aprender vocabulario.",fe:"Les contes m'aident à apprendre du
+vocabulaire."}, // ── NUMBERS & QUANTITIES
+───────────────────────────────────────── {id:571,w:"número",pos:"N",fr:"nombre
+/ numéro",es:"El número de idiomas que aprendo crece.",fe:"Le nombre de langues
+que j'apprends augmente."}, {id:572,w:"uno",pos:"N/Adj",fr:"un",es:"Tengo un
+solo objetivo esta semana.",fe:"J'ai un seul objectif cette semaine."},
+{id:573,w:"dos",pos:"N/Adj",fr:"deux",es:"Tengo dos empleos: el estudio y el
+trabajo.",fe:"J'ai deux occupations : les études et le travail."},
+{id:574,w:"tres",pos:"N/Adj",fr:"trois",es:"Me quedan tres meses para
+graduarme.",fe:"Il me reste trois mois pour obtenir mon diplôme."},
+{id:575,w:"cuatro",pos:"N/Adj",fr:"quatre",es:"Llevo cuatro horas en el
+turno.",fe:"Je suis dans le quart depuis quatre heures."},
+{id:576,w:"cinco",pos:"N/Adj",fr:"cinq",es:"Estoy en el quinto semestre.",fe:"Je
+suis au cinquième semestre."}, {id:577,w:"diez",pos:"N/Adj",fr:"dix",es:"Aprendí
+diez palabras nuevas hoy.",fe:"J'ai appris dix nouveaux mots aujourd'hui."},
+{id:578,w:"cien",pos:"N/Adj",fr:"cent",es:"Estudio cien palabras por
+semana.",fe:"J'étudie cent mots par semaine."},
+{id:579,w:"mil",pos:"N/Adj",fr:"mille",es:"Quiero aprender mil palabras en
+español.",fe:"Je veux apprendre mille mots en espagnol."},
+{id:580,w:"mitad",pos:"N",fr:"moitié",es:"La mitad del semestre ya pasó.",fe:"La
+moitié du semestre est déjà passée."}, {id:581,w:"poco",pos:"N/Adj/Adv",fr:"peu
+/ un peu",es:"Un poco de esfuerzo cada día cambia mucho.",fe:"Un peu d'effort
+chaque jour change beaucoup."}, {id:582,w:"mucho",pos:"Adj/Adv",fr:"beaucoup /
+très",es:"Aprendo mucho gracias a la práctica.",fe:"J'apprends beaucoup grâce à
+la pratique."}, {id:583,w:"tanto",pos:"Adj/Adv",fr:"tant / tellement",es:"Tengo
+tanto que aprender todavía.",fe:"J'ai tellement encore à apprendre."},
+{id:584,w:"varios",pos:"Adj",fr:"plusieurs",es:"Hablo varios idiomas.",fe:"Je
+parle plusieurs langues."}, {id:585,w:"alguno",pos:"Adj/Pron",fr:"quelque /
+certain",es:"Tengo algunos proyectos pendientes.",fe:"J'ai quelques projets en
+attente."}, {id:586,w:"ninguno",pos:"Adj/Pron",fr:"aucun",es:"Ningún obstáculo
+es demasiado grande.",fe:"Aucun obstacle n'est trop grand."},
+{id:587,w:"primera",pos:"Adj/N",fr:"première",es:"La primera vez que programé
+fue emocionante.",fe:"La première fois que j'ai programmé, c'était excitant."},
+{id:588,w:"último",pos:"Adj",fr:"dernier / ultime",es:"Este es el último
+semestre antes de graduarme.",fe:"C'est le dernier semestre avant mon
+diplôme."}, {id:589,w:"siguiente",pos:"Adj",fr:"suivant / prochain",es:"El
+siguiente paso es conseguir empleo.",fe:"La prochaine étape est de trouver un
+emploi."}, {id:590,w:"anterior",pos:"Adj",fr:"précédent / antérieur",es:"El
+semestre anterior fue muy intenso.",fe:"Le semestre précédent était très
+intense."}, // ── ADJECTIVES ───────────────────────────────────────────────────
+{id:591,w:"bueno",pos:"Adj",fr:"bon / bien",es:"Tengo un buen ritmo de
+trabajo.",fe:"J'ai un bon rythme de travail."},
+{id:592,w:"malo",pos:"Adj",fr:"mauvais",es:"Los malos hábitos frenan el
+progreso.",fe:"Les mauvaises habitudes freinent le progrès."},
+{id:593,w:"grande",pos:"Adj",fr:"grand / important",es:"Tengo grandes planes
+para el futuro.",fe:"J'ai de grands plans pour l'avenir."},
+{id:594,w:"pequeño",pos:"Adj",fr:"petit",es:"Cada pequeño esfuerzo
+suma.",fe:"Chaque petit effort compte."},
+{id:595,w:"nuevo",pos:"Adj",fr:"nouveau / neuf",es:"Aprendo un idioma nuevo cada
+año.",fe:"J'apprends une nouvelle langue chaque année."},
+{id:596,w:"viejo",pos:"Adj",fr:"vieux / ancien",es:"Compro teléfonos viejos para
+repararlos.",fe:"J'achète de vieux téléphones pour les réparer."},
+{id:597,w:"alto",pos:"Adj",fr:"grand (taille) / élevé",es:"Tengo estándares
+altos para mi trabajo.",fe:"J'ai des standards élevés pour mon travail."},
+{id:598,w:"bajo",pos:"Adj",fr:"petit (taille) / bas",es:"El costo de la
+bicicleta es bajo.",fe:"Le coût du vélo est bas."},
+{id:599,w:"largo",pos:"Adj",fr:"long",es:"El invierno es largo, pero lo
+aguanto.",fe:"L'hiver est long, mais je le supporte."},
+{id:600,w:"corto",pos:"Adj",fr:"court",es:"El verano es corto pero
+intenso.",fe:"L'été est court mais intense."},
+{id:601,w:"rápido",pos:"Adj",fr:"rapide",es:"Soy un aprendedor rápido.",fe:"Je
+suis un apprenant rapide."}, {id:602,w:"lento",pos:"Adj",fr:"lent",es:"Prefiero
+aprender lento pero bien.",fe:"Je préfère apprendre lentement mais bien."},
+{id:603,w:"fuerte",pos:"Adj",fr:"fort / solide",es:"Soy fuerte
+mentalmente.",fe:"Je suis fort mentalement."},
+{id:604,w:"débil",pos:"Adj",fr:"faible",es:"Nadie es débil cuando se conoce a sí
+mismo.",fe:"Personne n'est faible quand il se connaît lui-même."},
+{id:605,w:"duro",pos:"Adj",fr:"dur / difficile",es:"El trabajo nocturno es duro,
+pero vale la pena.",fe:"Le travail de nuit est dur, mais ça vaut la peine."},
+{id:606,w:"suave",pos:"Adj",fr:"doux / souple",es:"Un tono suave comunica
+mejor.",fe:"Un ton doux communique mieux."},
+{id:607,w:"caliente",pos:"Adj",fr:"chaud",es:"Bebo té caliente en las noches de
+trabajo.",fe:"Je bois du thé chaud les nuits de travail."},
+{id:608,w:"frío",pos:"Adj",fr:"froid",es:"El invierno de Montréal es muy
+frío.",fe:"L'hiver de Montréal est très froid."},
+{id:609,w:"lleno",pos:"Adj",fr:"plein / rassasié",es:"Estoy lleno de energía
+cuando duermo bien.",fe:"Je suis plein d'énergie quand je dors bien."},
+{id:610,w:"vacío",pos:"Adj",fr:"vide",es:"No me gusta tener el tiempo
+vacío.",fe:"Je n'aime pas avoir du temps vide."},
+{id:611,w:"fácil",pos:"Adj",fr:"facile",es:"Nada importante es fácil.",fe:"Rien
+d'important n'est facile."}, {id:612,w:"difícil",pos:"Adj",fr:"difficile",es:"Lo
+difícil me motiva.",fe:"Le difficile me motive."},
+{id:613,w:"posible",pos:"Adj",fr:"possible",es:"Todo es posible con
+dedicación.",fe:"Tout est possible avec de la dédicace."},
+{id:614,w:"imposible",pos:"Adj",fr:"impossible",es:"Nada es imposible si lo
+intentas.",fe:"Rien n'est impossible si on essaie."},
+{id:615,w:"importante",pos:"Adj",fr:"important",es:"Es importante mantener el
+equilibrio.",fe:"Il est important de maintenir l'équilibre."},
+{id:616,w:"interesante",pos:"Adj",fr:"intéressant",es:"La programación es muy
+interesante.",fe:"La programmation est très intéressante."},
+{id:617,w:"aburrido",pos:"Adj",fr:"ennuyeux",es:"No hay tarea aburrida si la
+abordas bien.",fe:"Il n'y a pas de tâche ennuyeuse si on l'aborde bien."},
+{id:618,w:"feliz",pos:"Adj",fr:"heureux / content",es:"Me siento feliz cuando
+aprendo algo nuevo.",fe:"Je me sens heureux quand j'apprends quelque chose de
+nouveau."}, {id:619,w:"triste",pos:"Adj",fr:"triste",es:"Estoy triste cuando no
+logro mis objetivos.",fe:"Je suis triste quand je n'atteins pas mes
+objectifs."}, {id:620,w:"enojado",pos:"Adj",fr:"en colère / fâché",es:"Me enojo
+cuando pierdo el tiempo.",fe:"Je me fâche quand je perds du temps."},
+{id:621,w:"cansado",pos:"Adj",fr:"fatigué",es:"Estoy cansado pero
+determinado.",fe:"Je suis fatigué mais déterminé."},
+{id:622,w:"contento",pos:"Adj",fr:"content / satisfait",es:"Estoy contento con
+mi progreso.",fe:"Je suis content de mes progrès."},
+{id:623,w:"seguro",pos:"Adj",fr:"sûr / certain / en sécurité",es:"Estoy seguro
+de que voy a lograrlo.",fe:"Je suis sûr que je vais y arriver."},
+{id:624,w:"rico",pos:"Adj",fr:"riche / délicieux",es:"Mi cultura es rica en
+tradiciones.",fe:"Ma culture est riche en traditions."},
+{id:625,w:"pobre",pos:"Adj",fr:"pauvre",es:"Crecer pobre me enseñó el valor del
+dinero.",fe:"Grandir pauvre m'a appris la valeur de l'argent."},
+{id:626,w:"caro",pos:"Adj",fr:"cher / coûteux",es:"El costo de vida en Montréal
+es caro.",fe:"Le coût de la vie à Montréal est cher."},
+{id:627,w:"barato",pos:"Adj",fr:"bon marché / pas cher",es:"Busco ofertas
+baratas para mis proyectos.",fe:"Je cherche des offres pas chères pour mes
+projets."}, {id:628,w:"diferente",pos:"Adj",fr:"différent",es:"Soy diferente, y
+eso es una ventaja.",fe:"Je suis différent, et c'est un avantage."},
+{id:629,w:"igual",pos:"Adj",fr:"égal / pareil",es:"No todos aprendemos de la
+misma manera.",fe:"Nous n'apprenons pas tous de la même façon."},
+{id:630,w:"especial",pos:"Adj",fr:"spécial",es:"Este semestre es especial para
+mí.",fe:"Ce semestre est spécial pour moi."},
+{id:631,w:"normal",pos:"Adj",fr:"normal",es:"Es normal cometer errores al
+aprender.",fe:"Il est normal de faire des erreurs en apprenant."},
+{id:632,w:"extraño",pos:"Adj",fr:"étrange / bizarre",es:"Es extraño trabajar
+cuando todos duermen.",fe:"C'est étrange de travailler quand tout le monde
+dort."}, {id:633,w:"útil",pos:"Adj",fr:"utile",es:"Python es un lenguaje muy
+útil.",fe:"Python est un langage très utile."},
+{id:634,w:"verdadero",pos:"Adj",fr:"vrai / véritable",es:"El verdadero éxito
+viene del interior.",fe:"Le vrai succès vient de l'intérieur."},
+{id:635,w:"falso",pos:"Adj",fr:"faux",es:"No me gustan las excusas
+falsas.",fe:"Je n'aime pas les fausses excuses."},
+{id:636,w:"correcto",pos:"Adj",fr:"correct / juste",es:"El código es correcto y
+funciona bien.",fe:"Le code est correct et fonctionne bien."},
+{id:637,w:"completo",pos:"Adj",fr:"complet / entier",es:"El proyecto está
+completo y listo.",fe:"Le projet est complet et prêt."},
+{id:638,w:"famoso",pos:"Adj",fr:"célèbre / fameux",es:"Quiero construir una
+marca famosa un día.",fe:"Je veux construire une marque célèbre un jour."},
+{id:639,w:"público",pos:"Adj",fr:"public",es:"Publicaré mi código de forma
+pública.",fe:"Je publierai mon code de façon publique."},
+{id:640,w:"privado",pos:"Adj",fr:"privé",es:"Mantengo mi vida privada separada
+del trabajo.",fe:"Je garde ma vie privée séparée du travail."},
+{id:641,w:"nacional",pos:"Adj",fr:"national",es:"La residencia permanente es un
+documento nacional.",fe:"La résidence permanente est un document national."},
+{id:642,w:"internacional",pos:"Adj",fr:"international",es:"Quiero trabajar en
+una empresa internacional.",fe:"Je veux travailler dans une entreprise
+internationale."}, {id:643,w:"natural",pos:"Adj",fr:"naturel",es:"El aprendizaje
+natural es más duradero.",fe:"L'apprentissage naturel est plus durable."},
+{id:644,w:"humano",pos:"Adj/N",fr:"humain",es:"El error es humano.",fe:"L'erreur
+est humaine."}, {id:645,w:"político",pos:"Adj",fr:"politique",es:"No me interesa
+la política.",fe:"La politique ne m'intéresse pas."},
+{id:646,w:"económico",pos:"Adj",fr:"économique",es:"Necesito estabilidad
+económica.",fe:"J'ai besoin de stabilité économique."},
+{id:647,w:"social",pos:"Adj",fr:"social",es:"Las habilidades sociales son tan
+importantes como las técnicas.",fe:"Les compétences sociales sont aussi
+importantes que les techniques."},
+{id:648,w:"cultural",pos:"Adj",fr:"culturel",es:"El intercambio cultural
+enriquece la mente.",fe:"L'échange culturel enrichit l'esprit."},
+{id:649,w:"científico",pos:"Adj",fr:"scientifique",es:"El método científico me
+ayuda a resolver problemas.",fe:"La méthode scientifique m'aide à résoudre des
+problèmes."}, {id:650,w:"tecnológico",pos:"Adj",fr:"technologique",es:"El mundo
+tecnológico evoluciona rápido.",fe:"Le monde technologique évolue rapidement."},
+{id:651,w:"moderno",pos:"Adj",fr:"moderne",es:"Uso herramientas modernas en mis
+proyectos.",fe:"J'utilise des outils modernes dans mes projets."},
+{id:652,w:"antiguo",pos:"Adj",fr:"ancien / vieux",es:"Aprendo de la filosofía
+antigua.",fe:"J'apprends de la philosophie ancienne."},
+{id:653,w:"reciente",pos:"Adj",fr:"récent",es:"Los avances recientes en IA son
+impresionantes.",fe:"Les avancées récentes en IA sont impressionnantes."},
+{id:654,w:"próximo",pos:"Adj",fr:"prochain / suivant",es:"El próximo semestre
+tendrá nuevos desafíos.",fe:"Le prochain semestre aura de nouveaux défis."},
+{id:655,w:"pasado",pos:"Adj",fr:"passé / dernier",es:"El año pasado aprendí
+muchísimo.",fe:"L'année passée j'ai énormément appris."},
+{id:656,w:"personal",pos:"Adj",fr:"personnel",es:"Tengo un desarrollo personal
+constante.",fe:"J'ai un développement personnel constant."},
+{id:657,w:"profesional",pos:"Adj",fr:"professionnel",es:"Quiero una carrera
+profesional en tecnología.",fe:"Je veux une carrière professionnelle en
+technologie."}, {id:658,w:"general",pos:"Adj",fr:"général",es:"En general, soy
+un estudiante aplicado.",fe:"En général, je suis un étudiant appliqué."},
+{id:659,w:"específico",pos:"Adj",fr:"spécifique",es:"Tengo objetivos específicos
+cada semana.",fe:"J'ai des objectifs spécifiques chaque semaine."},
+{id:660,w:"total",pos:"Adj",fr:"total / entier",es:"El total de créditos para
+graduarme está cubierto.",fe:"Le total de crédits pour obtenir mon diplôme est
+couvert."}, {id:661,w:"directo",pos:"Adj",fr:"direct",es:"Prefiero la
+comunicación directa.",fe:"Je préfère la communication directe."},
+{id:662,w:"simple",pos:"Adj",fr:"simple",es:"La solución más simple suele ser la
+mejor.",fe:"La solution la plus simple est souvent la meilleure."},
+{id:663,w:"complejo",pos:"Adj",fr:"complexe",es:"Los proyectos complejos me
+desafían positivamente.",fe:"Les projets complexes me challengent
+positivement."}, {id:664,w:"básico",pos:"Adj",fr:"basique / de base",es:"Domino
+los conceptos básicos de la programación.",fe:"Je maîtrise les concepts de base
+de la programmation."}, {id:665,w:"avanzado",pos:"Adj",fr:"avancé",es:"Quiero
+llegar a un nivel avanzado en español.",fe:"Je veux atteindre un niveau avancé
+en espagnol."}, {id:666,w:"libre",pos:"Adj",fr:"libre / gratuit",es:"Soy libre
+de elegir mi camino.",fe:"Je suis libre de choisir mon chemin."},
+{id:667,w:"ocupado",pos:"Adj",fr:"occupé",es:"Siempre estoy ocupado, pero
+organizado.",fe:"Je suis toujours occupé, mais organisé."},
+{id:668,w:"listo",pos:"Adj",fr:"prêt / intelligent",es:"Estoy listo para el
+siguiente reto.",fe:"Je suis prêt pour le prochain défi."},
+{id:669,w:"juntos",pos:"Adj/Adv",fr:"ensemble",es:"Juntos podemos lograr
+más.",fe:"Ensemble on peut accomplir plus."},
+{id:670,w:"solo",pos:"Adj",fr:"seul",es:"Trabajo solo en algunos
+proyectos.",fe:"Je travaille seul sur certains projets."},
+{id:671,w:"propio",pos:"Adj",fr:"propre / à soi",es:"Tengo mis propios métodos
+de estudio.",fe:"J'ai mes propres méthodes d'étude."},
+{id:672,w:"ajeno",pos:"Adj",fr:"étranger / d'autrui",es:"No me comparo con el
+éxito ajeno.",fe:"Je ne me compare pas au succès des autres."},
+{id:673,w:"claro",pos:"Adj",fr:"clair",es:"Tengo una visión clara de mi
+futuro.",fe:"J'ai une vision claire de mon avenir."},
+{id:674,w:"oscuro",pos:"Adj",fr:"sombre / obscur",es:"El pasado oscuro me hizo
+más fuerte.",fe:"Le passé sombre m'a rendu plus fort."},
+{id:675,w:"tranquilo",pos:"Adj",fr:"tranquille / calme",es:"Mantengo la mente
+tranquila bajo presión.",fe:"Je garde l'esprit tranquille sous pression."},
+{id:676,w:"agresivo",pos:"Adj",fr:"agressif",es:"Soy agresivo en mis metas, no
+en mi actitud.",fe:"Je suis agressif dans mes objectifs, pas dans mon
+attitude."}, {id:677,w:"amable",pos:"Adj",fr:"aimable / gentil",es:"Soy amable
+con todos mis compañeros.",fe:"Je suis aimable avec tous mes camarades."},
+{id:678,w:"educado",pos:"Adj",fr:"poli / éduqué",es:"Soy educado y respetuoso en
+todo momento.",fe:"Je suis poli et respectueux en tout moment."},
+{id:679,w:"honesto",pos:"Adj",fr:"honnête",es:"La honestidad es un principio
+fundamental para mí.",fe:"L'honnêteté est un principe fondamental pour moi."},
+{id:680,w:"responsable",pos:"Adj",fr:"responsable",es:"Soy responsable con mis
+compromisos.",fe:"Je suis responsable de mes engagements."}, // ── MORE VERBS
+───────────────────────────────────────────────────
+{id:681,w:"manejar",pos:"V",fr:"conduire / gérer",es:"Manejo bien el estrés del
+turno nocturno.",fe:"Je gère bien le stress du quart de nuit."},
+{id:682,w:"aprovechar",pos:"V",fr:"profiter de / tirer parti de",es:"Aprovecho
+cada oportunidad de aprender.",fe:"Je profite de chaque occasion d'apprendre."},
+{id:683,w:"adaptar",pos:"V",fr:"adapter",es:"Me adapto fácilmente a nuevos
+entornos.",fe:"Je m'adapte facilement aux nouveaux environnements."},
+{id:684,w:"enfrentar",pos:"V",fr:"affronter / faire face à",es:"Enfrento los
+problemas con calma.",fe:"J'affronte les problèmes avec calme."},
+{id:685,w:"motivar",pos:"V",fr:"motiver",es:"Mis metas me motivan a seguir
+adelante.",fe:"Mes objectifs me motivent à continuer."},
+{id:686,w:"inspirar",pos:"V",fr:"inspirer",es:"Quiero inspirar a otros con mi
+historia.",fe:"Je veux inspirer les autres avec mon histoire."},
+{id:687,w:"demostrar",pos:"V",fr:"démontrer / prouver",es:"Quiero demostrar que
+soy capaz.",fe:"Je veux démontrer que je suis capable."},
+{id:688,w:"compartir",pos:"V",fr:"partager",es:"Comparto lo que aprendo con mis
+compañeros.",fe:"Je partage ce que j'apprends avec mes camarades."},
+{id:689,w:"combinar",pos:"V",fr:"combiner",es:"Combino el aprendizaje visual y
+auditivo.",fe:"Je combine l'apprentissage visuel et auditif."},
+{id:690,w:"repetir",pos:"V",fr:"répéter",es:"Repito las palabras hasta
+memorizarlas.",fe:"Je répète les mots jusqu'à les mémoriser."},
+{id:691,w:"memorizar",pos:"V",fr:"mémoriser",es:"Memorizo vocabulario con
+tarjetas de repaso.",fe:"Je mémorise le vocabulaire avec des fiches de
+révision."}, {id:692,w:"concentrar",pos:"V",fr:"concentrer",es:"Me concentro
+mejor por la mañana.",fe:"Je me concentre mieux le matin."},
+{id:693,w:"reflexionar",pos:"V",fr:"réfléchir / méditer",es:"Reflexiono sobre
+mis errores para mejorar.",fe:"Je réfléchis sur mes erreurs pour m'améliorer."},
+{id:694,w:"meditar",pos:"V",fr:"méditer",es:"Medito unos minutos antes de
+dormir.",fe:"Je médite quelques minutes avant de dormir."},
+{id:695,w:"descansar",pos:"V",fr:"se reposer",es:"Descanso para recuperar
+energías.",fe:"Je me repose pour récupérer mes énergies."},
+{id:696,w:"fortalecer",pos:"V",fr:"renforcer / fortifier",es:"El ejercicio
+fortalece el cuerpo y la mente.",fe:"L'exercice renforce le corps et
+l'esprit."}, {id:697,w:"superar",pos:"V",fr:"surpasser / dépasser",es:"Quiero
+superar mis récords personales.",fe:"Je veux surpasser mes records
+personnels."}, {id:698,w:"perseverar",pos:"V",fr:"persévérer",es:"Persevero
+aunque los resultados tarden.",fe:"Je persévère même si les résultats
+tardent."}, {id:699,w:"esforzarse",pos:"V",fr:"faire des efforts /
+s'efforcer",es:"Me esfuerzo al máximo en todo lo que hago.",fe:"Je fais de mon
+mieux dans tout ce que je fais."},
+{id:700,w:"comprometerse",pos:"V",fr:"s'engager / s'impliquer",es:"Me comprometo
+con mis metas al cien por ciento.",fe:"Je m'engage à cent pour cent envers mes
+objectifs."}, {id:701,w:"colaborar",pos:"V",fr:"collaborer",es:"Colaboro bien en
+proyectos de equipo.",fe:"Je collabore bien dans les projets d'équipe."},
+{id:702,w:"negociar",pos:"V",fr:"négocier",es:"Negocio el precio cuando compro
+electrónicos.",fe:"Je négocie le prix quand j'achète des appareils
+électroniques."}, {id:703,w:"planificar",pos:"V",fr:"planifier",es:"Planifico
+mis semanas con detalle.",fe:"Je planifie mes semaines en détail."},
+{id:704,w:"ejecutar",pos:"V",fr:"exécuter / réaliser",es:"Ejecuto mi plan con
+disciplina.",fe:"J'exécute mon plan avec discipline."},
+{id:705,w:"monitorear",pos:"V",fr:"surveiller / suivre",es:"Monitoreo mi
+progreso cada semana.",fe:"Je surveille mes progrès chaque semaine."},
+{id:706,w:"ajustar",pos:"V",fr:"ajuster / adapter",es:"Ajusto mi plan según los
+resultados.",fe:"J'ajuste mon plan selon les résultats."},
+{id:707,w:"importar",pos:"V",fr:"importer / avoir de l'importance",es:"Me
+importa mucho mi desarrollo personal.",fe:"Mon développement personnel m'importe
+beaucoup."}, {id:708,w:"depender",pos:"V",fr:"dépendre",es:"No quiero depender
+de nadie.",fe:"Je ne veux pas dépendre de personne."},
+{id:709,w:"pertenecer",pos:"V",fr:"appartenir",es:"Pertenezco a la comunidad
+africana de Montréal.",fe:"J'appartiens à la communauté africaine de
+Montréal."}, {id:710,w:"representar",pos:"V",fr:"représenter",es:"Represento mis
+valores en cada acción.",fe:"Je représente mes valeurs dans chaque action."},
+{id:711,w:"significar",pos:"V",fr:"signifier / vouloir dire",es:"Trabajar duro
+significa respetar el proceso.",fe:"Travailler dur signifie respecter le
+processus."}, {id:712,w:"afectar",pos:"V",fr:"affecter",es:"El cansancio afecta
+mi concentración.",fe:"La fatigue affecte ma concentration."},
+{id:713,w:"influir",pos:"V",fr:"influencer",es:"Mis experiencias influyen en mi
+visión del mundo.",fe:"Mes expériences influencent ma vision du monde."},
+{id:714,w:"contribuir",pos:"V",fr:"contribuer",es:"Quiero contribuir al avance
+de la tecnología.",fe:"Je veux contribuer à l'avance de la technologie."},
+{id:715,w:"generar",pos:"V",fr:"générer",es:"Genero ingresos de varias
+fuentes.",fe:"Je génère des revenus de plusieurs sources."},
+{id:716,w:"aprovechar",pos:"V",fr:"exploiter / profiter",es:"Aprovecho cada
+minuto libre para aprender.",fe:"Je profite de chaque minute libre pour
+apprendre."}, {id:717,w:"trasladar",pos:"V",fr:"déplacer /
+transférer",es:"Trasladé mis archivos al nuevo servidor.",fe:"J'ai transféré mes
+fichiers vers le nouveau serveur."},
+{id:718,w:"integrar",pos:"V",fr:"intégrer",es:"Integro el feedback en cada
+proyecto.",fe:"J'intègre les retours dans chaque projet."},
+{id:719,w:"transformar",pos:"V",fr:"transformer",es:"La educación transforma
+vidas.",fe:"L'éducation transforme des vies."},
+{id:720,w:"imitar",pos:"V",fr:"imiter",es:"Imito a los mejores para aprender más
+rápido.",fe:"J'imite les meilleurs pour apprendre plus vite."}, // ── NOUNS —
+EMOTIONS & CHARACTER ─────────────────────────────────
+{id:721,w:"emoción",pos:"N",fr:"émotion",es:"Controlo mis emociones con la
+meditación.",fe:"Je contrôle mes émotions avec la méditation."},
+{id:722,w:"motivación",pos:"N",fr:"motivation",es:"Mi motivación viene de mis
+metas.",fe:"Ma motivation vient de mes objectifs."},
+{id:723,w:"ambición",pos:"N",fr:"ambition",es:"Tengo mucha ambición pero también
+paciencia.",fe:"J'ai beaucoup d'ambition mais aussi de la patience."},
+{id:724,w:"paciencia",pos:"N",fr:"patience",es:"La paciencia es la madre del
+aprendizaje.",fe:"La patience est la mère de l'apprentissage."},
+{id:725,w:"perseverancia",pos:"N",fr:"persévérance",es:"La perseverancia es
+clave para el éxito.",fe:"La persévérance est la clé du succès."},
+{id:726,w:"resiliencia",pos:"N",fr:"résilience",es:"La resiliencia me permite
+superar los obstáculos.",fe:"La résilience me permet de surmonter les
+obstacles."}, {id:727,w:"confianza",pos:"N",fr:"confiance",es:"Tengo confianza
+en mis capacidades.",fe:"J'ai confiance en mes capacités."},
+{id:728,w:"miedo",pos:"N",fr:"peur",es:"No dejo que el miedo me detenga.",fe:"Je
+ne laisse pas la peur m'arrêter."},
+{id:729,w:"orgullo",pos:"N",fr:"fierté",es:"Siento orgullo por cada
+logro.",fe:"Je ressens de la fierté pour chaque accomplissement."},
+{id:730,w:"vergüenza",pos:"N",fr:"honte",es:"No siento vergüenza de cometer
+errores.",fe:"Je n'ai pas honte de faire des erreurs."},
+{id:731,w:"alegría",pos:"N",fr:"joie / bonheur",es:"La alegría viene de vivir
+con propósito.",fe:"La joie vient de vivre avec un but."},
+{id:732,w:"tristeza",pos:"N",fr:"tristesse",es:"La tristeza pasa cuando
+actúas.",fe:"La tristesse passe quand on agit."},
+{id:733,w:"estrés",pos:"N",fr:"stress",es:"Manejo el estrés con técnicas de
+respiración.",fe:"Je gère le stress avec des techniques de respiration."},
+{id:734,w:"calma",pos:"N",fr:"calme",es:"Encuentro la calma en momentos
+difíciles.",fe:"Je trouve le calme dans les moments difficiles."},
+{id:735,w:"voluntad",pos:"N",fr:"volonté",es:"Tengo la voluntad de lograr todo
+lo que me propongo.",fe:"J'ai la volonté d'accomplir tout ce que je me
+propose."}, {id:736,w:"carácter",pos:"N",fr:"caractère",es:"El carácter se forma
+en los momentos difíciles.",fe:"Le caractère se forme dans les moments
+difficiles."}, {id:737,w:"actitud",pos:"N",fr:"attitude",es:"Mi actitud positiva
+lo cambia todo.",fe:"Mon attitude positive change tout."},
+{id:738,w:"habilidad",pos:"N",fr:"compétence / habileté",es:"Desarrollo mis
+habilidades constantemente.",fe:"Je développe mes compétences constamment."},
+{id:739,w:"talento",pos:"N",fr:"talent",es:"El talento sin esfuerzo no llega
+lejos.",fe:"Le talent sans effort n'arrive pas loin."},
+{id:740,w:"creatividad",pos:"N",fr:"créativité",es:"La creatividad es esencial
+en la tecnología.",fe:"La créativité est essentielle dans la technologie."},
+{id:741,w:"inteligencia",pos:"N",fr:"intelligence",es:"La inteligencia emocional
+es tan importante como la técnica.",fe:"L'intelligence émotionnelle est aussi
+importante que la technique."},
+{id:742,w:"memoria",pos:"N",fr:"mémoire",es:"Entreno mi memoria con técnicas
+especiales.",fe:"J'entraîne ma mémoire avec des techniques spéciales."},
+{id:743,w:"imaginación",pos:"N",fr:"imagination",es:"La imaginación no tiene
+límites.",fe:"L'imagination n'a pas de limites."},
+{id:744,w:"lógica",pos:"N",fr:"logique",es:"La lógica es fundamental en la
+programación.",fe:"La logique est fondamentale en programmation."},
+{id:745,w:"pensamiento",pos:"N",fr:"pensée / réflexion",es:"El pensamiento
+crítico se desarrolla con la práctica.",fe:"La pensée critique se développe avec
+la pratique."}, // ── NOUNS — EDUCATION & SCIENCE
+──────────────────────────────────
+{id:746,w:"aprendizaje",pos:"N",fr:"apprentissage",es:"El aprendizaje es un
+viaje de por vida.",fe:"L'apprentissage est un voyage pour toute la vie."},
+{id:747,w:"educación",pos:"N",fr:"éducation",es:"La educación es mi prioridad
+número uno.",fe:"L'éducation est ma priorité numéro un."},
+{id:748,w:"conocimiento",pos:"N",fr:"connaissance",es:"El conocimiento es la
+base del progreso.",fe:"La connaissance est la base du progrès."},
+{id:749,w:"ciencia",pos:"N",fr:"science",es:"La ciencia de datos es mi área
+preferida.",fe:"La science des données est mon domaine préféré."},
+{id:750,w:"tecnología",pos:"N",fr:"technologie",es:"La tecnología transforma el
+mundo moderno.",fe:"La technologie transforme le monde moderne."},
+{id:751,w:"matemáticas",pos:"N",fr:"mathématiques",es:"Las matemáticas son el
+lenguaje de la ciencia.",fe:"Les mathématiques sont le langage de la science."},
+{id:752,w:"física",pos:"N",fr:"physique",es:"La física explica cómo funciona el
+universo.",fe:"La physique explique comment fonctionne l'univers."},
+{id:753,w:"investigación",pos:"N",fr:"recherche",es:"Hago investigación sobre IA
+en mis proyectos.",fe:"Je fais de la recherche sur l'IA dans mes projets."},
+{id:754,w:"método",pos:"N",fr:"méthode",es:"Uso el método de repetición
+espaciada.",fe:"J'utilise la méthode de répétition espacée."},
+{id:755,w:"técnica",pos:"N",fr:"technique",es:"Aprendo nuevas técnicas de
+programación.",fe:"J'apprends de nouvelles techniques de programmation."},
+{id:756,w:"práctica",pos:"N",fr:"pratique",es:"La práctica diaria es mi
+secreto.",fe:"La pratique quotidienne est mon secret."},
+{id:757,w:"teoría",pos:"N",fr:"théorie",es:"La teoría sin práctica es
+incompleta.",fe:"La théorie sans pratique est incomplète."},
+{id:758,w:"análisis",pos:"N",fr:"analyse",es:"El análisis de datos me
+fascina.",fe:"L'analyse de données me fascine."},
+{id:759,w:"desarrollo",pos:"N",fr:"développement",es:"El desarrollo web es mi
+especialidad.",fe:"Le développement web est ma spécialité."},
+{id:760,w:"innovación",pos:"N",fr:"innovation",es:"La innovación requiere
+creatividad y riesgo.",fe:"L'innovation exige de la créativité et du risque."},
+// ── NOUNS — SOCIAL & CIVIC ───────────────────────────────────────
+{id:761,w:"gobierno",pos:"N",fr:"gouvernement",es:"El gobierno de Canadá apoya
+la inmigración.",fe:"Le gouvernement du Canada soutient l'immigration."},
+{id:762,w:"ley",pos:"N",fr:"loi",es:"Respeto las leyes del país donde
+vivo.",fe:"Je respecte les lois du pays où je vis."},
+{id:763,w:"derecho",pos:"N",fr:"droit / droite",es:"Tengo el derecho de buscar
+una mejor vida.",fe:"J'ai le droit de chercher une vie meilleure."},
+{id:764,w:"documento",pos:"N",fr:"document",es:"Tengo todos mis documentos en
+orden.",fe:"J'ai tous mes documents en ordre."},
+{id:765,w:"permiso",pos:"N",fr:"permission / permis",es:"Tramité mi permiso de
+trabajo a tiempo.",fe:"J'ai obtenu mon permis de travail à temps."},
+{id:766,w:"residencia",pos:"N",fr:"résidence",es:"Aspiro a la residencia
+permanente en Canadá.",fe:"J'aspire à la résidence permanente au Canada."},
+{id:767,w:"ciudadanía",pos:"N",fr:"citoyenneté",es:"La ciudadanía es mi objetivo
+a largo plazo.",fe:"La citoyenneté est mon objectif à long terme."},
+{id:768,w:"inmigrante",pos:"N",fr:"immigrant/e",es:"Soy un inmigrante que
+trabaja para su futuro.",fe:"Je suis un immigrant qui travaille pour son
+avenir."}, {id:769,w:"idioma",pos:"N",fr:"langue officielle / idiome",es:"El
+francés es el idioma oficial de Québec.",fe:"Le français est la langue
+officielle du Québec."}, {id:770,w:"diversidad",pos:"N",fr:"diversité",es:"La
+diversidad de Montréal es una riqueza.",fe:"La diversité de Montréal est une
+richesse."}, // ── EXPRESSIONS & FIXED PHRASES
+────────────────────────────────── {id:771,w:"de
+acuerdo",pos:"Expr",fr:"d'accord / ok",es:"De acuerdo, mañana entrego el
+trabajo.",fe:"D'accord, je remets le travail demain."}, {id:772,w:"por
+supuesto",pos:"Expr",fr:"bien sûr / évidemment",es:"Por supuesto que voy a
+lograrlo.",fe:"Bien sûr que je vais y arriver."}, {id:773,w:"a
+veces",pos:"Expr",fr:"parfois / des fois",es:"A veces el camino es difícil, pero
+vale la pena.",fe:"Parfois le chemin est difficile, mais ça vaut la peine."},
+{id:774,w:"de vez en cuando",pos:"Expr",fr:"de temps en temps",es:"De vez en
+cuando salgo a pasear.",fe:"De temps en temps je sors me promener."},
+{id:775,w:"en seguida",pos:"Expr",fr:"tout de suite / immédiatement",es:"Lo hago
+en seguida.",fe:"Je le fais tout de suite."}, {id:776,w:"de
+hecho",pos:"Expr",fr:"en fait / en réalité",es:"De hecho, ya terminé el
+proyecto.",fe:"En fait, j'ai déjà terminé le projet."}, {id:777,w:"sin
+duda",pos:"Expr",fr:"sans doute / sans aucun doute",es:"Sin duda, aprenderé
+español este año.",fe:"Sans aucun doute, j'apprendrai l'espagnol cette année."},
+{id:778,w:"en realidad",pos:"Expr",fr:"en réalité / en fait",es:"En realidad, el
+trabajo nocturno me conviene.",fe:"En réalité, le travail de nuit me
+convient."}, {id:779,w:"al final",pos:"Expr",fr:"au final / à la fin",es:"Al
+final, el esfuerzo siempre vale la pena.",fe:"Au final, l'effort vaut toujours
+la peine."}, {id:780,w:"por eso",pos:"Expr",fr:"c'est pourquoi / pour
+ça",es:"Por eso estudio y trabajo al mismo tiempo.",fe:"C'est pourquoi j'étudie
+et travaille en même temps."}, {id:781,w:"lo que",pos:"Expr",fr:"ce
+que",es:"Hago lo que me apasiona.",fe:"Je fais ce qui me passionne."},
+{id:782,w:"es decir",pos:"Expr",fr:"c'est-à-dire / autrement dit",es:"Soy
+autodidacta, es decir, aprendo solo.",fe:"Je suis autodidacte, c'est-à-dire que
+j'apprends seul."}, {id:783,w:"por ejemplo",pos:"Expr",fr:"par
+exemple",es:"Aprendo idiomas; por ejemplo, árabe y español.",fe:"J'apprends des
+langues ; par exemple, l'arabe et l'espagnol."}, {id:784,w:"en
+cambio",pos:"Expr",fr:"en revanche / par contre",es:"El inglés es fácil; en
+cambio, el árabe es difícil.",fe:"L'anglais est facile ; en revanche, l'arabe
+est difficile."}, {id:785,w:"a pesar de",pos:"Expr",fr:"malgré / en dépit
+de",es:"A pesar del cansancio, sigo estudiando.",fe:"Malgré la fatigue, je
+continue d'étudier."}, {id:786,w:"gracias a",pos:"Expr",fr:"grâce à",es:"Gracias
+a mi esfuerzo, mejoré mucho.",fe:"Grâce à mon effort, j'ai beaucoup
+progressé."}, {id:787,w:"a causa de",pos:"Expr",fr:"à cause de",es:"A causa del
+frío, me quedé en casa.",fe:"À cause du froid, je suis resté chez moi."},
+{id:788,w:"con tal de",pos:"Expr",fr:"pourvu que / à condition de",es:"Hago lo
+que sea con tal de lograr mis metas.",fe:"Je fais tout ce qu'il faut pourvu
+d'atteindre mes objectifs."}, {id:789,w:"a medida que",pos:"Expr",fr:"au fur et
+à mesure que",es:"A medida que aprendo, mi confianza crece.",fe:"Au fur et à
+mesure que j'apprends, ma confiance grandit."}, {id:790,w:"tan pronto
+como",pos:"Expr",fr:"dès que / aussitôt que",es:"Tan pronto como termino el
+trabajo, estudio.",fe:"Dès que je termine le travail, j'étudie."}, // ── MORE
+KEY VOCABULARY ──────────────────────────────────────────
+{id:791,w:"caso",pos:"N",fr:"cas / situation",es:"En mi caso, trabajo y estudio
+simultáneamente.",fe:"Dans mon cas, je travaille et j'étudie simultanément."},
+{id:792,w:"forma",pos:"N",fr:"forme / façon / manière",es:"Tengo mi propia forma
+de aprender.",fe:"J'ai ma propre façon d'apprendre."},
+{id:793,w:"parte",pos:"N",fr:"partie / part",es:"Una parte de mi sueldo va al
+ahorro.",fe:"Une partie de mon salaire va à l'épargne."},
+{id:794,w:"punto",pos:"N",fr:"point",es:"Llegué a un punto de inflexión en mi
+vida.",fe:"Je suis arrivé à un point d'inflexion dans ma vie."},
+{id:795,w:"hecho",pos:"N",fr:"fait",es:"El hecho es que trabajo duro.",fe:"Le
+fait est que je travaille dur."},
+{id:796,w:"nivel",pos:"N",fr:"niveau",es:"Quiero subir mi nivel en
+español.",fe:"Je veux hausser mon niveau en espagnol."},
+{id:797,w:"tipo",pos:"N",fr:"type / genre / sorte",es:"Soy el tipo de persona
+que no se rinde.",fe:"Je suis le genre de personne qui ne renonce pas."},
+{id:798,w:"aspecto",pos:"N",fr:"aspect / côté",es:"El aspecto técnico es mi
+punto fuerte.",fe:"L'aspect technique est mon point fort."},
+{id:799,w:"función",pos:"N",fr:"fonction / rôle",es:"Mi función en el equipo es
+el backend.",fe:"Ma fonction dans l'équipe est le backend."},
+{id:800,w:"ambiente",pos:"N",fr:"ambiance / environnement",es:"Creo un ambiente
+positivo a mi alrededor.",fe:"Je crée un environnement positif autour de moi."},
+{id:801,w:"impacto",pos:"N",fr:"impact",es:"Quiero tener un impacto positivo en
+el mundo.",fe:"Je veux avoir un impact positif sur le monde."},
+{id:802,w:"ventaja",pos:"N",fr:"avantage",es:"Hablar varios idiomas es una gran
+ventaja.",fe:"Parler plusieurs langues est un grand avantage."},
+{id:803,w:"desventaja",pos:"N",fr:"désavantage / inconvénient",es:"El cansancio
+es la única desventaja del turno nocturno.",fe:"La fatigue est le seul
+inconvénient du quart de nuit."},
+{id:804,w:"oportunidad",pos:"N",fr:"opportunité / chance",es:"Veo cada reto como
+una oportunidad.",fe:"Je vois chaque défi comme une opportunité."},
+{id:805,w:"riesgo",pos:"N",fr:"risque",es:"Todo gran logro implica algún
+riesgo.",fe:"Tout grand accomplissement implique un certain risque."},
+{id:806,w:"límite",pos:"N",fr:"limite",es:"No hay límites cuando te lo
+propones.",fe:"Il n'y a pas de limites quand on se l'est proposé."},
+{id:807,w:"frontera",pos:"N",fr:"frontière / limite",es:"Cruce la frontera con
+el corazón lleno de esperanza.",fe:"J'ai traversé la frontière le cœur plein
+d'espoir."}, {id:808,w:"barrera",pos:"N",fr:"barrière / obstacle",es:"El idioma
+es una barrera que supero cada día.",fe:"La langue est une barrière que je
+surmonte chaque jour."}, {id:809,w:"desafío",pos:"N",fr:"défi /
+challenge",es:"Acepto cada desafío como una oportunidad.",fe:"J'accepte chaque
+défi comme une opportunité."}, {id:810,w:"reto",pos:"N",fr:"défi / enjeu",es:"El
+reto más grande es mantener el ritmo.",fe:"Le plus grand défi est de maintenir
+le rythme."}, {id:811,w:"recurso",pos:"N",fr:"ressource",es:"Uso todos los
+recursos disponibles para aprender.",fe:"J'utilise toutes les ressources
+disponibles pour apprendre."}, {id:812,w:"herramienta",pos:"N",fr:"outil",es:"El
+árabe es una herramienta poderosa.",fe:"L'arabe est un outil puissant."},
+{id:813,w:"estrategia",pos:"N",fr:"stratégie",es:"Tengo una estrategia clara
+para mi aprendizaje.",fe:"J'ai une stratégie claire pour mon apprentissage."},
+{id:814,w:"plan",pos:"N",fr:"plan",es:"Tengo un plan detallado para los próximos
+meses.",fe:"J'ai un plan détaillé pour les prochains mois."},
+{id:815,w:"etapa",pos:"N",fr:"étape",es:"Cada etapa del proceso es
+importante.",fe:"Chaque étape du processus est importante."},
+{id:816,w:"avance",pos:"N",fr:"avancée / progrès",es:"Mido mis avances
+semanalmente.",fe:"Je mesure mes progrès chaque semaine."},
+{id:817,w:"progreso",pos:"N",fr:"progrès",es:"El progreso lento también es
+progreso.",fe:"La progression lente est aussi une progression."},
+{id:818,w:"logro",pos:"N",fr:"accomplissement / réussite",es:"Cada logro, por
+pequeño que sea, cuenta.",fe:"Chaque accomplissement, aussi petit soit-il,
+compte."}, {id:819,w:"ejecución",pos:"N",fr:"exécution",es:"La ejecución es lo
+que diferencia los sueños de la realidad.",fe:"L'exécution est ce qui
+différencie les rêves de la réalité."},
+{id:820,w:"disciplina",pos:"N",fr:"discipline",es:"La disciplina es el puente
+entre las metas y los logros.",fe:"La discipline est le pont entre les objectifs
+et les accomplissements."}, {id:821,w:"prioridad",pos:"N",fr:"priorité",es:"La
+educación es mi prioridad número uno.",fe:"L'éducation est ma priorité numéro
+un."}, {id:822,w:"equilibrio",pos:"N",fr:"équilibre",es:"Busco el equilibrio
+entre trabajo y estudio.",fe:"Je cherche l'équilibre entre travail et études."},
+{id:823,w:"ritmo",pos:"N",fr:"rythme",es:"Mantengo un buen ritmo de
+aprendizaje.",fe:"Je maintiens un bon rythme d'apprentissage."},
+{id:824,w:"hábito",pos:"N",fr:"habitude",es:"Los buenos hábitos definen el
+carácter.",fe:"Les bonnes habitudes définissent le caractère."},
+{id:825,w:"rutina",pos:"N",fr:"routine",es:"Mi rutina diaria incluye ejercicio y
+estudio.",fe:"Ma routine quotidienne inclut exercice et étude."},
+{id:826,w:"decisión",pos:"N",fr:"décision",es:"Cada decisión me acerca a mi
+futuro.",fe:"Chaque décision me rapproche de mon avenir."},
+{id:827,w:"acción",pos:"N",fr:"action",es:"La acción es la base de cualquier
+logro.",fe:"L'action est la base de tout accomplissement."},
+{id:828,w:"consecuencia",pos:"N",fr:"conséquence",es:"Cada acción tiene una
+consecuencia.",fe:"Chaque action a une conséquence."},
+{id:829,w:"causa",pos:"N",fr:"cause",es:"La pereza es la causa del
+fracaso.",fe:"La paresse est la cause de l'échec."},
+{id:830,w:"efecto",pos:"N",fr:"effet",es:"El efecto del esfuerzo se ve con el
+tiempo.",fe:"L'effet de l'effort se voit avec le temps."}, // ── VERBS —
+MOVEMENT & PHYSICAL ──────────────────────────────────
+{id:831,w:"llenar",pos:"V",fr:"remplir",es:"Lleno los estantes de productos en
+el supermercado.",fe:"Je remplis les rayons de produits au supermarché."},
+{id:832,w:"ordenar",pos:"V",fr:"ordonner / commander / ranger",es:"Ordeno mi
+espacio para pensar mejor.",fe:"Je range mon espace pour mieux penser."},
+{id:833,w:"recoger",pos:"V",fr:"ramasser / récupérer",es:"Recojo el cartón para
+compactarlo.",fe:"Je ramasse le carton pour le compacter."},
+{id:834,w:"empujar",pos:"V",fr:"pousser",es:"Empujo el carrito de
+productos.",fe:"Je pousse le chariot de produits."},
+{id:835,w:"jalar",pos:"V",fr:"tirer",es:"Jalo la puerta del almacén.",fe:"Je
+tire la porte de l'entrepôt."}, {id:836,w:"meter",pos:"V",fr:"mettre /
+introduire",es:"Meto el código en el repositorio.",fe:"Je mets le code dans le
+dépôt."}, {id:837,w:"sacar",pos:"V",fr:"sortir / tirer",es:"Saco los productos
+del depósito.",fe:"Je sors les produits de l'entrepôt."},
+{id:838,w:"colocar",pos:"V",fr:"placer / poser",es:"Coloco los productos en su
+lugar correcto.",fe:"Je place les produits à leur bonne place."},
+{id:839,w:"verificar",pos:"V",fr:"vérifier",es:"Verifico el inventario al inicio
+del turno.",fe:"Je vérifie l'inventaire au début du quart."},
+{id:840,w:"revisar",pos:"V",fr:"réviser / vérifier",es:"Reviso cada línea del
+código.",fe:"Je révise chaque ligne du code."},
+{id:841,w:"acomodar",pos:"V",fr:"ranger / accommoder",es:"Acomodo los productos
+según el planograma.",fe:"J'arrange les produits selon le planogramme."},
+{id:842,w:"transportar",pos:"V",fr:"transporter",es:"Transporto las cajas al
+pasillo correcto.",fe:"Je transporte les boîtes dans le bon couloir."},
+{id:843,w:"cargar",pos:"V",fr:"charger / porter",es:"Cargo cajas pesadas durante
+el turno.",fe:"Je porte des boîtes lourdes pendant le quart."},
+{id:844,w:"descargar",pos:"V",fr:"décharger / télécharger",es:"Descargo el
+camión de mercancías.",fe:"Je décharge le camion de marchandises."},
+{id:845,w:"nivelar",pos:"V",fr:"niveler / équilibrer",es:"Nivelo los productos
+para que se vean bien.",fe:"Je nivèle les produits pour qu'ils paraissent
+bien."}, {id:846,w:"pedalear",pos:"V",fr:"pédaler",es:"Pedaleo rápido para
+entregar los pedidos.",fe:"Je pédale vite pour livrer les commandes."},
+{id:847,w:"navegar",pos:"V",fr:"naviguer",es:"Navego por internet buscando
+información.",fe:"Je navigue sur internet à la recherche d'informations."},
+{id:848,w:"calcular",pos:"V",fr:"calculer",es:"Calculo mis horas trabajadas cada
+semana.",fe:"Je calcule mes heures travaillées chaque semaine."},
+{id:849,w:"medir",pos:"V",fr:"mesurer",es:"Mido mis resultados
+semanalmente.",fe:"Je mesure mes résultats chaque semaine."},
+{id:850,w:"pesar",pos:"V",fr:"peser / coûter cher",es:"El trabajo nocturno pesa
+a veces.",fe:"Le travail de nuit pèse parfois."}, // ── MISCELLANEOUS KEY WORDS
+─────────────────────────────────────── {id:851,w:"por
+qué",pos:"Expr",fr:"pourquoi",es:"Por qué hago esto: porque amo el
+progreso.",fe:"Pourquoi je fais ça : parce que j'aime le progrès."},
+{id:852,w:"dónde",pos:"Adv",fr:"où (interrogatif)",es:"¿Dónde puedo estudiar en
+silencio?",fe:"Où puis-je étudier en silence ?"},
+{id:853,w:"cuándo",pos:"Adv",fr:"quand (interrogatif)",es:"¿Cuándo empiezo el
+nuevo semestre?",fe:"Quand est-ce que je commence le nouveau semestre ?"},
+{id:854,w:"cuánto",pos:"Adv/Adj",fr:"combien",es:"¿Cuánto gano por
+hora?",fe:"Combien est-ce que je gagne par heure ?"},
+{id:855,w:"cómo",pos:"Adv",fr:"comment (interrogatif)",es:"¿Cómo puedo mejorar
+mi acento?",fe:"Comment puis-je améliorer mon accent ?"},
+{id:856,w:"cuántos",pos:"Adj",fr:"combien de",es:"¿Cuántos idiomas
+hablas?",fe:"Combien de langues est-ce que tu parles ?"}, {id:857,w:"ya
+que",pos:"Conj",fr:"puisque / étant donné que",es:"Ya que sé programar, tengo
+ventaja laboral.",fe:"Puisque je sais programmer, j'ai un avantage
+professionnel."}, {id:858,w:"a fin de",pos:"Expr",fr:"afin de / dans le but
+de",es:"Trabajo a fin de tener independencia.",fe:"Je travaille afin d'avoir mon
+indépendance."}, {id:859,w:"en cuanto a",pos:"Expr",fr:"en ce qui concerne /
+quant à",es:"En cuanto a mis estudios, estoy en buen camino.",fe:"En ce qui
+concerne mes études, je suis sur la bonne voie."}, {id:860,w:"respecto
+a",pos:"Expr",fr:"par rapport à / concernant",es:"Respecto a mis metas, todo va
+según el plan.",fe:"Par rapport à mes objectifs, tout se passe selon le plan."},
+{id:861,w:"en vez de",pos:"Expr",fr:"au lieu de / plutôt que",es:"En vez de
+quejarse, actúo.",fe:"Au lieu de me plaindre, j'agis."}, {id:862,w:"acerca
+de",pos:"Expr",fr:"à propos de / sur",es:"Hablo acerca de mis proyectos con
+entusiasmo.",fe:"Je parle de mes projets avec enthousiasme."}, {id:863,w:"a
+través de",pos:"Expr",fr:"à travers / par le biais de",es:"Aprendí español a
+través de la práctica constante.",fe:"J'ai appris l'espagnol à travers la
+pratique constante."}, {id:864,w:"en torno a",pos:"Expr",fr:"autour de / à
+propos de",es:"Todo en torno a la tecnología me interesa.",fe:"Tout ce qui
+touche à la technologie m'intéresse."}, {id:865,w:"en lugar de",pos:"Expr",fr:"à
+la place de / plutôt que",es:"En lugar de ver TV, leo libros.",fe:"À la place de
+regarder la télé, je lis des livres."}, {id:866,w:"pese a",pos:"Expr",fr:"malgré
+/ en dépit de",es:"Pese a las dificultades, sigo avanzando.",fe:"Malgré les
+difficultés, je continue d'avancer."}, {id:867,w:"siempre
+que",pos:"Expr",fr:"chaque fois que / tant que",es:"Siempre que tengo tiempo,
+practico español.",fe:"Chaque fois que j'ai le temps, je pratique l'espagnol."},
+{id:868,w:"en caso de",pos:"Expr",fr:"en cas de",es:"En caso de duda, pregunto
+al profesor.",fe:"En cas de doute, je demande au professeur."}, {id:869,w:"a lo
+largo de",pos:"Expr",fr:"tout au long de / au fil de",es:"A lo largo del año,
+aprendo mucho.",fe:"Tout au long de l'année, j'apprends beaucoup."},
+{id:870,w:"con respecto a",pos:"Expr",fr:"en ce qui concerne / par rapport
+à",es:"Con respecto a la IA, soy autodidacta.",fe:"En ce qui concerne l'IA, je
+suis autodidacte."}, // ── FINAL VOCABULARY BLOCKS
+─────────────────────────────────────── {id:871,w:"estado",pos:"N",fr:"état /
+situation",es:"Mi estado de ánimo es positivo hoy.",fe:"Mon état d'esprit est
+positif aujourd'hui."}, {id:872,w:"nombre",pos:"N",fr:"nom / prénom",es:"Mi
+nombre es Badara y soy de Senegal.",fe:"Mon prénom est Badara et je suis du
+Sénégal."}, {id:873,w:"color",pos:"N",fr:"couleur",es:"Pinto con varios colores
+en mis proyectos de diseño.",fe:"Je peins avec plusieurs couleurs dans mes
+projets de design."}, {id:874,w:"tamaño",pos:"N",fr:"taille / taille
+(grandeur)",es:"El tamaño del equipo influye en la productividad.",fe:"La taille
+de l'équipe influence la productivité."},
+{id:875,w:"velocidad",pos:"N",fr:"vitesse",es:"La velocidad de aprendizaje varía
+según la técnica.",fe:"La vitesse d'apprentissage varie selon la technique."},
+{id:876,w:"fuerza",pos:"N",fr:"force",es:"La fuerza mental es más importante que
+la física.",fe:"La force mentale est plus importante que la physique."},
+{id:877,w:"peso",pos:"N",fr:"poids",es:"El peso de la responsabilidad me
+motiva.",fe:"Le poids de la responsabilité me motive."},
+{id:878,w:"medida",pos:"N",fr:"mesure / taille",es:"Tomo medidas para evitar
+errores.",fe:"Je prends des mesures pour éviter les erreurs."},
+{id:879,w:"diferencia",pos:"N",fr:"différence",es:"La diferencia está en los
+detalles.",fe:"La différence est dans les détails."},
+{id:880,w:"similitud",pos:"N",fr:"similitude / ressemblance",es:"Hay similitud
+entre el árabe y el español.",fe:"Il y a une ressemblance entre l'arabe et
+l'espagnol."}, {id:881,w:"relación",pos:"N",fr:"relation / rapport",es:"Mantengo
+buenas relaciones con mis compañeros.",fe:"Je maintiens de bonnes relations avec
+mes camarades."}, {id:882,w:"conexión",pos:"N",fr:"connexion / lien",es:"Hago
+conexiones entre todos los idiomas que aprendo.",fe:"Je fais des liens entre
+toutes les langues que j'apprends."},
+{id:883,w:"contexto",pos:"N",fr:"contexte",es:"Aprendo las palabras en
+contexto.",fe:"J'apprends les mots dans leur contexte."},
+{id:884,w:"ejemplo",pos:"N",fr:"exemple",es:"Aprendo mejor con ejemplos
+concretos.",fe:"J'apprends mieux avec des exemples concrets."},
+{id:885,w:"excepción",pos:"N",fr:"exception",es:"No hay regla sin excepción en
+los idiomas.",fe:"Il n'y a pas de règle sans exception dans les langues."},
+{id:886,w:"condición",pos:"N",fr:"condition",es:"La condición del éxito es la
+persistencia.",fe:"La condition du succès est la persistance."},
+{id:887,w:"situación",pos:"N",fr:"situation",es:"Mi situación actual me motiva a
+mejorar.",fe:"Ma situation actuelle me motive à m'améliorer."},
+{id:888,w:"posición",pos:"N",fr:"position / poste",es:"Aspiro a una posición de
+desarrollador senior.",fe:"J'aspire à un poste de développeur senior."},
+{id:889,w:"dirección",pos:"N",fr:"direction / adresse",es:"Voy en la dirección
+correcta.",fe:"Je vais dans la bonne direction."},
+{id:890,w:"origen",pos:"N",fr:"origine",es:"Mi origen africano es mi mayor
+orgullo.",fe:"Mon origine africaine est ma plus grande fierté."},
+{id:891,w:"base",pos:"N",fr:"base",es:"La base del aprendizaje es la
+repetición.",fe:"La base de l'apprentissage est la répétition."},
+{id:892,w:"estructura",pos:"N",fr:"structure",es:"La estructura del código es
+clara.",fe:"La structure du code est claire."},
+{id:893,w:"contenido",pos:"N",fr:"contenu",es:"El contenido de mis proyectos es
+original.",fe:"Le contenu de mes projets est original."},
+{id:894,w:"formato",pos:"N",fr:"format",es:"Entrego los proyectos en el formato
+correcto.",fe:"Je remets les projets dans le bon format."},
+{id:895,w:"versión",pos:"N",fr:"version",es:"Actualizo la versión de mi
+aplicación.",fe:"Je mets à jour la version de mon application."},
+{id:896,w:"acceso",pos:"N",fr:"accès",es:"Tengo acceso a muchos recursos en
+línea.",fe:"J'ai accès à beaucoup de ressources en ligne."},
+{id:897,w:"control",pos:"N",fr:"contrôle / maîtrise",es:"Tengo control sobre mi
+tiempo y energía.",fe:"J'ai le contrôle sur mon temps et mon énergie."},
+{id:898,w:"seguridad",pos:"N",fr:"sécurité / confiance",es:"La seguridad
+personal viene del conocimiento.",fe:"La confiance personnelle vient du
+savoir."}, {id:899,w:"calidad",pos:"N",fr:"qualité",es:"Prefiero calidad sobre
+cantidad en el trabajo.",fe:"Je préfère la qualité sur la quantité dans le
+travail."}, {id:900,w:"cantidad",pos:"N",fr:"quantité",es:"La cantidad de horas
+de estudio importa.",fe:"La quantité d'heures d'étude est importante."},
+{id:901,w:"detalle",pos:"N",fr:"détail",es:"Atiendo cada detalle en mis
+proyectos.",fe:"Je fais attention à chaque détail dans mes projets."},
+{id:902,w:"perfil",pos:"N",fr:"profil",es:"Construyo un buen perfil
+profesional.",fe:"Je construis un bon profil professionnel."},
+{id:903,w:"imagen",pos:"N",fr:"image",es:"Cuido mi imagen profesional en
+línea.",fe:"Je prends soin de mon image professionnelle en ligne."},
+{id:904,w:"impresión",pos:"N",fr:"impression",es:"Quiero dar una buena impresión
+en entrevistas.",fe:"Je veux faire bonne impression lors des entretiens."},
+{id:905,w:"reputación",pos:"N",fr:"réputation",es:"Construyo una buena
+reputación con trabajo de calidad.",fe:"Je construis une bonne réputation avec
+un travail de qualité."}, {id:906,w:"red de contactos",pos:"N",fr:"réseau
+(professionnel)",es:"Construyo mi red de contactos en LinkedIn.",fe:"Je
+construis mon réseau professionnel sur LinkedIn."},
+{id:907,w:"currículum",pos:"N",fr:"CV / curriculum vitae",es:"Actualizo mi
+currículum con cada proyecto.",fe:"Je mets à jour mon CV avec chaque projet."},
+{id:908,w:"entrevista",pos:"N",fr:"entretien / interview",es:"Me preparo bien
+para cada entrevista.",fe:"Je me prépare bien pour chaque entretien."},
+{id:909,w:"referencia",pos:"N",fr:"référence",es:"Uso el francés como idioma de
+referencia.",fe:"J'utilise le français comme langue de référence."},
+{id:910,w:"retroalimentación",pos:"N",fr:"feedback / rétroaction",es:"El
+feedback del profesor mejora mi trabajo.",fe:"Le feedback du professeur améliore
+mon travail."}, {id:911,w:"opinión",pos:"N",fr:"opinion",es:"Expreso mi opinión
+con confianza.",fe:"J'exprime mon opinion avec confiance."},
+{id:912,w:"debate",pos:"N",fr:"débat",es:"Participo en debates sobre
+tecnología.",fe:"Je participe à des débats sur la technologie."},
+{id:913,w:"argumento",pos:"N",fr:"argument",es:"Presento mis argumentos con
+lógica.",fe:"Je présente mes arguments avec logique."},
+{id:914,w:"conclusión",pos:"N",fr:"conclusion",es:"Llego a conclusiones basadas
+en los datos.",fe:"J'arrive à des conclusions basées sur les données."},
+{id:915,w:"introducción",pos:"N",fr:"introduction",es:"Hago una introducción
+clara al proyecto.",fe:"Je fais une introduction claire au projet."},
+{id:916,w:"resumen",pos:"N",fr:"résumé / sommaire",es:"Escribo un resumen al
+final del proyecto.",fe:"J'écris un résumé à la fin du projet."},
+{id:917,w:"capítulo",pos:"N",fr:"chapitre",es:"Leo un capítulo cada
+noche.",fe:"Je lis un chapitre chaque nuit."},
+{id:918,w:"sección",pos:"N",fr:"section",es:"Cada sección del proyecto tiene su
+función.",fe:"Chaque section du projet a sa fonction."},
+{id:919,w:"página",pos:"N",fr:"page",es:"Leo quince páginas por día.",fe:"Je lis
+quinze pages par jour."}, {id:920,w:"línea",pos:"N",fr:"ligne",es:"Escribo cien
+líneas de código por día.",fe:"J'écris cent lignes de code par jour."},
+{id:921,w:"columna",pos:"N",fr:"colonne",es:"La base de datos tiene varias
+columnas.",fe:"La base de données a plusieurs colonnes."},
+{id:922,w:"tabla",pos:"N",fr:"tableau / table",es:"Organizo los datos en una
+tabla.",fe:"J'organise les données dans un tableau."},
+{id:923,w:"lista",pos:"N",fr:"liste",es:"Hago una lista de vocabulario cada
+semana.",fe:"Je fais une liste de vocabulaire chaque semaine."},
+{id:924,w:"categoría",pos:"N",fr:"catégorie",es:"Organizo las palabras por
+categoría.",fe:"J'organise les mots par catégorie."},
+{id:925,w:"grupo",pos:"N",fr:"groupe",es:"Aprendo el vocabulario en grupos
+temáticos.",fe:"J'apprends le vocabulaire en groupes thématiques."},
+{id:926,w:"conjunto",pos:"N",fr:"ensemble / groupe",es:"Trabajo en conjunto con
+mi equipo.",fe:"Je travaille en ensemble avec mon équipe."},
+{id:927,w:"parte",pos:"N",fr:"partie",es:"Hago la parte más difícil
+primero.",fe:"Je fais la partie la plus difficile en premier."},
+{id:928,w:"todo",pos:"N",fr:"tout / l'ensemble",es:"El todo es mayor que la suma
+de sus partes.",fe:"Le tout est plus grand que la somme de ses parties."},
+{id:929,w:"nada",pos:"N",fr:"rien",es:"De la nada, nace nada.",fe:"De rien, naît
+rien."}, {id:930,w:"algo",pos:"N",fr:"quelque chose",es:"Siempre hay algo que
+aprender.",fe:"Il y a toujours quelque chose à apprendre."},
+{id:931,w:"mundo",pos:"N",fr:"monde",es:"El mundo es grande y quiero
+explorarlo.",fe:"Le monde est grand et je veux l'explorer."},
+{id:932,w:"universo",pos:"N",fr:"univers",es:"El universo del conocimiento es
+infinito.",fe:"L'univers du savoir est infini."},
+{id:933,w:"realidad",pos:"N",fr:"réalité",es:"Vivo la realidad con los pies en
+la tierra.",fe:"Je vis la réalité avec les pieds sur terre."},
+{id:934,w:"posibilidad",pos:"N",fr:"possibilité",es:"Veo posibilidades en
+todo.",fe:"Je vois des possibilités partout."},
+{id:935,w:"probabilidad",pos:"N",fr:"probabilité",es:"La probabilidad de éxito
+crece con el esfuerzo.",fe:"La probabilité de succès augmente avec l'effort."},
+{id:936,w:"certeza",pos:"N",fr:"certitude",es:"Tengo la certeza de que lo
+lograré.",fe:"J'ai la certitude que je vais y arriver."},
+{id:937,w:"duda",pos:"N",fr:"doute",es:"La duda es el inicio del pensamiento
+crítico.",fe:"Le doute est le début de la pensée critique."},
+{id:938,w:"error",pos:"N",fr:"erreur",es:"Aprendo de cada error que
+cometo.",fe:"J'apprends de chaque erreur que je commets."},
+{id:939,w:"prueba",pos:"N",fr:"preuve / test",es:"Esta prueba demuestra que el
+algoritmo funciona.",fe:"Ce test démontre que l'algorithme fonctionne."},
+{id:940,w:"experimento",pos:"N",fr:"expérience / expérimentation",es:"Hago
+pequeños experimentos para aprender.",fe:"Je fais de petites expériences pour
+apprendre."}, {id:941,w:"hipótesis",pos:"N",fr:"hypothèse",es:"Formulo hipótesis
+antes de resolver un problema.",fe:"Je formule des hypothèses avant de résoudre
+un problème."}, {id:942,w:"conclusión",pos:"N",fr:"conclusion",es:"Llego a mis
+conclusiones de forma lógica.",fe:"J'arrive à mes conclusions de façon
+logique."}, {id:943,w:"observación",pos:"N",fr:"observation",es:"La observación
+es la base del aprendizaje.",fe:"L'observation est la base de
+l'apprentissage."}, {id:944,w:"atención",pos:"N",fr:"attention",es:"Pongo
+atención en cada detalle.",fe:"Je fais attention à chaque détail."},
+{id:945,w:"enfoque",pos:"N",fr:"focus / approche",es:"Mi enfoque es la práctica
+constante.",fe:"Mon approche est la pratique constante."},
+{id:946,w:"concentración",pos:"N",fr:"concentration",es:"La concentración es
+esencial para aprender.",fe:"La concentration est essentielle pour apprendre."},
+{id:947,w:"claridad",pos:"N",fr:"clarté",es:"Busco claridad en todo lo que
+aprendo.",fe:"Je cherche la clarté dans tout ce que j'apprends."},
+{id:948,w:"precisión",pos:"N",fr:"précision",es:"Trabajo con precisión en cada
+proyecto.",fe:"Je travaille avec précision dans chaque projet."},
+{id:949,w:"exactitud",pos:"N",fr:"exactitude",es:"La exactitud es clave en la
+programación.",fe:"L'exactitude est clé en programmation."},
+{id:950,w:"fluidez",pos:"N",fr:"fluidité",es:"Quiero tener fluidez en
+español.",fe:"Je veux avoir de la fluidité en espagnol."}, // ── FINAL 50
+─────────────────────────────────────────────────────
+{id:951,w:"comprensión",pos:"N",fr:"compréhension",es:"La comprensión oral es mi
+primer objetivo.",fe:"La compréhension orale est mon premier objectif."},
+{id:952,w:"expresión",pos:"N",fr:"expression",es:"Trabajo mi expresión oral cada
+día.",fe:"Je travaille mon expression orale chaque jour."},
+{id:953,w:"acento",pos:"N",fr:"accent",es:"Practico el acento español con
+audios.",fe:"Je pratique l'accent espagnol avec des enregistrements audio."},
+{id:954,w:"tono",pos:"N",fr:"ton / tonalité",es:"El tono del idioma cambia el
+significado.",fe:"Le ton de la langue change le sens."},
+{id:955,w:"ritmo",pos:"N",fr:"rythme",es:"El español tiene un ritmo muy
+diferente al árabe.",fe:"L'espagnol a un rythme très différent de l'arabe."},
+{id:956,w:"sonido",pos:"N",fr:"son",es:"Imito los sonidos del español para
+mejorar.",fe:"J'imite les sons de l'espagnol pour m'améliorer."},
+{id:957,w:"letra",pos:"N",fr:"lettre / paroles (chanson)",es:"Aprendo el
+alfabeto de cada idioma que estudio.",fe:"J'apprends l'alphabet de chaque langue
+que j'étudie."}, {id:958,w:"sílaba",pos:"N",fr:"syllabe",es:"En español, cada
+sílaba se pronuncia claramente.",fe:"En espagnol, chaque syllabe se prononce
+clairement."}, {id:959,w:"raíz",pos:"N",fr:"racine",es:"La raíz latina del
+español me ayuda como francófono.",fe:"La racine latine de l'espagnol m'aide en
+tant que francophone."}, {id:960,w:"prefijo",pos:"N",fr:"préfixe",es:"Los
+prefijos ayudan a entender palabras nuevas.",fe:"Les préfixes aident à
+comprendre de nouveaux mots."}, {id:961,w:"sufijo",pos:"N",fr:"suffixe",es:"Los
+sufijos cambian el significado de las palabras.",fe:"Les suffixes changent le
+sens des mots."}, {id:962,w:"singular",pos:"N/Adj",fr:"singulier",es:"Aprendí la
+palabra en singular primero.",fe:"J'ai appris le mot au singulier d'abord."},
+{id:963,w:"plural",pos:"N/Adj",fr:"pluriel",es:"En español, el plural
+generalmente añade una 's'.",fe:"En espagnol, le pluriel ajoute généralement un
+'s'."}, {id:964,w:"masculino",pos:"N/Adj",fr:"masculin",es:"El artículo
+masculino en español es 'el'.",fe:"L'article masculin en espagnol est 'el'."},
+{id:965,w:"femenino",pos:"N/Adj",fr:"féminin",es:"El artículo femenino en
+español es 'la'.",fe:"L'article féminin en espagnol est 'la'."},
+{id:966,w:"conjugación",pos:"N",fr:"conjugaison",es:"La conjugación en español
+es regular.",fe:"La conjugaison en espagnol est régulière."},
+{id:967,w:"verbo",pos:"N",fr:"verbe",es:"Los verbos son el núcleo de cada
+oración.",fe:"Les verbes sont le noyau de chaque phrase."},
+{id:968,w:"sustantivo",pos:"N",fr:"nom / substantif",es:"Los sustantivos tienen
+género en español.",fe:"Les noms ont un genre en espagnol."},
+{id:969,w:"adjetivo",pos:"N",fr:"adjectif",es:"Los adjetivos concuerdan con los
+sustantivos.",fe:"Les adjectifs s'accordent avec les noms."},
+{id:970,w:"adverbio",pos:"N",fr:"adverbe",es:"Los adverbios modifican los
+verbos.",fe:"Les adverbes modifient les verbes."},
+{id:971,w:"sujeto",pos:"N",fr:"sujet",es:"El sujeto de la oración puede omitirse
+en español.",fe:"Le sujet de la phrase peut être omis en espagnol."},
+{id:972,w:"objeto",pos:"N",fr:"objet / complément",es:"El objeto directo recibe
+la acción del verbo.",fe:"Le complément d'objet direct reçoit l'action du
+verbe."}, {id:973,w:"oración",pos:"N",fr:"phrase / prière",es:"Construyo
+oraciones completas en español.",fe:"Je construis des phrases complètes en
+espagnol."}, {id:974,w:"párrafo",pos:"N",fr:"paragraphe",es:"Escribo un párrafo
+en español cada día.",fe:"J'écris un paragraphe en espagnol chaque jour."},
+{id:975,w:"ensayo",pos:"N",fr:"essai / dissertation",es:"Escribiré un ensayo en
+español pronto.",fe:"J'écrirai bientôt un essai en espagnol."},
+{id:976,w:"diario",pos:"N",fr:"journal (intime) / quotidien",es:"Escribo un
+diario en varios idiomas.",fe:"J'écris un journal en plusieurs langues."},
+{id:977,w:"nota",pos:"N",fr:"note / annotation",es:"Tomo notas en clase.",fe:"Je
+prends des notes en cours."}, {id:978,w:"repaso",pos:"N",fr:"révision",es:"Hago
+un repaso de vocabulario cada noche.",fe:"Je fais une révision de vocabulaire
+chaque soir."}, {id:979,w:"repetición",pos:"N",fr:"répétition",es:"La repetición
+espaciada es clave para memorizar.",fe:"La répétition espacée est clé pour
+mémoriser."}, {id:980,w:"inmersión",pos:"N",fr:"immersion",es:"La inmersión en
+el idioma acelera el aprendizaje.",fe:"L'immersion dans la langue accélère
+l'apprentissage."}, {id:981,w:"producción",pos:"N",fr:"production",es:"La
+producción oral me ayuda más que la lectura.",fe:"La production orale m'aide
+plus que la lecture."}, {id:982,w:"insumo",pos:"N",fr:"input / intrant",es:"El
+input comprensible es esencial para aprender.",fe:"L'input compréhensible est
+essentiel pour apprendre."}, {id:983,w:"retroalimentación",pos:"N",fr:"feedback
+/ rétroaction",es:"Necesito retroalimentación para mejorar.",fe:"J'ai besoin de
+feedback pour m'améliorer."}, {id:984,w:"shadowing",pos:"N",fr:"shadowing /
+répétition imitée",es:"Uso el shadowing para mejorar mi acento.",fe:"J'utilise
+le shadowing pour améliorer mon accent."},
+{id:985,w:"frecuencia",pos:"N",fr:"fréquence",es:"Aprendo las palabras por orden
+de frecuencia.",fe:"J'apprends les mots par ordre de fréquence."},
+{id:986,w:"exposición",pos:"N",fr:"exposition",es:"La exposición diaria al
+idioma es fundamental.",fe:"L'exposition quotidienne à la langue est
+fondamentale."}, {id:987,w:"asociación",pos:"N",fr:"association / lien",es:"Hago
+asociaciones visuales para recordar palabras.",fe:"Je fais des associations
+visuelles pour mémoriser les mots."}, {id:988,w:"chunking",pos:"N",fr:"chunking
+/ découpage",es:"El chunking agrupa la información para memorizarla.",fe:"Le
+chunking regroupe l'information pour la mémoriser."},
+{id:989,w:"patrón",pos:"N",fr:"patron / modèle",es:"Reconozco los patrones del
+español fácilmente.",fe:"Je reconnais facilement les schémas de l'espagnol."},
+{id:990,w:"analogía",pos:"N",fr:"analogie",es:"Uso analogías del francés para
+aprender español.",fe:"J'utilise des analogies du français pour apprendre
+l'espagnol."}, {id:991,w:"transferencia",pos:"N",fr:"transfert",es:"Hay mucha
+transferencia entre el francés y el español.",fe:"Il y a beaucoup de transfert
+entre le français et l'espagnol."},
+{id:992,w:"interferencia",pos:"N",fr:"interférence",es:"El árabe no interfiere
+con mi aprendizaje del español.",fe:"L'arabe n'interfère pas avec mon
+apprentissage de l'espagnol."},
+{id:993,w:"multilingüe",pos:"Adj",fr:"multilingue",es:"Soy multilingüe y sigo
+añadiendo idiomas.",fe:"Je suis multilingue et je continue d'ajouter des
+langues."}, {id:994,w:"poliglota",pos:"N/Adj",fr:"polyglotte",es:"Mi meta es ser
+un verdadero poliglota.",fe:"Mon objectif est d'être un vrai polyglotte."},
+{id:995,w:"autodidacta",pos:"N/Adj",fr:"autodidacte",es:"Soy autodidacta en
+varios campos.",fe:"Je suis autodidacte dans plusieurs domaines."},
+{id:996,w:"curioso",pos:"Adj",fr:"curieux",es:"Soy curioso por
+naturaleza.",fe:"Je suis curieux par nature."},
+{id:997,w:"constante",pos:"Adj",fr:"constant / régulier",es:"El progreso
+constante supera al esporádico.",fe:"Le progrès constant surpasse
+l'esporadique."}, {id:998,w:"consistente",pos:"Adj",fr:"constant /
+cohérent",es:"Soy consistente en mis hábitos de estudio.",fe:"Je suis constant
+dans mes habitudes d'étude."},
+{id:999,w:"independiente",pos:"Adj",fr:"indépendant",es:"Soy independiente y me
+gusta aprender solo.",fe:"Je suis indépendant et j'aime apprendre seul."},
+{id:1000,w:"determinado",pos:"Adj",fr:"déterminé",es:"Estoy determinado a lograr
+todas mis metas.",fe:"Je suis déterminé à atteindre tous mes objectifs."}, ];

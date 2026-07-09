@@ -1,0 +1,21 @@
+{
+  "name": "takhub",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "@react-three/fiber": "^8.18.0",
+    "three": "^0.185.1"
+  },
+  "scripts": {
+    "test:engine": "npm test --workspace=@takhub/tak-engine",
+    "test:server": "npm test --workspace=@takhub/server",
+    "test:puzzle-gen": "npm test --workspace=@takhub/puzzle-gen",
+    "dev:server": "npm run dev --workspace=@takhub/server",
+    "dev:client": "npm run dev --workspace=@takhub/client",
+    "build:client": "npm run build --workspace=@takhub/client",
+    "puzzles:generate": "npm run generate --workspace=@takhub/puzzle-gen --"
+  }
+}

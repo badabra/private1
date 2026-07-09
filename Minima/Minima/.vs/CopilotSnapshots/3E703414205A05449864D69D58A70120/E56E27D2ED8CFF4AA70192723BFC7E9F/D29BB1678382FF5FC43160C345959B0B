@@ -1,0 +1,130 @@
+﻿@page
+@model Minima.Pages.RegisterModel
+@{
+    ViewData["Title"] = "Inscription";
+}
+
+<div class="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-lg bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Créer un compte Minima</h2>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <strong>Erreur:</strong> @Model.ErrorMessage
+            </div>
+        }
+
+        <form method="post">
+            <div class="flex flex-wrap -mx-3 mb-4">
+                <div class="w-full md:w-1/2 px-3 mb-4 md:mb-0">
+                    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-first-name">
+                        Prénom
+                    </label>
+                    <input class="appearance-none block w-full bg-gray-50 text-gray-700 border border-gray-200 rounded-lg py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                           id="grid-first-name" asp-for="FirstName" type="text" required>
+                </div>
+                <div class="w-full md:w-1/2 px-3">
+                    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-last-name">
+                        Nom
+                    </label>
+                    <input class="appearance-none block w-full bg-gray-50 text-gray-700 border border-gray-200 rounded-lg py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                           id="grid-last-name" asp-for="LastName" type="text" required>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap -mx-3 mb-4">
+                <div class="w-full px-3">
+                    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-username">
+                        Identifiant / Nom d'utilisateur
+                    </label>
+                    <input class="appearance-none block w-full bg-gray-50 text-gray-700 border border-gray-200 rounded-lg py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                           id="grid-username" asp-for="Username" type="text" required>
+                    <p class="text-gray-400 text-xs italic mt-1">Ce nom servira à vous trouver sans numéro de téléphone.</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap -mx-3 mb-4">
+                <div class="w-full px-3">
+                    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-email">
+                        Adresse courriel
+                    </label>
+                    <input class="appearance-none block w-full bg-gray-50 text-gray-700 border border-gray-200 rounded-lg py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                           id="grid-email" asp-for="Email" type="email" required>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap -mx-3 mb-4">
+                <div class="w-full px-3">
+                    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-password">
+                        Mot de passe
+                    </label>
+                    <input class="appearance-none block w-full bg-gray-50 text-gray-700 border border-gray-200 rounded-lg py-3 px-4 mb-2 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                           id="grid-password" asp-for="Password" type="password" placeholder="Minimum 6 caractères" required>
+                    <p class="text-gray-400 text-xs italic">Minimum 6 caractères</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap -mx-3 mb-6">
+                <div class="w-full px-3">
+                    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-confirm-password">
+                        Confirmer le mot de passe
+                    </label>
+                    <input class="appearance-none block w-full bg-gray-50 text-gray-700 border border-gray-200 rounded-lg py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                           id="grid-confirm-password" asp-for="ConfirmPassword" type="password" placeholder="Répétez votre mot de passe" required>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap -mx-3 mt-6">
+                <div class="w-full px-3">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-150 ease-in-out shadow-md"
+                            type="submit">
+                        Créer mon compte
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-center mt-6">
+                <p class="text-sm text-gray-600">
+                    Déjà inscrit ?
+                    <a asp-page="/Login" class="text-blue-600 hover:underline font-medium">Se connecter</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>                    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-email">
+                        Adresse courriel
+                    </label>
+                    <input class="appearance-none block w-full bg-gray-50 text-gray-700 border border-gray-200 rounded-lg py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                           id="grid-email" name="Email" type="email" required>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap -mx-3 mb-6">
+                <div class="w-full px-3">
+                    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="grid-password">
+                        Mot de passe
+                    </label>
+                    <input class="appearance-none block w-full bg-gray-50 text-gray-700 border border-gray-200 rounded-lg py-3 px-4 mb-2 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                           id="grid-password" name="Password" type="password" placeholder="********" required>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap -mx-3 mt-6">
+                <div class="w-full px-3">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-150 ease-in-out shadow-md"
+                            type="submit">
+                        Créer mon compte
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-center mt-6">
+                <p class="text-sm text-gray-600">
+                    Déjà inscrit ?
+                    <a asp-page="/Login" class="text-blue-600 hover:underline font-medium">Se connecter</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>

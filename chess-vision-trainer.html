@@ -1,0 +1,4000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Vision Trainer</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --light-sq: #f0d9b5;
+  --dark-sq:  #b58863;
+  --bg:       #0f1923;
+  --panel:    #1a2535;
+  --border:   #2e3f58;
+  --text:     #dce4ef;
+  --muted:    #7a8fa6;
+  --accent:   #e8b84b;
+  --green:    #3ecf78;
+  --red:      #e05252;
+  --blue:     #4a9eff;
+  --purple:   #b06bdd;
+  --yellow:   #f5c842;
+}
+
+html, body { height: 100%; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+header h1 { font-size: 1rem; color: var(--accent); letter-spacing: .5px; white-space: nowrap; }
+
+.hbtn {
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .76rem;
+  transition: all .12s;
+  white-space: nowrap;
+}
+.hbtn:hover { border-color: var(--accent); color: var(--accent); }
+.hbtn.on    { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 700; }
+
+#score-bar { margin-left: auto; display: flex; gap: 14px; }
+.sc { display: flex; flex-direction: column; align-items: center; font-size: .68rem; color: var(--muted); line-height: 1; gap: 2px; }
+.sc span { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+
+/* ── MAIN ── */
+main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── BOARD ── */
+#board-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+#board-wrap {
+  position: relative;
+  width: clamp(260px, min(48vw, 480px), 480px);
+  height: clamp(260px, min(48vw, 480px), 480px);
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(8,1fr);
+  grid-template-rows: repeat(8,1fr);
+  width: 100%; height: 100%;
+  border: 2px solid var(--accent);
+  box-shadow: 0 8px 40px rgba(0,0,0,.55);
+  border-radius: 2px;
+}
+
+.sq { position:relative; cursor:pointer; user-select:none; transition:filter .08s; }
+.sq.light { background: var(--light-sq); }
+.sq.dark  { background: var(--dark-sq); }
+.sq:hover { filter: brightness(1.12); }
+
+.lbl {
+  position:absolute; font-weight:700; pointer-events:none; opacity:.65; z-index:1;
+  font-size: clamp(.4rem,.8vw,.58rem);
+}
+.sq.dark  .lbl { color: var(--light-sq); }
+.sq.light .lbl { color: var(--dark-sq); }
+.rank-lbl { bottom:2px; left:3px; }
+.file-lbl { top:2px; right:3px; }
+
+.ov { position:absolute; inset:0; pointer-events:none; border-radius:1px; z-index:2; }
+.ov.sel        { background:rgba(20,160,70,.65); outline:3px solid #1ed760; outline-offset:-3px; }
+.ov.knight     { background:rgba(74,158,255,.42); }
+.ov.bishop     { background:rgba(176,107,221,.38); }
+.ov.rook-f     { background:rgba(62,207,120,.38); }
+.ov.rook-r     { background:rgba(255,140,40,.32); }
+.ov.same-color { background:rgba(245,200,66,.42); }
+.ov.path       { background:rgba(62,207,120,.48); }
+.ov.found      { background:rgba(62,207,120,.55); outline:2px solid #3ecf78; outline-offset:-2px; }
+.ov.ghost      { background:rgba(255,255,255,.1); }
+.ov.dest       { background:rgba(232,184,75,.55); outline:3px solid var(--accent); outline-offset:-3px; }
+.ov.ok         { background:rgba(62,207,120,.65); outline:3px solid #3ecf78; outline-offset:-3px; }
+.ov.err        { background:rgba(224,82,82,.6);   outline:3px solid #e05252; outline-offset:-3px; }
+
+.dot {
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:32%; height:32%; border-radius:50%;
+  background:rgba(74,158,255,.75); pointer-events:none; z-index:3;
+}
+.piece {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:clamp(1.3rem,3.2vw,2.2rem); pointer-events:none; z-index:4;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));
+}
+
+/* Blind cover */
+#blind-cover {
+  position:absolute; inset:0; z-index:50;
+  background:#0f1923;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  border-radius:2px;
+  transition:opacity .2s;
+}
+#blind-cover.off { display:none; }
+#blind-cover .icon { font-size:2.8rem; }
+#blind-cover .msg  { font-size:.88rem; color:var(--muted); }
+#peek-btn {
+  padding:6px 16px;
+  background:rgba(255,255,255,.08);
+  border:1px solid var(--border);
+  border-radius:6px;
+  color:var(--text);
+  cursor:pointer;
+  font-size:.8rem;
+}
+#peek-btn:hover { background:rgba(255,255,255,.14); }
+
+/* ── RIGHT PANEL ── */
+#ctrl {
+  flex:1; background:var(--panel);
+  border-left:1px solid var(--border);
+  padding:14px; display:flex; flex-direction:column; gap:12px;
+  overflow-y:auto; min-width:260px; max-width:380px;
+}
+
+#mode-tabs { display:flex; flex-wrap:wrap; gap:5px; }
+.mtab {
+  padding:4px 9px; font-size:.72rem;
+  background:transparent; border:1px solid var(--border);
+  border-radius:5px; color:var(--muted); cursor:pointer; transition:all .12s;
+}
+.mtab:hover { border-color:var(--accent); color:var(--text); }
+.mtab.active { background:var(--accent); color:#111; font-weight:700; border-color:var(--accent); }
+
+.card {
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border);
+  border-radius:10px; padding:12px;
+}
+.card-label { font-size:.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin-bottom:6px; }
+#ex-prompt { font-size:.96rem; line-height:1.65; }
+#ex-hint   { font-size:.78rem; color:var(--muted); margin-top:7px; line-height:1.5; }
+
+/* text input */
+#text-row {
+  display:flex; gap:8px; align-items:center;
+}
+#text-row.hidden { display:none; }
+#sq-input {
+  flex:1; padding:9px 12px;
+  background:rgba(255,255,255,.07);
+  border:1px solid var(--border);
+  border-radius:8px; color:var(--text);
+  font-size:1.05rem; font-family:monospace; letter-spacing:2px; text-transform:uppercase;
+  outline:none;
+  transition:border-color .15s;
+}
+#sq-input:focus { border-color:var(--accent); }
+#sq-input::placeholder { color:var(--muted); letter-spacing:0; font-size:.82rem; text-transform:none; }
+#submit-btn {
+  padding:9px 14px; background:var(--accent); color:#111;
+  border:none; border-radius:8px; cursor:pointer; font-weight:700; font-size:.88rem;
+  transition:filter .12s;
+}
+#submit-btn:hover { filter:brightness(1.1); }
+
+/* answer buttons */
+#ans-area { display:flex; flex-wrap:wrap; gap:7px; }
+.abtn {
+  padding:8px 16px; border:none; border-radius:7px;
+  cursor:pointer; font-size:.88rem; font-weight:600;
+  transition:transform .1s,box-shadow .1s;
+}
+.abtn:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,.3); }
+.abtn.light-col { background:var(--light-sq); color:#3a2a14; }
+.abtn.dark-col  { background:var(--dark-sq);  color:#fff; }
+.abtn.neutral   { background:rgba(255,255,255,.1); color:var(--text); border:1px solid var(--border); }
+.abtn.accent    { background:var(--accent); color:#111; }
+.abtn.yes-btn   { background:rgba(62,207,120,.2); color:var(--green); border:1px solid rgba(62,207,120,.5); }
+.abtn.no-btn    { background:rgba(224,82,82,.2);  color:var(--red);   border:1px solid rgba(224,82,82,.5); }
+
+#feedback {
+  border-radius:8px; padding:9px 13px; font-size:.88rem; font-weight:600; display:none;
+  line-height:1.45;
+}
+#feedback.ok  { background:rgba(62,207,120,.12); border:1px solid rgba(62,207,120,.35); color:var(--green); display:block; }
+#feedback.err { background:rgba(224,82,82,.12);  border:1px solid rgba(224,82,82,.35);  color:var(--red);   display:block; }
+
+/* progress bar for destinations */
+#prog-row { display:none; align-items:center; gap:8px; font-size:.8rem; color:var(--muted); }
+#prog-row.show { display:flex; }
+#prog-bar { flex:1; height:6px; background:rgba(255,255,255,.1); border-radius:3px; overflow:hidden; }
+#prog-fill { height:100%; background:var(--green); border-radius:3px; transition:width .25s; }
+
+/* move sequence display */
+#seq-display {
+  display:none; flex-direction:column; gap:4px;
+  background:rgba(0,0,0,.25); border-radius:8px; padding:10px 12px;
+  font-family:monospace; font-size:.9rem;
+}
+#seq-display.show { display:flex; }
+.seq-start { color:var(--accent); font-weight:700; }
+.seq-move  { color:var(--text); padding-left:8px; }
+.seq-move::before { content:'→ '; color:var(--muted); }
+
+#info-box {
+  background:rgba(255,255,255,.03); border:1px solid var(--border);
+  border-radius:10px; padding:12px; font-size:.8rem; line-height:1.65; color:var(--muted);
+  flex-shrink:0;
+}
+#info-box strong { color:var(--text); }
+kbd {
+  background:rgba(255,255,255,.12); border-radius:4px; padding:1px 5px;
+  font-size:.8em; border:1px solid rgba(255,255,255,.1);
+}
+
+/* ── generic ── */
+.hidden { display:none !important; }
+
+/* batch feedback tags */
+.tg { display:inline-block; font-family:monospace; font-size:.82rem; padding:1px 6px; border-radius:4px; margin:1px 2px; }
+.tg-hit   { background:rgba(62,207,120,.18); color:var(--green); }
+.tg-miss  { background:rgba(224,82,82,.18);  color:var(--red); }
+.tg-extra { background:rgba(245,200,66,.18); color:var(--yellow); }
+
+/* settings panel */
+#settings-panel .set-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:8px; }
+#settings-panel .set-lbl { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; width:100%; }
+.sbtn {
+  padding:4px 10px; background:transparent; border:1px solid var(--border);
+  border-radius:6px; color:var(--muted); cursor:pointer; font-size:.74rem; transition:all .12s;
+}
+.sbtn:hover { border-color:var(--accent); color:var(--accent); }
+.sbtn.on { background:var(--accent); color:#111; border-color:var(--accent); font-weight:700; }
+
+/* session chip */
+#session-chip {
+  padding:4px 10px; border:1px solid var(--accent); border-radius:6px;
+  color:var(--accent); font-size:.78rem; font-weight:700; cursor:pointer; white-space:nowrap;
+}
+#session-chip:hover { background:rgba(232,184,75,.15); }
+
+/* session summary overlay */
+#session-overlay {
+  position:fixed; inset:0; z-index:100; background:rgba(8,14,20,.88);
+  display:flex; align-items:center; justify-content:center;
+}
+#session-overlay .sum-card {
+  background:var(--panel); border:1px solid var(--accent); border-radius:14px;
+  padding:28px 36px; text-align:center; min-width:280px;
+}
+#session-overlay .sum-big { font-size:2.6rem; font-weight:900; color:var(--accent); }
+#session-overlay .sum-sub { color:var(--muted); font-size:.85rem; margin:6px 0 16px; line-height:1.7; }
+
+/* hands-free sliders */
+.hf-row { margin-top:10px; width:100%; }
+.hf-row label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+.hf-row input[type=range] { width:100%; accent-color:var(--accent); cursor:pointer; }
+.hf-val { color:var(--accent); font-weight:700; }
+
+/* guide */
+body.guide-active #board-panel { display:none; }
+body.guide-active #ctrl { max-width:none; }
+#info-box h3 { color:var(--accent); font-size:.9rem; margin:14px 0 6px; }
+#info-box h3:first-child { margin-top:0; }
+.gjump {
+  padding:2px 8px; font-size:.72rem; background:transparent; border:1px solid var(--border);
+  border-radius:5px; color:var(--accent); cursor:pointer; margin:1px 2px; transition:all .12s;
+}
+.gjump:hover { background:var(--accent); color:#111; }
+.gtable { width:100%; border-collapse:collapse; margin:8px 0; font-size:.76rem; }
+.gtable th, .gtable td { border:1px solid var(--border); padding:4px 8px; text-align:left; vertical-align:top; }
+.gtable th { color:var(--accent); white-space:nowrap; }
+
+@media (max-width:680px) {
+  main { flex-direction:column; }
+  #ctrl { max-width:100%; border-left:none; border-top:1px solid var(--border); }
+  #board-panel { padding:12px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>♟ Chess Vision Trainer</h1>
+  <button class="hbtn" id="blind-toggle">🙈 Blind OFF</button>
+  <button class="hbtn" id="flip-btn">⇅ Flip</button>
+  <button class="hbtn" id="settings-btn">⚙ Settings</button>
+  <div id="session-chip" class="hidden">⏱ --:--</div>
+  <div id="score-bar">
+    <div class="sc"><span id="s-streak">0</span>Streak</div>
+    <div class="sc"><span id="s-correct">0</span>Correct</div>
+    <div class="sc"><span id="s-total">0</span>Total</div>
+    <div class="sc"><span id="s-hints">0</span>Hints</div>
+  </div>
+</header>
+
+<main>
+  <div id="board-panel">
+    <div id="board-wrap">
+      <div id="board"></div>
+      <div id="blind-cover" class="off">
+        <div class="icon">🧠</div>
+        <div class="msg">Calculate first…</div>
+        <button id="peek-btn">Peek (counts as hint)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ctrl">
+    <div id="mode-tabs"></div>
+
+    <div id="settings-panel" class="card hidden"></div>
+
+    <div class="card">
+      <div class="card-label" id="ex-title">Explore</div>
+      <div id="ex-prompt">Click any square on the board.</div>
+      <div id="ex-hint"></div>
+    </div>
+
+    <div id="seq-display"></div>
+
+    <div id="prog-row">
+      <span id="prog-label">0/0</span>
+      <div id="prog-bar"><div id="prog-fill" style="width:0%"></div></div>
+    </div>
+
+    <div id="text-row" class="hidden">
+      <input id="sq-input" type="text" maxlength="3" placeholder="type square (e.g. e4)" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button id="submit-btn">↵</button>
+    </div>
+
+    <div id="ans-area"></div>
+    <div id="feedback"></div>
+
+    <div id="info-box">Pick a mode below to start training.</div>
+  </div>
+</main>
+
+<div id="session-overlay" class="hidden">
+  <div class="sum-card">
+    <div class="card-label">Session complete</div>
+    <div class="sum-big" id="sum-score">0 / 0</div>
+    <div class="sum-sub" id="sum-detail"></div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="abtn accent" id="sum-again">▶ New session</button>
+      <button class="abtn neutral" id="sum-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+//  CONSTANTS & STATE
+// ════════════════════════════════════════════════════
+const FILES = 'abcdefgh';
+let flipped        = false;
+let blindMode      = false;      // global blind preference
+let highlights     = {};
+let pieces         = {};
+let mode           = 'explore';
+let quiz           = {};
+let score          = { correct:0, total:0, streak:0, hints:0, best:0 };
+let lastQuizColor  = null;       // used to enforce color alternation in Color Quiz
+let lastRight      = false;      // outcome of the most recent recordAnswer
+let pendingNext    = null;       // stored continuation while waiting for Enter (instant pace, wrong answer)
+
+// ── Settings (persisted in localStorage when available) ──
+// localStorage access is wrapped: in sandboxed previews / some file:// contexts
+// it throws a SecurityError, which must never halt the app.
+function safeLoadSettings(){
+  try{ return JSON.parse(localStorage.getItem('cvt-settings')||'{}'); }
+  catch(e){ return {}; }
+}
+const settings = Object.assign(
+  { pace:'instant', entry:'single', timerMin:0 },
+  safeLoadSettings()
+);
+function saveSettings(){
+  try{ localStorage.setItem('cvt-settings', JSON.stringify(settings)); }
+  catch(e){ /* storage unavailable — settings stay for this session only */ }
+}
+
+// ── Session timer ──
+let sessionTimer=null, sessionLeft=0;
+
+// ════════════════════════════════════════════════════
+//  SQUARE UTILITIES
+// ════════════════════════════════════════════════════
+const sqColor = (f,r) => (f+r)%2===0 ? 'dark' : 'light';
+const sqName  = (f,r) => FILES[f]+(r+1);
+const parseSq = n     => ({ f:FILES.indexOf(n[0]), r:parseInt(n[1])-1 });
+const valid   = (f,r) => f>=0&&f<8&&r>=0&&r<8;
+const rand8   = ()    => Math.floor(Math.random()*8);
+const randSq  = ()    => ({ f:rand8(), r:rand8() });
+
+function isValidSqName(s) {
+  s = (s||'').toLowerCase().trim();
+  return s.length===2 && FILES.includes(s[0]) && '12345678'.includes(s[1]);
+}
+function normSq(s) { return (s||'').toLowerCase().trim().slice(0,2); }
+
+function knightMoves(f,r) {
+  return [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]
+    .map(([df,dr])=>({f:f+df,r:r+dr})).filter(s=>valid(s.f,s.r));
+}
+function bishopSquares(f,r) {
+  const out=[];
+  for(const [df,dr] of [[-1,-1],[-1,1],[1,-1],[1,1]]){
+    let cf=f+df,cr=r+dr;
+    while(valid(cf,cr)){out.push({f:cf,r:cr});cf+=df;cr+=dr;}
+  }
+  return out;
+}
+function rookSquares(f,r) {
+  const out=[];
+  for(const [df,dr] of [[-1,0],[1,0],[0,-1],[0,1]]){
+    let cf=f+df,cr=r+dr;
+    while(valid(cf,cr)){out.push({f:cf,r:cr});cf+=df;cr+=dr;}
+  }
+  return out;
+}
+function kingNeighbors(f,r) {
+  const out=[];
+  for(let df=-1;df<=1;df++) for(let dr=-1;dr<=1;dr++){
+    if(df===0&&dr===0) continue;
+    if(valid(f+df,r+dr)) out.push({f:f+df,r:r+dr,df,dr});
+  }
+  return out;
+}
+function sameColorNeighbors(f,r) {
+  return kingNeighbors(f,r).filter(s=>sqColor(s.f,s.r)===sqColor(f,r));
+}
+
+// BFS shortest knight path
+function knightPath(sf,sr,ef,er) {
+  if(sf===ef&&sr===er) return [{f:sf,r:sr}];
+  const prev={}; const q=[{f:sf,r:sr}];
+  prev[sqName(sf,sr)]=null;
+  while(q.length){
+    const cur=q.shift();
+    for(const nx of knightMoves(cur.f,cur.r)){
+      const k=sqName(nx.f,nx.r);
+      if(k in prev) continue;
+      prev[k]=cur;
+      if(nx.f===ef&&nx.r===er){
+        const path=[nx]; let n=cur;
+        while(n){path.unshift(n);n=prev[sqName(n.f,n.r)];}
+        return path;
+      }
+      q.push(nx);
+    }
+  }
+  return null;
+}
+
+// Generate a move sequence for a piece
+function generateSequence(pieceType, sf, sr, numMoves) {
+  const path=[{f:sf,r:sr}];
+  let f=sf,r=sr;
+  for(let i=0;i<numMoves;i++){
+    let candidates;
+    if(pieceType==='knight'){
+      candidates=knightMoves(f,r);
+    } else if(pieceType==='bishop'){
+      candidates=[];
+      for(const [df,dr] of [[-1,-1],[-1,1],[1,-1],[1,1]]){
+        let cf=f+df,cr=r+dr,steps=0;
+        while(valid(cf,cr)&&steps<4){candidates.push({f:cf,r:cr});cf+=df;cr+=dr;steps++;}
+      }
+    } else { // rook
+      candidates=[];
+      for(const [df,dr] of [[-1,0],[1,0],[0,-1],[0,1]]){
+        let cf=f+df,cr=r+dr,steps=0;
+        while(valid(cf,cr)&&steps<4){candidates.push({f:cf,r:cr});cf+=df;cr+=dr;steps++;}
+      }
+    }
+    const prev=path.length>1?path[path.length-2]:null;
+    const filtered=prev?candidates.filter(s=>!(s.f===prev.f&&s.r===prev.r)):candidates;
+    const pool=filtered.length?filtered:candidates;
+    if(!pool.length) break;
+    const next=pool[Math.floor(Math.random()*pool.length)];
+    path.push(next); f=next.f; r=next.r;
+  }
+  return path;
+}
+
+const DIR_NAME ={'0,1':'N','0,-1':'S','1,0':'E','-1,0':'W','1,1':'NE','-1,1':'NW','1,-1':'SE','-1,-1':'SW'};
+const DIR_ARR  ={'0,1':'↑','0,-1':'↓','1,0':'→','-1,0':'←','1,1':'↗','-1,1':'↖','1,-1':'↘','-1,-1':'↙'};
+
+// ════════════════════════════════════════════════════
+//  BOARD RENDERING
+// ════════════════════════════════════════════════════
+function buildBoard(){
+  const el=document.getElementById('board'); el.innerHTML='';
+  for(let row=0;row<8;row++) for(let col=0;col<8;col++){
+    const f=flipped?7-col:col;
+    const r=flipped?row:7-row;
+    const sq=document.createElement('div');
+    sq.className='sq '+sqColor(f,r);
+    sq.dataset.f=f; sq.dataset.r=r; sq.dataset.n=sqName(f,r);
+    if(col===0){const l=document.createElement('div');l.className='lbl rank-lbl';l.textContent=r+1;sq.appendChild(l);}
+    if(row===7){const l=document.createElement('div');l.className='lbl file-lbl';l.textContent=FILES[f];sq.appendChild(l);}
+    const ov=document.createElement('div'); ov.className='ov'; sq.appendChild(ov);
+    sq.addEventListener('click',()=>onSquareClick(f,r));
+    el.appendChild(sq);
+  }
+  applyHighlights();
+}
+
+function getSqEl(f,r){ return document.querySelector(`.sq[data-f="${f}"][data-r="${r}"]`); }
+
+function applyHighlights(){
+  document.querySelectorAll('.ov').forEach(o=>{o.className='ov';});
+  document.querySelectorAll('.dot,.piece').forEach(d=>d.remove());
+  for(const [name,cls] of Object.entries(highlights)){
+    const {f,r}=parseSq(name); const sq=getSqEl(f,r); if(!sq) continue;
+    if(cls==='dot'){
+      const d=document.createElement('div'); d.className='dot'; sq.appendChild(d);
+    } else {
+      sq.querySelector('.ov').className='ov '+cls;
+    }
+  }
+  for(const [name,sym] of Object.entries(pieces)){
+    const {f,r}=parseSq(name); const sq=getSqEl(f,r); if(!sq) continue;
+    const p=document.createElement('div'); p.className='piece'; p.textContent=sym; sq.appendChild(p);
+  }
+}
+
+function clearBoard(){ highlights={}; pieces={}; applyHighlights(); }
+
+// ── Blind cover ──
+function showBlind(){
+  if(blindMode){ document.getElementById('blind-cover').classList.remove('off'); }
+}
+function hideBlind(){ document.getElementById('blind-cover').classList.add('off'); }
+function isBlindOn(){ return !document.getElementById('blind-cover').classList.contains('off'); }
+
+// ════════════════════════════════════════════════════
+//  MODES
+// ════════════════════════════════════════════════════
+const MODES=[
+  { id:'guide',          name:'📖 Guide'           },
+  { id:'explore',        name:'🔭 Explore'         },
+  { id:'square-namer',   name:'📝 Name Squares'    },
+  { id:'color-quiz',     name:'🎨 Color Quiz'      },
+  { id:'color-pair',     name:'🔗 Color Pair'      },
+  { id:'neighbor-quiz',  name:'🧭 Neighbors'       },
+  { id:'knight-color',   name:'♞ Knight Parity'   },
+  { id:'piece-tracker',  name:'🎯 Piece Tracker'   },
+  { id:'destinations',   name:'📡 Destinations'    },
+  { id:'knight-path',    name:'🛤 Knight Path'     },
+  { id:'shortest-path',  name:'🧭 Shortest Path'   },
+  { id:'knight-tour',    name:'♞ Knight Tour'      },
+  { id:'bishop-diag',    name:'♝ Bishop Vision'   },
+  { id:'diagonals',      name:'⤢ Diagonal Quiz'    },
+  { id:'rook-vision',    name:'♜ Rook Vision'     },
+  { id:'knight-web',     name:'🕸 Knight Web'      },
+  { id:'region-scan',    name:'🗺 Region Scan'     },
+  { id:'coord-drill',    name:'⏱ Coord Drill'     },
+  { id:'reachability',   name:'🎯 Reachability'    },
+  { id:'two-piece',        name:'♟♞ Two-Piece'        },
+  { id:'position-flash',   name:'⚡ Position Flash'    },
+  { id:'path-tracer',      name:'〰 Path Tracer'       },
+  { id:'blind-destinations',name:'📡 Blind Dest.'     },
+  { id:'dest-colors',      name:'🎨 Dest. Colors'      },
+  { id:'two-piece-path',   name:'🔀 Two-Piece Path'    },
+  { id:'path-colors',      name:'〰🎨 Path + Colors'   },
+  { id:'colored-dest',     name:'📡🎨 Colored Dest.'   },
+  { id:'step-tracer',     name:'👣 Step Tracer'        },
+  { id:'library',         name:'📚 Library'            },
+  { id:'spatial-sprints', name:'🏃 Sprints'            },
+  { id:'hands-free',      name:'🎧 Hands-Free'         },
+];
+
+function buildModeTabs(){
+  const c=document.getElementById('mode-tabs'); c.innerHTML='';
+  MODES.forEach(m=>{
+    const b=document.createElement('button');
+    b.className='mtab'+(m.id===mode?' active':'');
+    b.textContent=m.name;
+    b.addEventListener('click',()=>setMode(m.id));
+    c.appendChild(b);
+  });
+}
+
+function setMode(id){
+  // Stop coord drill timer if switching away
+  if(coordTimer){ clearInterval(coordTimer); coordTimer=null; }
+  hfStop();                 // stop any running hands-free audio session
+  pendingNext=null;         // discard stale continue-waits
+  document.body.classList.toggle('guide-active', id==='guide');
+  mode=id; quiz={}; lastQuizColor=null;
+  clearBoard(); hideBlind(); hideFeedback(); setAns([]); hideSeq(); hideTextInput(); hideProg();
+  buildModeTabs();
+  switch(id){
+    case 'guide':          modeGuide();          break;
+    case 'explore':        modeExplore();        break;
+    case 'square-namer':   modeSquareNamer();    break;
+    case 'color-quiz':     modeColorQuiz();      break;
+    case 'color-pair':     modeColorPair();      break;
+    case 'neighbor-quiz':  modeNeighborQuiz();   break;
+    case 'knight-color':   modeKnightColor();    break;
+    case 'piece-tracker':  modePieceTracker();   break;
+    case 'destinations':   modeDestinations();   break;
+    case 'knight-path':    modeKnightPath();     break;
+    case 'shortest-path':  modeShortestPath();   break;
+    case 'knight-tour':    modeKnightTour();     break;
+    case 'bishop-diag':    modeBishopDiag();     break;
+    case 'diagonals':      modeDiagonals();      break;
+    case 'rook-vision':    modeRookVision();     break;
+    case 'knight-web':     modeKnightWeb();      break;
+    case 'region-scan':    modeRegionScan();     break;
+    case 'coord-drill':    modeCoordDrill();     break;
+    case 'reachability':   modeReachability();   break;
+    case 'two-piece':         modeTwoPiece();         break;
+    case 'position-flash':    modePositionFlash();    break;
+    case 'path-tracer':       modePathTracer();       break;
+    case 'blind-destinations':modeBlindDest();        break;
+    case 'dest-colors':       modeDestColors();       break;
+    case 'two-piece-path':    modeTwoPiecePath();     break;
+    case 'path-colors':       modePathColors();       break;
+    case 'colored-dest':      modeColoredDest();      break;
+    case 'step-tracer':       modeStepTracer();       break;
+    case 'library':           modeLibrary();          break;
+    case 'spatial-sprints':   modeSprints();          break;
+    case 'hands-free':        modeHandsFree();        break;
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: EXPLORE
+// ════════════════════════════════════════════════════
+function modeExplore(){
+  setEx('Explore','Click any square to see its properties.','');
+  setInfo(`<strong>Explore Mode</strong><br><br>
+    Click any square. Then press a key:<br>
+    <kbd>N</kbd> knight moves &nbsp;
+    <kbd>B</kbd> bishop diagonals<br>
+    <kbd>R</kbd> rook lines &nbsp;&nbsp;&nbsp;
+    <kbd>S</kbd> same-color neighbors<br>
+    <kbd>Esc</kbd> clear board`);
+}
+
+function exploreSquare(f,r){
+  clearBoard();
+  const name=sqName(f,r),col=sqColor(f,r);
+  highlights[name]='sel';
+  applyHighlights();
+  setEx(name.toUpperCase(),
+    `Color: <strong style="color:var(--accent)">${col}</strong><br>
+     Knight reach: <strong>${knightMoves(f,r).length}</strong> squares<br>
+     Bishop controls: <strong>${bishopSquares(f,r).length}</strong> squares<br>
+     Rook controls: <strong>${rookSquares(f,r).length}</strong> squares`,
+    'Press <kbd>N</kbd> <kbd>B</kbd> <kbd>R</kbd> <kbd>S</kbd> to overlay'
+  );
+  quiz.lastF=f; quiz.lastR=r;
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: SQUARE NAMER  (see square → type its name)
+// ════════════════════════════════════════════════════
+function modeSquareNamer(){
+  setInfo(`<strong>Square Namer</strong><br><br>
+    A square is highlighted on the board. Type its name (e.g. <kbd>e4</kbd>) without reading the labels.<br><br>
+    This builds automatic coordinate awareness — the foundation of all visualization.`);
+  nextSquareNamer();
+}
+
+function nextSquareNamer(){
+  const {f,r}=randSq();
+  quiz={f,r,answered:false};
+  clearBoard(); hideBlind();
+  highlights[sqName(f,r)]='sel';
+  pieces[sqName(f,r)]='●';
+  applyHighlights();
+  setEx('Square Namer','What square is highlighted?','Type the name and press Enter');
+  showTextInput();
+  setAns([]);
+  focusInput();
+}
+
+function submitSquareNamer(input){
+  if(quiz.answered) return;
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  quiz.answered=true;
+  const correct=sqName(quiz.f,quiz.r);
+  const right=ans===correct;
+  recordAnswer(right);
+  highlights[correct]= right?'ok':'err';
+  if(!right) highlights[ans]='err';
+  applyHighlights();
+  showFeedback(right, right?`✓ ${correct.toUpperCase()} — correct!`:`✗ That was ${correct.toUpperCase()}.`);
+  hideTextInput();
+  autoNext(nextSquareNamer);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: COLOR QUIZ
+// ════════════════════════════════════════════════════
+function modeColorQuiz(){
+  setInfo(`<strong>Color Quiz</strong><br><br>
+    A square name is shown. Is it light or dark?<br><br>
+    <strong>Method:</strong> a=1…h=8. Add file number + rank. Even → dark. Odd → light.<br>
+    e.g. e4 → 5+4=9, odd → <strong>light</strong><br><br>
+    In blind mode the board is covered.`);
+  nextColorQuiz();
+}
+
+function nextColorQuiz(){
+  // Alternate colors strictly so you never get a run of the same
+  const want = lastQuizColor === 'dark' ? 'light' : lastQuizColor === 'light' ? 'dark' : null;
+  let f, r, tries = 0;
+  do { ({f,r} = randSq()); tries++; }
+  while (want && tries < 30 && sqColor(f,r) !== want);
+
+  quiz={f,r,answered:false};
+  clearBoard();
+  // Always hide the board in Color Quiz — seeing it lets you cheat
+  document.getElementById('blind-cover').classList.remove('off');
+  setEx('Color Quiz',`What color is <strong style="font-size:1.4rem;letter-spacing:2px">${sqName(f,r).toUpperCase()}</strong>?`,
+    'Press <kbd>L</kbd> Light · <kbd>D</kbd> Dark');
+  setAns([
+    {label:'☀ Light',cls:'light-col',cb:()=>answerColor('light')},
+    {label:'● Dark', cls:'dark-col', cb:()=>answerColor('dark') },
+  ]);
+}
+
+function answerColor(answer){
+  if(quiz.answered) return;
+  quiz.answered=true;
+  const correct=sqColor(quiz.f,quiz.r);
+  const right=answer===correct;
+  lastQuizColor=correct;
+  recordAnswer(right);
+  // Briefly reveal the board so the user can see the actual square
+  hideBlind();
+  highlights[sqName(quiz.f,quiz.r)]=right?'ok':'err';
+  applyHighlights();
+  showFeedback(right,
+    right?`✓ ${sqName(quiz.f,quiz.r).toUpperCase()} is ${correct}.`
+         :`✗ ${sqName(quiz.f,quiz.r).toUpperCase()} is ${correct}, not ${answer}.`
+  );
+  autoNext(nextColorQuiz,1100);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: COLOR PAIR  (same color? yes/no)
+// ════════════════════════════════════════════════════
+function modeColorPair(){
+  setInfo(`<strong>Color Pair</strong><br><br>
+    Two squares are shown. Are they on the same color?<br><br>
+    <strong>Method:</strong> (file+rank) parity. Same parity = same color.<br>
+    e.g. e4 (5+4=9 odd) and g6 (7+6=13 odd) → same (both light)<br><br>
+    In blind mode: only the names are shown, board is covered.`);
+  nextColorPair();
+}
+
+function nextColorPair(){
+  const a=randSq(), b=randSq();
+  // make half same-color, half different to avoid guessing bias
+  quiz={a,b,answered:false};
+  clearBoard();
+  showBlind();
+  highlights[sqName(a.f,a.r)]='sel';
+  highlights[sqName(b.f,b.r)]='dest';
+  const nameA=sqName(a.f,a.r).toUpperCase();
+  const nameB=sqName(b.f,b.r).toUpperCase();
+  setEx('Color Pair',
+    `<strong style="font-size:1.1rem">${nameA}</strong> &nbsp;and&nbsp; <strong style="font-size:1.1rem">${nameB}</strong><br>Same color?`,
+    'Press <kbd>Y</kbd> yes · <kbd>N</kbd> no'
+  );
+  setAns([
+    {label:'✓ Same',     cls:'yes-btn',cb:()=>answerColorPair(true)},
+    {label:'✗ Different',cls:'no-btn', cb:()=>answerColorPair(false)},
+  ]);
+}
+
+function answerColorPair(answer){
+  if(quiz.answered) return;
+  quiz.answered=true;
+  const same=sqColor(quiz.a.f,quiz.a.r)===sqColor(quiz.b.f,quiz.b.r);
+  const right=answer===same;
+  recordAnswer(right);
+  hideBlind();
+  highlights[sqName(quiz.a.f,quiz.a.r)]='ok';
+  highlights[sqName(quiz.b.f,quiz.b.r)]=same?'ok':'err';
+  applyHighlights();
+  const ca=sqColor(quiz.a.f,quiz.a.r),cb=sqColor(quiz.b.f,quiz.b.r);
+  showFeedback(right,right?`✓ Both ${ca} — correct!`:`✗ ${sqName(quiz.a.f,quiz.a.r).toUpperCase()} is ${ca}, ${sqName(quiz.b.f,quiz.b.r).toUpperCase()} is ${cb}.`);
+  autoNext(nextColorPair,1200);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: PIECE TRACKER  ← main new mode
+// ════════════════════════════════════════════════════
+function modePieceTracker(){
+  setInfo(`<strong>Piece Tracker</strong><br><br>
+    A piece is placed on a square. A sequence of moves is shown. You must name the final square.<br><br>
+    In blind mode the board is covered while you calculate — you can peek once.<br><br>
+    Pieces: <strong>Knight</strong> (hardest), <strong>Bishop</strong>, <strong>Rook</strong><br>
+    Difficulty: 2–5 moves depending on streak.`);
+  nextPieceTracker();
+}
+
+const PIECE_SYMBOLS = {knight:'♞', bishop:'♝', rook:'♜', queen:'♛', king:'♚', pawn:'♟'};
+const PIECE_NAMES   = {knight:'Knight', bishop:'Bishop', rook:'Rook', queen:'Queen', king:'King', pawn:'Pawn'};
+let coordTimer = null;  // interval handle for Coord Drill
+
+function nextPieceTracker(){
+  // Difficulty scales with streak
+  const numMoves = Math.min(2 + Math.floor(score.streak/3), 5);
+  const pieceTypes = ['knight','bishop','rook'];
+  const pieceType = pieceTypes[Math.floor(Math.random()*pieceTypes.length)];
+  let {f:sf,r:sr}=randSq();
+
+  // For bishop, avoid edges
+  if(pieceType==='bishop'){
+    sf=1+Math.floor(Math.random()*6); sr=1+Math.floor(Math.random()*6);
+  }
+
+  const path=generateSequence(pieceType,sf,sr,numMoves);
+  if(path.length<2){ nextPieceTracker(); return; }
+
+  quiz={pieceType,path,answered:false,peeked:false};
+
+  clearBoard();
+  highlights[sqName(sf,sr)]='sel';
+  pieces[sqName(sf,sr)]=PIECE_SYMBOLS[pieceType];
+  applyHighlights();
+
+  // Build sequence display
+  showSeq(pieceType, path);
+  showBlind();
+
+  const ef=path[path.length-1].f, er=path[path.length-1].r;
+  setEx('Piece Tracker',
+    `${PIECE_SYMBOLS[pieceType]} ${PIECE_NAMES[pieceType]} starts on <strong>${sqName(sf,sr).toUpperCase()}</strong><br>After <strong>${path.length-1} move${path.length>2?'s':''}</strong> — where is it?`,
+    'Type the final square name'
+  );
+  showTextInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealPieceTracker}]);
+  focusInput();
+}
+
+function showSeq(pieceType,path){
+  const el=document.getElementById('seq-display');
+  el.innerHTML='';
+  el.classList.add('show');
+  const start=document.createElement('div');
+  start.className='seq-start';
+  start.textContent=`${PIECE_NAMES[pieceType]} on ${sqName(path[0].f,path[0].r).toUpperCase()}`;
+  el.appendChild(start);
+  for(let i=1;i<path.length;i++){
+    const d=document.createElement('div');
+    d.className='seq-move';
+    d.textContent=(i<path.length-1)?sqName(path[i].f,path[i].r).toUpperCase():'?';
+    el.appendChild(d);
+  }
+}
+
+function submitPieceTracker(input){
+  if(quiz.answered) return;
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  quiz.answered=true;
+  const path=quiz.path;
+  const ef=path[path.length-1].f, er=path[path.length-1].r;
+  const correct=sqName(ef,er);
+  const right=ans===correct;
+  recordAnswer(right);
+  if(quiz.peeked) score.hints++;
+  hideBlind();
+  // Show full path
+  path.forEach((s,i)=>{
+    const k=sqName(s.f,s.r);
+    if(i===0)              highlights[k]='sel';
+    else if(i===path.length-1) highlights[k]=right?'ok':'err';
+    else                   highlights[k]='path';
+  });
+  pieces[sqName(path[0].f,path[0].r)]=PIECE_SYMBOLS[quiz.pieceType];
+  // Update seq display to reveal last square
+  const seqMoves=document.querySelectorAll('.seq-move');
+  if(seqMoves.length) seqMoves[seqMoves.length-1].textContent=correct.toUpperCase();
+  applyHighlights();
+  showFeedback(right,
+    right?`✓ ${correct.toUpperCase()} — perfect!${quiz.peeked?' (hint used)':''}`
+         :`✗ The piece ended on ${correct.toUpperCase()}.`
+  );
+  autoNext(()=>{hideSeq();nextPieceTracker();});
+}
+
+function revealPieceTracker(){
+  quiz.answered=true; lastRight=false;
+  hideBlind();
+  const path=quiz.path;
+  path.forEach((s,i)=>{
+    const k=sqName(s.f,s.r);
+    if(i===0)              highlights[k]='sel';
+    else if(i===path.length-1) highlights[k]='dest';
+    else                   highlights[k]='path';
+  });
+  pieces[sqName(path[0].f,path[0].r)]=PIECE_SYMBOLS[quiz.pieceType];
+  const seqMoves=document.querySelectorAll('.seq-move');
+  const ef=path[path.length-1].f,er=path[path.length-1].r;
+  if(seqMoves.length) seqMoves[seqMoves.length-1].textContent=sqName(ef,er).toUpperCase();
+  applyHighlights();
+  hideTextInput();
+  score.hints++;
+  updateScoreDisplay();
+  autoNext(()=>{hideSeq();nextPieceTracker();});
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: DESTINATIONS  (name all squares a piece can reach)
+// ════════════════════════════════════════════════════
+function modeDestinations(){
+  setInfo(`<strong>Destinations</strong><br><br>
+    A piece is placed on a square. Name every square it can reach — one at a time.<br><br>
+    Knight: up to 8. Bishop: unlimited diagonals. Rook: 14 always.<br><br>
+    In blind mode, found squares appear on the board as you name them — your only visual feedback.`);
+  nextDestinations();
+}
+
+function nextDestinations(){
+  const pieceTypes=['knight','bishop','rook','king','queen'];
+  const pieceType=pieceTypes[Math.floor(Math.random()*pieceTypes.length)];
+  let {f,r}=randSq();
+  if(pieceType==='bishop'){f=2+Math.floor(Math.random()*4);r=2+Math.floor(Math.random()*4);}
+
+  const allSqs=genericMoves(pieceType,f,r).map(s=>sqName(s.f,s.r));
+  const allSet=new Set(allSqs);
+  quiz={f,r,pieceType,allSet,found:new Set(),answered:false};
+
+  clearBoard();
+  highlights[sqName(f,r)]='sel';
+  pieces[sqName(f,r)]=PIECE_SYMBOLS[pieceType];
+  applyHighlights();
+  showBlind();
+
+  const batch=settings.entry==='batch';
+  setEx('Destinations',
+    `${PIECE_SYMBOLS[pieceType]} ${PIECE_NAMES[pieceType]} on <strong>${sqName(f,r).toUpperCase()}</strong><br>Name all <strong>${allSet.size}</strong> squares it can reach`,
+    batch?'Type ALL squares in one line, e.g. <kbd>c3 e3 d2 f2</kbd>':'Type squares one by one · Press Enter each time'
+  );
+  showTextInput(batch?{batch:true}:{});
+  showProg(0,allSet.size);
+  setAns([{label:'Give up',cls:'neutral',cb:()=>revealDestinations(false)}]);
+  focusInput();
+}
+
+function submitDestination(input){
+  if(quiz.answered) return;
+  if(settings.entry==='batch'){ submitDestBatch(input); return; }
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  clearInput();
+
+  if(quiz.found.has(ans)){
+    showFeedback(false,'Already found '+ans.toUpperCase());
+    setTimeout(hideFeedback,700); return;
+  }
+  if(!quiz.allSet.has(ans)){
+    showFeedback(false,`✗ ${ans.toUpperCase()} is not reachable.`);
+    setTimeout(hideFeedback,800); return;
+  }
+
+  quiz.found.add(ans);
+  const {f,r}=parseSq(ans);
+  highlights[ans]='found';
+  if(isBlindOn()){
+    // In blind mode, reveal found squares through the cover by temporarily lowering it
+    // We just update behind the cover — found squares show when revealed
+  }
+  applyHighlights();
+  showProg(quiz.found.size,quiz.allSet.size);
+  hideFeedback();
+
+  if(quiz.found.size===quiz.allSet.size){
+    quiz.answered=true;
+    recordAnswer(true);
+    hideBlind();
+    showFeedback(true,`✓ All ${quiz.allSet.size} squares found!`);
+    hideTextInput();
+    autoNext(()=>{hideProg();nextDestinations();});
+  }
+}
+
+function submitDestBatch(input){
+  const given=[...new Set(parseSquares(input))];
+  if(!given.length){ shakeInput(); return; }
+  quiz.answered=true;
+  const hit=[],miss=[],extra=[];
+  quiz.allSet.forEach(s=>{ (given.includes(s)?hit:miss).push(s); });
+  given.forEach(s=>{ if(!quiz.allSet.has(s)) extra.push(s); });
+  const ok=!miss.length&&!extra.length;
+  recordAnswer(ok);
+  hideBlind();
+  hit.forEach(s=>highlights[s]='ok');
+  miss.forEach(s=>highlights[s]='dest');
+  extra.forEach(s=>highlights[s]='err');
+  highlights[sqName(quiz.f,quiz.r)]='sel';
+  pieces[sqName(quiz.f,quiz.r)]=PIECE_SYMBOLS[quiz.pieceType];
+  applyHighlights();
+  showFeedback(ok, ok?`✓ All ${quiz.allSet.size} squares correct!`:batchTags(hit,miss,extra));
+  hideTextInput();
+  autoNext(()=>{hideProg();nextDestinations();});
+}
+
+function revealDestinations(right){
+  quiz.answered=true; lastRight=false; hideBlind();
+  quiz.allSet.forEach(name=>{
+    if(!quiz.found.has(name)) highlights[name]='knight';
+    else highlights[name]='found';
+  });
+  hideBlind();
+  applyHighlights();
+  hideTextInput();
+  if(quiz.found.size>0&&right!==false) recordAnswer(false);
+  showFeedback(false,`Revealed ${quiz.allSet.size-quiz.found.size} missing squares.`);
+  autoNext(()=>{hideProg();nextDestinations();});
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: NEIGHBOR QUIZ
+// ════════════════════════════════════════════════════
+function modeNeighborQuiz(){
+  setInfo(`<strong>Neighbors</strong><br><br>
+    A king is on a square. Name the square in the given direction — type it.<br><br>
+    In blind mode the board is covered. This forces real calculation instead of visually counting.`);
+  nextNeighborQuiz();
+}
+
+function nextNeighborQuiz(){
+  let f,r,df,dr;
+  do{
+    const s=randSq();f=s.f;r=s.r;
+    const dirs=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+    [df,dr]=dirs[Math.floor(Math.random()*dirs.length)];
+  }while(!valid(f+df,r+dr));
+  quiz={f,r,df,dr,tf:f+df,tr:r+dr,answered:false};
+  clearBoard();
+  highlights[sqName(f,r)]='sel'; pieces[sqName(f,r)]='♔';
+  applyHighlights();
+  showBlind();
+  const dir=DIR_NAME[`${df},${dr}`];
+  setEx('Neighbors',
+    `From <strong>${sqName(f,r).toUpperCase()}</strong> — what square is <strong>${dir} ${DIR_ARR[`${df},${dr}`]}</strong>?`,
+    'Type the square name'
+  );
+  showTextInput(); focusInput(); setAns([]);
+}
+
+function submitNeighborQuiz(input){
+  if(quiz.answered) return;
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  quiz.answered=true;
+  const correct=sqName(quiz.tf,quiz.tr);
+  const right=ans===correct;
+  recordAnswer(right);
+  hideBlind();
+  highlights[correct]='ok';
+  if(!right) highlights[ans]='err';
+  applyHighlights();
+  showFeedback(right,right?`✓ ${correct.toUpperCase()}`:`✗ It was ${correct.toUpperCase()}`);
+  hideTextInput();
+  autoNext(nextNeighborQuiz);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: KNIGHT COLOR (after N moves)
+// ════════════════════════════════════════════════════
+function modeKnightColor(){
+  setInfo(`<strong>Knight Parity</strong><br><br>
+    Knight starts on a square. After N moves, what color is it on?<br><br>
+    <strong>Rule:</strong> Knights always alternate color. Even moves → same as start. Odd moves → opposite.<br><br>
+    Practice until the parity is instant — no counting.`);
+  nextKnightColor();
+}
+
+function nextKnightColor(){
+  const {f,r}=randSq();
+  const moves=1+Math.floor(Math.random()*6);
+  const startCol=sqColor(f,r);
+  const endCol=moves%2===0?startCol:(startCol==='dark'?'light':'dark');
+  quiz={f,r,moves,startCol,endCol,answered:false};
+  clearBoard();
+  highlights[sqName(f,r)]='sel'; pieces[sqName(f,r)]='♞';
+  applyHighlights();
+  showBlind();
+  setEx('Knight Parity',
+    `♞ Knight on <strong>${sqName(f,r).toUpperCase()}</strong> <span style="color:var(--muted)">(${startCol})</span><br>After <strong>${moves} move${moves>1?'s':''}</strong> — what color?`,
+    'Press <kbd>L</kbd> Light · <kbd>D</kbd> Dark'
+  );
+  setAns([
+    {label:'☀ Light',cls:'light-col',cb:()=>answerKnightColor('light')},
+    {label:'● Dark', cls:'dark-col', cb:()=>answerKnightColor('dark') },
+  ]);
+}
+
+function answerKnightColor(answer){
+  if(quiz.answered) return;
+  quiz.answered=true;
+  const right=answer===quiz.endCol;
+  recordAnswer(right);
+  hideBlind();
+  highlights[sqName(quiz.f,quiz.r)]=right?'ok':'err';
+  applyHighlights();
+  showFeedback(right,
+    right?`✓ After ${quiz.moves} move${quiz.moves>1?'s':''} from ${quiz.startCol}: ${quiz.endCol}.`
+         :`✗ After ${quiz.moves} move${quiz.moves>1?'s':''} from ${quiz.startCol}: ${quiz.endCol}. (${quiz.moves} is ${quiz.moves%2===0?'even → same':'odd → opposite'})`
+  );
+  autoNext(nextKnightColor,1300);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: KNIGHT PATH
+// ════════════════════════════════════════════════════
+function modeKnightPath(){
+  setInfo(`<strong>Knight Path</strong><br><br>
+    Start and end squares are shown. Type the intermediate square(s) in order to trace the shortest knight route.<br><br>
+    This is exactly what you do when calculating knight maneuvers — see the route in your mind before committing.`);
+  nextKnightPath();
+}
+
+function nextKnightPath(){
+  let sf,sr,ef,er,path;
+  let tries=0;
+  do{
+    ({f:sf,r:sr}=randSq());({f:ef,r:er}=randSq());
+    path=knightPath(sf,sr,ef,er);
+    tries++;
+  }while(!path||path.length<3||path.length>5||tries>200);
+
+  quiz={sf,sr,ef,er,path,userPath:[{f:sf,r:sr}],answered:false};
+  clearBoard();
+  highlights[sqName(sf,sr)]='sel';
+  highlights[sqName(ef,er)]='dest';
+  pieces[sqName(sf,sr)]='♞';
+  applyHighlights();
+
+  const moves=path.length-1;
+  setEx('Knight Path',
+    `♞ from <strong>${sqName(sf,sr).toUpperCase()}</strong> to <strong>${sqName(ef,er).toUpperCase()}</strong><br>Minimum: <strong>${moves} move${moves>1?'s':''}</strong>`,
+    'Type intermediate squares in order, then the destination'
+  );
+  showTextInput(); focusInput();
+  setAns([
+    {label:'Show Path',cls:'neutral',cb:revealKnightPath},
+    {label:'Reset',    cls:'neutral',cb:()=>{quiz.userPath=[{f:sf,r:sr}];refreshKnightPathBoard();}},
+  ]);
+}
+
+function refreshKnightPathBoard(){
+  clearBoard();
+  const {sf,sr,ef,er,userPath}=quiz;
+  highlights[sqName(ef,er)]='dest';
+  userPath.forEach((s,i)=>{highlights[sqName(s.f,s.r)]=i===0?'sel':'path';});
+  pieces[sqName(sf,sr)]='♞';
+  const cur=userPath[userPath.length-1];
+  knightMoves(cur.f,cur.r).forEach(s=>{ if(!highlights[sqName(s.f,s.r)]) highlights[sqName(s.f,s.r)]='dot'; });
+  applyHighlights();
+}
+
+function submitKnightPath(input){
+  if(quiz.answered) return;
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  const cur=quiz.userPath[quiz.userPath.length-1];
+  const isKnightMove=knightMoves(cur.f,cur.r).some(s=>sqName(s.f,s.r)===ans);
+  if(!isKnightMove){
+    showFeedback(false,`✗ ${ans.toUpperCase()} is not a valid knight move from ${sqName(cur.f,cur.r).toUpperCase()}`);
+    setTimeout(hideFeedback,1000); return;
+  }
+  clearInput();
+  const {f,r}=parseSq(ans);
+  quiz.userPath.push({f,r});
+  refreshKnightPathBoard();
+  hideFeedback();
+
+  if(f===quiz.ef&&r===quiz.er){
+    quiz.answered=true;
+    const moves=quiz.userPath.length-1;
+    const minMoves=quiz.path.length-1;
+    const right=moves===minMoves;
+    recordAnswer(right);
+    showFeedback(right,
+      right?`✓ ${moves} moves — shortest path!`:`Completed in ${moves} moves. Shortest is ${minMoves}.`
+    );
+    hideTextInput();
+    autoNext(nextKnightPath);
+  }
+}
+
+function revealKnightPath(){
+  quiz.answered=true; lastRight=false; hideBlind();
+  clearBoard();
+  quiz.path.forEach((s,i)=>{
+    const k=sqName(s.f,s.r);
+    if(i===0)                  highlights[k]='sel';
+    else if(i===quiz.path.length-1) highlights[k]='ok';
+    else                       highlights[k]='path';
+  });
+  pieces[sqName(quiz.sf,quiz.sr)]='♞';
+  applyHighlights();
+  setEx('Knight Path',`Path: <strong>${quiz.path.map(s=>sqName(s.f,s.r).toUpperCase()).join(' → ')}</strong>`,`${quiz.path.length-1} moves.`);
+  hideTextInput();
+  autoNext(nextKnightPath);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: BISHOP VISION
+// ════════════════════════════════════════════════════
+function modeBishopDiag(){
+  setEx('Bishop Vision','Click any square to see a bishop\'s diagonals.','');
+  setInfo(`<strong>Bishop Vision</strong><br><br>
+    A bishop is permanently bound to one color. It traces two crossing diagonals.<br><br>
+    Notice: the number of squares a bishop controls depends on its distance from the edge.`);
+}
+function showBishopDiag(f,r){
+  clearBoard();
+  const name=sqName(f,r),col=sqColor(f,r),bm=bishopSquares(f,r);
+  highlights[name]='sel'; pieces[name]='♝';
+  bm.forEach(s=>{highlights[sqName(s.f,s.r)]='bishop';});
+  applyHighlights();
+  setEx('Bishop Vision',`♝ on <strong>${name.toUpperCase()}</strong> (${col})<br>Controls <strong>${bm.length}</strong> squares`,`All ${bm.length} are ${col}.`);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: ROOK VISION
+// ════════════════════════════════════════════════════
+function modeRookVision(){
+  setEx('Rook Vision','Click any square to see a rook\'s lines.','');
+  setInfo(`<strong>Rook Vision</strong><br><br>
+    A rook controls its entire rank and file — always exactly 14 squares.<br><br>
+    <span style="color:var(--green)">■ Green</span> = file (vertical)<br>
+    <span style="color:var(--accent)">■ Orange</span> = rank (horizontal)<br><br>
+    Spotting open files and ranks instantly is key for middlegame planning.`);
+}
+function showRookVision(f,r){
+  clearBoard();
+  const name=sqName(f,r),rm=rookSquares(f,r);
+  highlights[name]='sel'; pieces[name]='♜';
+  rm.forEach(s=>{highlights[sqName(s.f,s.r)]=s.f===f?'rook-f':'rook-r';});
+  applyHighlights();
+  const fc=rm.filter(s=>s.f===f).length,rc=rm.filter(s=>s.r===r).length;
+  setEx('Rook Vision',
+    `♜ on <strong>${name.toUpperCase()}</strong><br>
+     <span style="color:var(--green)">File ${FILES[f].toUpperCase()}</span>: ${fc} squares &nbsp;
+     <span style="color:var(--accent)">Rank ${r+1}</span>: ${rc} squares`,
+    'Total always = 14.'
+  );
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: KNIGHT WEB
+// ════════════════════════════════════════════════════
+function modeKnightWeb(){
+  setEx('Knight Web','Click a square to see knight moves. Click a destination to hop.','Blue dots = knight destinations · Yellow = same-color king-neighbors');
+  setInfo(`<strong>Knight Web</strong><br><br>
+    Knights <strong>always</strong> change color: dark → light → dark…<br><br>
+    The <span style="color:var(--yellow)">yellow squares</span> are same-color king-neighbors of the current square. They show the "color neighborhood" — notice how knight destinations and same-color neighbors overlap, forming the web.`);
+  quiz.chain=[];
+}
+function showKnightWeb(f,r){
+  clearBoard();
+  const name=sqName(f,r),col=sqColor(f,r),km=knightMoves(f,r),scn=sameColorNeighbors(f,r);
+  (quiz.chain||[]).forEach(s=>{highlights[sqName(s.f,s.r)]='ghost';});
+  highlights[name]='sel'; pieces[name]='♞';
+  km.forEach(s=>{highlights[sqName(s.f,s.r)]='dot';});
+  scn.forEach(s=>{const k=sqName(s.f,s.r); if(!highlights[k]) highlights[k]='same-color';});
+  applyHighlights();
+  const destCol=col==='dark'?'light':'dark';
+  setEx('Knight Web',
+    `♞ on <strong>${name.toUpperCase()}</strong> <span style="color:var(--muted)">(${col})</span><br>
+     Jumps to <strong>${km.length}</strong> <strong style="color:var(--blue)">${destCol}</strong> squares<br>
+     <span style="font-size:.78rem;color:var(--muted)">Chain: ${(quiz.chain||[]).length} hops</span>`,
+    'Click a blue dot to hop'
+  );
+  quiz.f=f; quiz.r=r; quiz.km=km;
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: REGION SCAN
+// ════════════════════════════════════════════════════
+function modeRegionScan(){
+  setInfo(`<strong>Region Scan</strong><br><br>
+    Count the dark squares in the highlighted rectangle.<br><br>
+    <strong>Pattern:</strong> Any 2×2 block has exactly 2 dark + 2 light. Any 4×4 has exactly 8 dark. Use these as anchors.`);
+  nextRegionScan();
+}
+function nextRegionScan(){
+  const w=2+Math.floor(Math.random()*5), h=2+Math.floor(Math.random()*5);
+  const sf=Math.floor(Math.random()*(8-w)), sr=Math.floor(Math.random()*(8-h));
+  let dark=0;
+  for(let f=sf;f<sf+w;f++) for(let r=sr;r<sr+h;r++){
+    highlights[sqName(f,r)]='path'; if(sqColor(f,r)==='dark') dark++;
+  }
+  applyHighlights();
+  const total=w*h;
+  quiz={sf,sr,w,h,dark,total,answered:false};
+  setEx('Region Scan',`${sqName(sf,sr).toUpperCase()} to ${sqName(sf+w-1,sr+h-1).toUpperCase()} (${w}×${h}=${total})<br>How many <strong>dark</strong> squares?`,'');
+  const opts=new Set([dark]);
+  while(opts.size<3){const d=dark+Math.floor(Math.random()*5)-2; if(d>=0&&d<=total&&d!==dark) opts.add(d);}
+  setAns([...opts].sort((a,b)=>a-b).map(n=>({label:`${n} dark`,cls:'dark-col',cb:()=>answerRegionScan(n)})));
+}
+function answerRegionScan(answer){
+  if(quiz.answered) return;
+  quiz.answered=true;
+  const right=answer===quiz.dark;
+  recordAnswer(right);
+  for(let f=quiz.sf;f<quiz.sf+quiz.w;f++) for(let r=quiz.sr;r<quiz.sr+quiz.h;r++){
+    highlights[sqName(f,r)]=sqColor(f,r)==='dark'?'bishop':'same-color';
+  }
+  applyHighlights();
+  showFeedback(right,right?`✓ ${quiz.dark} dark, ${quiz.total-quiz.dark} light.`:`✗ ${quiz.dark} dark, ${quiz.total-quiz.dark} light.`);
+  autoNext(()=>{clearBoard();nextRegionScan();});
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: COORD DRILL  (timed, click the named square)
+// ════════════════════════════════════════════════════
+function modeCoordDrill(){
+  setInfo(`<strong>Coord Drill</strong><br><br>
+    A square name appears — click it on the board as fast as you can.<br><br>
+    30 seconds. How many can you get?<br><br>
+    Target: 15+ is solid · 20+ is strong · 25+ is master-level speed.`);
+  startCoordDrill();
+}
+
+function startCoordDrill(){
+  if(coordTimer){ clearInterval(coordTimer); coordTimer=null; }
+  quiz={ score:0, timeLeft:30, running:true };
+  clearBoard(); hideBlind();
+  nextCoordTarget();
+  coordTimer=setInterval(()=>{
+    if(mode!=='coord-drill'){ clearInterval(coordTimer); coordTimer=null; return; }
+    quiz.timeLeft--;
+    document.getElementById('ex-hint').textContent=`Time: ${quiz.timeLeft}s`;
+    if(quiz.timeLeft<=0){
+      clearInterval(coordTimer); coordTimer=null;
+      endCoordDrill();
+    }
+  },1000);
+}
+
+function nextCoordTarget(){
+  const {f,r}=randSq();
+  quiz.targetF=f; quiz.targetR=r;
+  clearBoard();
+  setEx('Coord Drill',
+    `<span style="font-size:2.2rem;font-weight:900;letter-spacing:4px;color:var(--accent)">${sqName(f,r).toUpperCase()}</span>
+     <span style="display:block;margin-top:6px;font-size:1rem">Score: <strong>${quiz.score}</strong></span>`,
+    `Time: ${quiz.timeLeft}s`
+  );
+}
+
+function clickCoordDrill(f,r){
+  if(!quiz.running) return;
+  const name=sqName(f,r);
+  if(f===quiz.targetF&&r===quiz.targetR){
+    quiz.score++;
+    highlights[name]='ok';
+    applyHighlights();
+    setTimeout(nextCoordTarget,120);
+  } else {
+    highlights[name]='err';
+    applyHighlights();
+    setTimeout(()=>{ delete highlights[name]; applyHighlights(); },300);
+  }
+}
+
+function endCoordDrill(){
+  quiz.running=false;
+  clearBoard();
+  const s=quiz.score;
+  const rating=s>=25?'🏆 Master!':s>=20?'⭐ Strong':s>=15?'✓ Solid':'Keep drilling';
+  setEx('Coord Drill — Done',
+    `<span style="font-size:2rem;font-weight:900;color:var(--accent)">${s}</span> squares in 30s<br>${rating}`,
+    'Best players score 25+ per 30 seconds'
+  );
+  setAns([{label:'Try Again',cls:'accent',cb:startCoordDrill}]);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: REACHABILITY  (can piece X reach square Y?)
+// ════════════════════════════════════════════════════
+function modeReachability(){
+  setInfo(`<strong>Reachability</strong><br><br>
+    A piece is on a square. Can it reach the target in ONE move?<br><br>
+    Tests piece pattern knowledge without visual aid.<br><br>
+    Remember:<br>
+    • Bishop = same color only, diagonals<br>
+    • Knight = L-shape, always changes color<br>
+    • Rook = full rank or file`);
+  nextReachability();
+}
+
+function nextReachability(){
+  const types=['knight','bishop','rook'];
+  const pieceType=types[Math.floor(Math.random()*3)];
+  const {f:sf,r:sr}=randSq();
+
+  let coverage;
+  if(pieceType==='knight')      coverage=knightMoves(sf,sr);
+  else if(pieceType==='bishop') coverage=bishopSquares(sf,sr);
+  else                          coverage=rookSquares(sf,sr);
+
+  // 50/50 reachable vs not
+  let tf,tr,reachable;
+  if(Math.random()<0.5&&coverage.length>0){
+    const pick=coverage[Math.floor(Math.random()*coverage.length)];
+    tf=pick.f; tr=pick.r; reachable=true;
+  } else {
+    let tries=0;
+    do{ const s=randSq(); tf=s.f; tr=s.r; tries++; }
+    while(tries<40&&(tf===sf&&tr===sr||coverage.some(s=>s.f===tf&&s.r===tr)));
+    reachable=coverage.some(s=>s.f===tf&&s.r===tr);
+  }
+
+  quiz={pieceType,sf,sr,tf,tr,reachable,coverage,answered:false};
+  clearBoard();
+  document.getElementById('blind-cover').classList.remove('off');
+
+  setEx('Reachability',
+    `${PIECE_SYMBOLS[pieceType]} <strong>${PIECE_NAMES[pieceType]}</strong> on <strong>${sqName(sf,sr).toUpperCase()}</strong><br>Can it reach <strong>${sqName(tf,tr).toUpperCase()}</strong> in one move?`,
+    'Press <kbd>Y</kbd> yes · <kbd>N</kbd> no'
+  );
+  setAns([
+    {label:'✓ Yes',cls:'yes-btn',cb:()=>answerReachability(true)},
+    {label:'✗ No', cls:'no-btn', cb:()=>answerReachability(false)},
+  ]);
+}
+
+function answerReachability(answer){
+  if(quiz.answered) return;
+  quiz.answered=true;
+  const right=answer===quiz.reachable;
+  recordAnswer(right);
+  hideBlind();
+
+  highlights[sqName(quiz.sf,quiz.sr)]='sel';
+  pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.pieceType];
+  // Dim all coverage squares, then mark the target clearly
+  const covCls=quiz.pieceType==='knight'?'knight':quiz.pieceType==='bishop'?'bishop':'rook-f';
+  quiz.coverage.forEach(s=>{ highlights[sqName(s.f,s.r)]=covCls; });
+  highlights[sqName(quiz.tf,quiz.tr)]=quiz.reachable?'ok':'err';
+  applyHighlights();
+
+  showFeedback(right,
+    right?(quiz.reachable?`✓ Yes — valid ${quiz.pieceType} move.`:`✓ Correct — not reachable in one move.`)
+         :(quiz.reachable?`✗ It IS reachable — check the ${quiz.pieceType} pattern.`:`✗ It is NOT reachable.`)
+  );
+  autoNext(nextReachability,1400);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: TWO-PIECE TRACKER
+// ════════════════════════════════════════════════════
+function modeTwoPiece(){
+  setInfo(`<strong>Two-Piece Tracker</strong><br><br>
+    Two pieces make several moves described in words (e.g. "3 up, 2 right").<br>
+    Follow each step mentally and name the <strong>exact</strong> final square for both.<br><br>
+    Board is always covered — pure mental calculation.<br>
+    Difficulty scales: starts at 2 moves per piece, grows with streak.`);
+  nextTwoPiece();
+}
+
+// Describe a move between two squares in plain words
+function describeMoveStep(type,s1,s2){
+  const df=s2.f-s1.f, dr=s2.r-s1.r;
+  if(type==='rook'){
+    if(df===0) return dr>0?`${dr} up`:`${Math.abs(dr)} down`;
+    return df>0?`${df} right`:`${Math.abs(df)} left`;
+  }
+  if(type==='bishop'){
+    const v=dr>0?'up':'down', h=df>0?'right':'left';
+    return `${Math.abs(df)} ${v}-${h}`;
+  }
+  if(type==='knight'){
+    return `to ${sqName(s2.f,s2.r).toUpperCase()}`;
+  }
+  return '';
+}
+
+function nextTwoPiece(){
+  const numMoves=Math.min(3+Math.floor(score.streak/3),8);
+  const types=['bishop','rook'];
+  const typeA=types[Math.floor(Math.random()*2)];
+  const typeB=types[Math.floor(Math.random()*2)];
+
+  let sq, pathA, pathB, tries=0;
+  do{ sq=randSq(); pathA=generateSequence(typeA,sq.f,sq.r,numMoves); tries++; }
+  while(pathA.length<4&&tries<20);
+  tries=0;
+  do{ sq=randSq(); pathB=generateSequence(typeB,sq.f,sq.r,numMoves); tries++; }
+  while(pathB.length<3&&tries<20);
+  if(pathA.length<3||pathB.length<3){ nextTwoPiece(); return; }
+
+  const finalA=sqName(pathA[pathA.length-1].f,pathA[pathA.length-1].r);
+  const finalB=sqName(pathB[pathB.length-1].f,pathB[pathB.length-1].r);
+  const movesA=[], movesB=[];
+  for(let i=0;i<pathA.length-1;i++) movesA.push(describeMoveStep(typeA,pathA[i],pathA[i+1]));
+  for(let i=0;i<pathB.length-1;i++) movesB.push(describeMoveStep(typeB,pathB[i],pathB[i+1]));
+
+  quiz={typeA,typeB,pathA,pathB,finalA,finalB,movesA,movesB,phase:'a',answered:false};
+
+  // Build sequence display with move descriptions only (no intermediate squares)
+  clearBoard();
+  const el=document.getElementById('seq-display');
+  el.innerHTML=''; el.classList.add('show');
+  const buildDesc=(type,path,moves)=>{
+    const h=document.createElement('div'); h.className='seq-start';
+    h.textContent=`${PIECE_SYMBOLS[type]} ${PIECE_NAMES[type]} on ${sqName(path[0].f,path[0].r).toUpperCase()}`;
+    el.appendChild(h);
+    moves.forEach(m=>{
+      const d=document.createElement('div'); d.className='seq-move';
+      d.textContent=`→ ${m}`;
+      el.appendChild(d);
+    });
+    const q=document.createElement('div'); q.className='seq-move'; q.textContent='= ?';
+    el.appendChild(q);
+  };
+  buildDesc(typeA,pathA,movesA);
+  const sep=document.createElement('div');
+  sep.style.cssText='border-top:1px solid var(--border);margin:6px 0';
+  el.appendChild(sep);
+  buildDesc(typeB,pathB,movesB);
+
+  document.getElementById('blind-cover').classList.remove('off');
+  setEx('Two-Piece Tracker',
+    `Where did the ${PIECE_SYMBOLS[typeA]} <strong>${PIECE_NAMES[typeA]}</strong> end up?`,
+    'Follow every step — type the exact square'
+  );
+  showTextInput(); focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealTwoPiece}]);
+}
+
+function submitTwoPiece(input){
+  if(quiz.answered) return;
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  clearInput();
+
+  if(quiz.phase==='a'){
+    const right=(ans===quiz.finalA);
+    quiz.ansA=ans; quiz.rightA=right; quiz.phase='b';
+    setEx('Two-Piece Tracker',
+      `${PIECE_SYMBOLS[quiz.typeA]}: <strong style="color:${right?'var(--green)':'var(--red)'}">${ans.toUpperCase()}</strong> ${right?'✓':`✗ (${quiz.finalA.toUpperCase()})`}<br>Where did the ${PIECE_SYMBOLS[quiz.typeB]} <strong>${PIECE_NAMES[quiz.typeB]}</strong> end up?`,
+      'Follow every step — type the exact square'
+    );
+    focusInput();
+  } else {
+    quiz.answered=true;
+    const rightB=(ans===quiz.finalB);
+    const both=quiz.rightA&&rightB;
+    recordAnswer(both);
+    hideBlind(); hideSeq();
+
+    quiz.pathA.forEach((s,i)=>{ highlights[sqName(s.f,s.r)]=i===0?'sel':i===quiz.pathA.length-1?(quiz.rightA?'ok':'err'):'path'; });
+    quiz.pathB.forEach((s,i)=>{ highlights[sqName(s.f,s.r)]=i===0?'dest':i===quiz.pathB.length-1?(rightB?'ok':'err'):'ghost'; });
+    if(!quiz.rightA) highlights[quiz.finalA]='ok';
+    if(!rightB)      highlights[quiz.finalB]='ok';
+    pieces[sqName(quiz.pathA[0].f,quiz.pathA[0].r)]=PIECE_SYMBOLS[quiz.typeA];
+    pieces[sqName(quiz.pathB[0].f,quiz.pathB[0].r)]=PIECE_SYMBOLS[quiz.typeB];
+    applyHighlights();
+
+    showFeedback(both,
+      both?'✓ Both correct!'
+          :`${PIECE_SYMBOLS[quiz.typeA]}: ${quiz.finalA.toUpperCase()} · ${PIECE_SYMBOLS[quiz.typeB]}: ${quiz.finalB.toUpperCase()}`
+    );
+    hideTextInput();
+    autoNext(()=>{nextTwoPiece();});
+  }
+}
+
+function revealTwoPiece(){
+  quiz.answered=true; hideBlind(); hideSeq(); recordAnswer(false);
+  quiz.pathA.forEach((s,i)=>{ highlights[sqName(s.f,s.r)]=i===0?'sel':i===quiz.pathA.length-1?'dest':'path'; });
+  quiz.pathB.forEach((s,i)=>{ highlights[sqName(s.f,s.r)]=i===0?'dest':i===quiz.pathB.length-1?'dest':'ghost'; });
+  pieces[sqName(quiz.pathA[0].f,quiz.pathA[0].r)]=PIECE_SYMBOLS[quiz.typeA];
+  pieces[sqName(quiz.pathB[0].f,quiz.pathB[0].r)]=PIECE_SYMBOLS[quiz.typeB];
+  applyHighlights(); hideTextInput();
+  autoNext(()=>{hideSeq();nextTwoPiece();});
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: POSITION FLASH  (see → hide → recall)
+// ════════════════════════════════════════════════════
+function modePositionFlash(){
+  setInfo(`<strong>Position Flash</strong><br><br>
+    A position with several pieces flashes on the board for 3 seconds, then disappears.<br><br>
+    You'll be asked: what piece was on a square, or where a piece was.<br><br>
+    This trains position memory — the foundation of all blindfold play. Start here if full blindfold games feel overwhelming.`);
+  nextPositionFlash();
+}
+
+function nextPositionFlash(){
+  const numPieces=3+Math.min(Math.floor(score.streak/5),4); // 3–7 pieces, scales with streak
+  const allTypes=Object.keys(PIECE_SYMBOLS);
+  const pos={};
+  while(Object.keys(pos).length<numPieces){
+    const {f,r}=randSq(), name=sqName(f,r);
+    if(!pos[name]) pos[name]={type:allTypes[Math.floor(Math.random()*allTypes.length)]};
+  }
+
+  quiz={pos,answered:false,flashDone:false};
+  clearBoard(); hideBlind();
+
+  Object.entries(pos).forEach(([name,p])=>{
+    highlights[name]='ghost';
+    pieces[name]=PIECE_SYMBOLS[p.type];
+  });
+  applyHighlights();
+
+  let countdown=3;
+  setEx('Position Flash',`Memorize the position!`,`Hiding in ${countdown}s…`);
+  setAns([]);
+
+  const tick=setInterval(()=>{
+    if(mode!=='position-flash'){ clearInterval(tick); return; }
+    countdown--;
+    if(countdown>0){
+      document.getElementById('ex-hint').textContent=`Hiding in ${countdown}s…`;
+    } else {
+      clearInterval(tick);
+      document.getElementById('blind-cover').classList.remove('off');
+      quiz.flashDone=true;
+      askFlashQuestion();
+    }
+  },1000);
+}
+
+function askFlashQuestion(){
+  const sqNames=Object.keys(quiz.pos);
+  if(Math.random()<0.5){
+    // What piece was on X?
+    const sq=sqNames[Math.floor(Math.random()*sqNames.length)];
+    const correct=quiz.pos[sq].type;
+    const allTypes=Object.keys(PIECE_SYMBOLS);
+    const wrong=allTypes.filter(t=>t!==correct).sort(()=>Math.random()-.5).slice(0,2);
+    const choices=[correct,...wrong].sort(()=>Math.random()-.5);
+    quiz.qType='what'; quiz.qSq=sq; quiz.qCorrect=correct;
+    setEx('Position Flash',`What piece was on <strong>${sq.toUpperCase()}</strong>?`,'');
+    setAns(choices.map(t=>({
+      label:`${PIECE_SYMBOLS[t]} ${PIECE_NAMES[t]}`,
+      cls:'neutral',
+      cb:()=>answerFlashButton(t)
+    })));
+  } else {
+    // Where was piece X?
+    const sq=sqNames[Math.floor(Math.random()*sqNames.length)];
+    const pType=quiz.pos[sq].type;
+    quiz.qType='where'; quiz.qSq=sq; quiz.qCorrect=sq;
+    setEx('Position Flash',`Where was the ${PIECE_SYMBOLS[pType]} <strong>${PIECE_NAMES[pType]}</strong>?`,'Type the square name');
+    showTextInput(); focusInput(); setAns([]);
+  }
+}
+
+function answerFlashButton(answer){
+  if(quiz.answered) return;
+  quiz.answered=true;
+  const right=answer===quiz.qCorrect;
+  recordAnswer(right);
+  hideBlind();
+  Object.entries(quiz.pos).forEach(([name,p])=>{
+    highlights[name]=name===quiz.qSq?(right?'ok':'err'):'ghost';
+    pieces[name]=PIECE_SYMBOLS[p.type];
+  });
+  applyHighlights();
+  showFeedback(right,
+    right?`✓ ${PIECE_SYMBOLS[quiz.qCorrect]} ${PIECE_NAMES[quiz.qCorrect]} on ${quiz.qSq.toUpperCase()}.`
+         :`✗ It was ${PIECE_SYMBOLS[quiz.qCorrect]} ${PIECE_NAMES[quiz.qCorrect]}.`
+  );
+  autoNext(nextPositionFlash);
+}
+
+function submitPositionFlash(input){
+  if(quiz.answered) return;
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  quiz.answered=true;
+  const right=ans===quiz.qCorrect;
+  recordAnswer(right);
+  hideBlind();
+  Object.entries(quiz.pos).forEach(([name,p])=>{
+    highlights[name]=name===quiz.qCorrect?'ok':'ghost';
+    pieces[name]=PIECE_SYMBOLS[p.type];
+  });
+  if(!right) highlights[ans]='err';
+  applyHighlights();
+  showFeedback(right,
+    right?`✓ ${quiz.qCorrect.toUpperCase()} — correct!`
+         :`✗ The ${PIECE_NAMES[quiz.pos[quiz.qCorrect].type]} was on ${quiz.qCorrect.toUpperCase()}.`
+  );
+  hideTextInput();
+  autoNext(nextPositionFlash);
+}
+
+// ════════════════════════════════════════════════════
+//  HELPER: intermediate squares between two squares
+// ════════════════════════════════════════════════════
+function getIntermediates(sf,sr,ef,er){
+  const df=Math.sign(ef-sf), dr=Math.sign(er-sr);
+  const steps=[];
+  let f=sf+df, r=sr+dr;
+  while(f!==ef||r!==er){ steps.push(sqName(f,r)); f+=df; r+=dr; }
+  return steps;
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: PATH TRACER  (name intermediate squares)
+// ════════════════════════════════════════════════════
+function modePathTracer(){
+  setInfo(`<strong>Path Tracer</strong><br><br>
+    A bishop or rook moves from one square to another.<br>
+    Name the intermediate squares in order — the ones it passes through.<br><br>
+    Example: Rook A1→A5 passes through A2, A3, A4.`);
+  nextPathTracer();
+}
+
+function nextPathTracer(){
+  const useBishop=Math.random()<0.5;
+  let sf,sr,ef,er,intermediates;
+  let tries=0;
+  do {
+    ({f:sf,r:sr}=randSq());
+    const candidates=useBishop?bishopSquares(sf,sr):rookSquares(sf,sr);
+    const pick=candidates[Math.floor(Math.random()*candidates.length)];
+    ef=pick.f; er=pick.r;
+    intermediates=getIntermediates(sf,sr,ef,er);
+    tries++;
+  } while(intermediates.length<1&&tries<30);
+
+  const type=useBishop?'bishop':'rook';
+  quiz={type,sf,sr,ef,er,intermediates,idx:0,answered:false};
+
+  clearBoard(); showBlind();
+  highlights[sqName(sf,sr)]='sel';
+  highlights[sqName(ef,er)]='dest';
+  pieces[sqName(sf,sr)]=PIECE_SYMBOLS[type];
+  applyHighlights();
+
+  if(intermediates.length===0){
+    // adjacent squares, nothing to name — skip
+    nextPathTracer(); return;
+  }
+
+  const batch=settings.entry==='batch';
+  setEx('Path Tracer',
+    `${PIECE_SYMBOLS[type]} <strong>${PIECE_NAMES[type]}</strong>: ${sqName(sf,sr).toUpperCase()} → ${sqName(ef,er).toUpperCase()}<br>Name the ${intermediates.length} intermediate square${intermediates.length>1?'s':''} in order.`,
+    batch?'Type ALL in order, e.g. <kbd>b2 c3 d4</kbd>':`Square 1 of ${intermediates.length}`
+  );
+  showTextInput(batch?{batch:true,placeholder:'in order: b2 c3 d4 …'}:{}); focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealPathTracer}]);
+}
+
+function submitPathTracer(input){
+  if(quiz.answered) return;
+  if(settings.entry==='batch'){
+    const given=parseSquares(input);
+    if(!given.length){ shakeInput(); return; }
+    quiz.answered=true;
+    const exp=quiz.intermediates;
+    let firstErr=-1;
+    for(let i=0;i<Math.max(given.length,exp.length);i++){
+      if(given[i]!==exp[i]){ firstErr=i; break; }
+    }
+    const ok=firstErr===-1;
+    recordAnswer(ok);
+    quiz.idx=ok?exp.length:Math.min(firstErr,exp.length);
+    if(ok){
+      hideBlind();
+      exp.forEach(sq=>{ highlights[sq]='ok'; });
+      highlights[sqName(quiz.sf,quiz.sr)]='sel';
+      highlights[sqName(quiz.ef,quiz.er)]='sel';
+      pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+      applyHighlights();
+      showFeedback(true,`✓ All ${exp.length} squares correct!`);
+      hideTextInput();
+      autoNext(nextPathTracer);
+    } else {
+      revealPathTracer(`✗ Path is: ${exp.map(s=>s.toUpperCase()).join(' → ')}`);
+    }
+    return;
+  }
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  clearInput();
+
+  const expected=quiz.intermediates[quiz.idx];
+  if(ans===expected){
+    highlights[sqName(...parseSqArr(expected))]='ok';
+    applyHighlights();
+    quiz.idx++;
+    if(quiz.idx>=quiz.intermediates.length){
+      quiz.answered=true;
+      recordAnswer(true);
+      showFeedback(true,`✓ Perfect — all ${quiz.intermediates.length} squares correct!`);
+      hideTextInput();
+      autoNext(nextPathTracer);
+    } else {
+      setEx('Path Tracer',
+        `${PIECE_SYMBOLS[quiz.type]} ${sqName(quiz.sf,quiz.sr).toUpperCase()} → ${sqName(quiz.ef,quiz.er).toUpperCase()} — ✓ ${expected.toUpperCase()}`,
+        `Square ${quiz.idx+1} of ${quiz.intermediates.length}`
+      );
+      focusInput();
+    }
+  } else {
+    quiz.answered=true;
+    recordAnswer(false);
+    shakeInput();
+    revealPathTracer(`✗ Expected ${expected.toUpperCase()}, got ${ans.toUpperCase()}`);
+  }
+}
+
+function revealPathTracer(msg){
+  quiz.answered=true; lastRight=false; hideBlind();
+  quiz.intermediates.forEach((sq,i)=>{
+    highlights[sqName(...parseSqArr(sq))]=i<quiz.idx?'ok':'dest';
+  });
+  highlights[sqName(quiz.sf,quiz.sr)]='sel';
+  highlights[sqName(quiz.ef,quiz.er)]='sel';
+  pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+  applyHighlights(); hideTextInput();
+  if(msg) showFeedback(false,msg);
+  autoNext(nextPathTracer);
+}
+
+// helper: parse "e4" → [4,3] (f,r)
+function parseSqArr(name){ const {f,r}=parseSq(name); return [f,r]; }
+
+// ════════════════════════════════════════════════════
+//  MODE: BLIND DESTINATIONS  (all reachable squares, no board)
+// ════════════════════════════════════════════════════
+function modeBlindDest(){
+  setInfo(`<strong>Blind Destinations</strong><br><br>
+    A piece is placed on a square — board is hidden.<br>
+    Name every square it can reach in one move.<br><br>
+    Type them one at a time. Order doesn't matter.`);
+  nextBlindDest();
+}
+
+function nextBlindDest(){
+  const types=['knight','bishop','rook','queen','king'];
+  const type=types[Math.floor(Math.random()*types.length)];
+  const {f,r}=randSq();
+
+  const targets=genericMoves(type,f,r);
+  const targetNames=new Set(targets.map(s=>sqName(s.f,s.r)));
+  quiz={type,sf:f,sr:r,targets:targetNames,found:new Set(),answered:false};
+
+  clearBoard();
+  document.getElementById('blind-cover').classList.remove('off');
+
+  const batch=settings.entry==='batch';
+  setEx('Blind Destinations',
+    `${PIECE_SYMBOLS[type]} <strong>${PIECE_NAMES[type]}</strong> on <strong>${sqName(f,r).toUpperCase()}</strong><br>Name all ${targetNames.size} reachable squares.`,
+    batch?'Type ALL squares in one line, e.g. <kbd>c3 e3 d2 f2</kbd>':`0 / ${targetNames.size} found`
+  );
+  showTextInput(batch?{batch:true}:{}); focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealBlindDest}]);
+}
+
+function submitBlindDest(input){
+  if(quiz.answered) return;
+  if(settings.entry==='batch'){
+    const given=[...new Set(parseSquares(input))];
+    if(!given.length){ shakeInput(); return; }
+    quiz.answered=true;
+    const hit=[],miss=[],extra=[];
+    quiz.targets.forEach(s=>{ (given.includes(s)?hit:miss).push(s); });
+    given.forEach(s=>{ if(!quiz.targets.has(s)) extra.push(s); });
+    const ok=!miss.length&&!extra.length;
+    recordAnswer(ok);
+    hideBlind();
+    hit.forEach(s=>highlights[s]='ok');
+    miss.forEach(s=>highlights[s]='dest');
+    extra.forEach(s=>highlights[s]='err');
+    pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+    applyHighlights();
+    showFeedback(ok, ok?`✓ All ${quiz.targets.size} squares correct!`:batchTags(hit,miss,extra));
+    hideTextInput();
+    autoNext(nextBlindDest);
+    return;
+  }
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  clearInput();
+
+  if(quiz.found.has(ans)){ focusInput(); return; }
+
+  if(quiz.targets.has(ans)){
+    quiz.found.add(ans);
+    const rem=quiz.targets.size-quiz.found.size;
+    if(rem===0){
+      quiz.answered=true;
+      recordAnswer(true);
+      hideBlind();
+      quiz.targets.forEach(sq=>{ highlights[sq]='ok'; });
+      pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+      applyHighlights();
+      showFeedback(true,`✓ All ${quiz.targets.size} squares found!`);
+      hideTextInput();
+      autoNext(nextBlindDest);
+    } else {
+      setEx('Blind Destinations',
+        `${PIECE_SYMBOLS[quiz.type]} on ${sqName(quiz.sf,quiz.sr).toUpperCase()} — ✓ ${ans.toUpperCase()}`,
+        `${quiz.found.size} / ${quiz.targets.size} found — ${rem} remaining`
+      );
+      focusInput();
+    }
+  } else {
+    shakeInput(); focusInput();
+  }
+}
+
+function revealBlindDest(){
+  quiz.answered=true; hideBlind();
+  quiz.targets.forEach(sq=>{ highlights[sq]=quiz.found.has(sq)?'ok':'dest'; });
+  pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+  applyHighlights(); hideTextInput();
+  recordAnswer(false);
+  showFeedback(false,`Found ${quiz.found.size} / ${quiz.targets.size}`);
+  autoNext(nextBlindDest);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: DEST COLORS  (count dark/light destinations)
+// ════════════════════════════════════════════════════
+function modeDestColors(){
+  setInfo(`<strong>Destination Colors</strong><br><br>
+    A piece is on a square. How many of its reachable squares are dark? How many light?<br><br>
+    Type the number when asked. Board is hidden — calculate mentally.<br><br>
+    Tip: Knights always land on the opposite color. Bishops stay on one color.`);
+  nextDestColors();
+}
+
+function nextDestColors(){
+  const types=['knight','bishop','rook','queen','king'];
+  const type=types[Math.floor(Math.random()*types.length)];
+  const {f,r}=randSq();
+
+  const targets=genericMoves(type,f,r);
+  const dark=targets.filter(s=>(s.f+s.r)%2===0).length;
+  const light=targets.length-dark;
+  const askDark=Math.random()<0.5;
+
+  quiz={type,sf:f,sr:r,targets,dark,light,askDark,answered:false};
+
+  clearBoard();
+  document.getElementById('blind-cover').classList.remove('off');
+
+  setEx('Destination Colors',
+    `${PIECE_SYMBOLS[type]} <strong>${PIECE_NAMES[type]}</strong> on <strong>${sqName(f,r).toUpperCase()}</strong><br>How many reachable squares are <strong>${askDark?'dark':'light'}</strong>?`,
+    'Type a number'
+  );
+  showTextInput(); focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:()=>revealDestColors(null)}]);
+}
+
+function submitDestColors(input){
+  if(quiz.answered) return;
+  const n=parseInt(input,10);
+  if(isNaN(n)){ shakeInput(); return; }
+  clearInput();
+
+  const correct=quiz.askDark?quiz.dark:quiz.light;
+  const right=(n===correct);
+  quiz.answered=true;
+  recordAnswer(right);
+  hideBlind();
+
+  quiz.targets.forEach(s=>{
+    const isDark=(s.f+s.r)%2===0;
+    highlights[sqName(s.f,s.r)]=isDark?'bishop':'rook-f';
+  });
+  highlights[sqName(quiz.sf,quiz.sr)]='sel';
+  pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+  applyHighlights();
+
+  showFeedback(right,
+    right?`✓ Correct — ${correct} ${quiz.askDark?'dark':'light'} squares.`
+         :`✗ Answer: ${correct} ${quiz.askDark?'dark':'light'} (dark: ${quiz.dark}, light: ${quiz.light})`
+  );
+  hideTextInput();
+  autoNext(nextDestColors);
+}
+
+function revealDestColors(msg){
+  submitDestColors('-999');
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: TWO-PIECE PATH  (given start+end, name the pivots)
+// ════════════════════════════════════════════════════
+function modeTwoPiecePath(){
+  setInfo(`<strong>Two-Piece Path</strong><br><br>
+    Two sliding pieces (bishop or rook) each make 2 moves.<br>
+    You see the start and final square of each — the board is then hidden.<br>
+    Name the pivot square (where each piece was after move 1).<br><br>
+    Trains: keeping two independent paths in mind simultaneously.`);
+  nextTwoPiecePath();
+}
+
+function nextTwoPiecePath(){
+  const types=['bishop','rook'];
+  const typeA=types[Math.floor(Math.random()*2)];
+  const typeB=types[Math.floor(Math.random()*2)];
+
+  // Generate 2-move paths (start→pivot→end) for each piece
+  let pathA, pathB, tries=0, sq;
+  do {
+    sq=randSq(); pathA=generateSequence(typeA,sq.f,sq.r,2);
+    tries++;
+  } while(pathA.length<3&&tries<20);
+  tries=0;
+  do {
+    sq=randSq(); pathB=generateSequence(typeB,sq.f,sq.r,2);
+    tries++;
+  } while(pathB.length<3&&tries<20);
+
+  if(pathA.length<3||pathB.length<3){ nextTwoPiecePath(); return; }
+
+  const pivotA=sqName(pathA[1].f,pathA[1].r);
+  const pivotB=sqName(pathB[1].f,pathB[1].r);
+
+  quiz={typeA,typeB,pathA,pathB,pivotA,pivotB,phase:'a',answered:false};
+
+  // Show start + end, board visible briefly so user can study
+  clearBoard(); showBlind();
+  highlights[sqName(pathA[0].f,pathA[0].r)]='sel';
+  highlights[sqName(pathA[2].f,pathA[2].r)]='dest';
+  highlights[sqName(pathB[0].f,pathB[0].r)]='sel';
+  highlights[sqName(pathB[2].f,pathB[2].r)]='dest';
+  pieces[sqName(pathA[0].f,pathA[0].r)]=PIECE_SYMBOLS[typeA];
+  pieces[sqName(pathA[2].f,pathA[2].r)]=PIECE_SYMBOLS[typeA];
+  pieces[sqName(pathB[0].f,pathB[0].r)]=PIECE_SYMBOLS[typeB];
+  pieces[sqName(pathB[2].f,pathB[2].r)]=PIECE_SYMBOLS[typeB];
+  applyHighlights();
+
+  const el=document.getElementById('seq-display');
+  el.innerHTML=''; el.classList.add('show');
+  [
+    [typeA,pathA],
+    [typeB,pathB],
+  ].forEach(([type,path],gi)=>{
+    if(gi===1){const sep=document.createElement('div');sep.style.cssText='border-top:1px solid var(--border);margin:6px 0';el.appendChild(sep);}
+    const h=document.createElement('div'); h.className='seq-start';
+    h.textContent=`${PIECE_SYMBOLS[type]} ${PIECE_NAMES[type]}: ${sqName(path[0].f,path[0].r).toUpperCase()} → ? → ${sqName(path[2].f,path[2].r).toUpperCase()}`;
+    el.appendChild(h);
+  });
+
+  setEx('Two-Piece Path',
+    'Study the start and end squares — find the pivot.',
+    'Press Ready when you have them.'
+  );
+  setAns([{label:'Ready — hide & ask',cls:'accent',cb:startTwoPiecePathQuiz}]);
+}
+
+function startTwoPiecePathQuiz(){
+  clearBoard();
+  document.getElementById('blind-cover').classList.remove('off');
+  setEx('Two-Piece Path',
+    `Where did the ${PIECE_SYMBOLS[quiz.typeA]} <strong>${PIECE_NAMES[quiz.typeA]}</strong> pass through? (${sqName(quiz.pathA[0].f,quiz.pathA[0].r).toUpperCase()} → ? → ${sqName(quiz.pathA[2].f,quiz.pathA[2].r).toUpperCase()})`,
+    'Type the pivot square'
+  );
+  showTextInput(); focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealTwoPiecePath}]);
+}
+
+function submitTwoPiecePath(input){
+  if(quiz.answered) return;
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  clearInput();
+
+  if(quiz.phase==='a'){
+    quiz.ansA=ans;
+    quiz.rightA=(ans===quiz.pivotA);
+    quiz.phase='b';
+    const hint=quiz.rightA?'✓':`✗ (${quiz.pivotA.toUpperCase()})`;
+    setEx('Two-Piece Path',
+      `${PIECE_SYMBOLS[quiz.typeA]}: <strong style="color:${quiz.rightA?'var(--green)':'var(--red)'}">${ans.toUpperCase()}</strong> ${hint}<br>Where did the ${PIECE_SYMBOLS[quiz.typeB]} <strong>${PIECE_NAMES[quiz.typeB]}</strong> pass through? (${sqName(quiz.pathB[0].f,quiz.pathB[0].r).toUpperCase()} → ? → ${sqName(quiz.pathB[2].f,quiz.pathB[2].r).toUpperCase()})`,
+      'Type the pivot square'
+    );
+    focusInput();
+  } else {
+    quiz.answered=true;
+    const rightB=(ans===quiz.pivotB);
+    const both=quiz.rightA&&rightB;
+    recordAnswer(both);
+    hideBlind(); hideSeq();
+
+    quiz.pathA.forEach((s,i)=>{ highlights[sqName(s.f,s.r)]=i===1?(quiz.rightA?'ok':'err'):'sel'; });
+    quiz.pathB.forEach((s,i)=>{ highlights[sqName(s.f,s.r)]=i===1?(rightB?'ok':'err'):'dest'; });
+    if(!quiz.rightA){ highlights[quiz.ansA]='err'; highlights[quiz.pivotA]='ok'; }
+    if(!rightB){      highlights[ans]='err';        highlights[quiz.pivotB]='ok'; }
+    pieces[sqName(quiz.pathA[0].f,quiz.pathA[0].r)]=PIECE_SYMBOLS[quiz.typeA];
+    pieces[sqName(quiz.pathB[0].f,quiz.pathB[0].r)]=PIECE_SYMBOLS[quiz.typeB];
+    applyHighlights();
+
+    showFeedback(both,
+      both?'✓ Both pivots correct!'
+          :`Pivots: ${PIECE_SYMBOLS[quiz.typeA]} ${quiz.pivotA.toUpperCase()} · ${PIECE_SYMBOLS[quiz.typeB]} ${quiz.pivotB.toUpperCase()}`
+    );
+    hideTextInput();
+    autoNext(()=>{hideSeq();nextTwoPiecePath();});
+  }
+}
+
+function revealTwoPiecePath(){
+  quiz.answered=true; hideBlind(); hideSeq();
+  quiz.pathA.forEach((s,i)=>{ highlights[sqName(s.f,s.r)]=i===1?'dest':'sel'; });
+  quiz.pathB.forEach((s,i)=>{ highlights[sqName(s.f,s.r)]=i===1?'dest':'sel'; });
+  pieces[sqName(quiz.pathA[0].f,quiz.pathA[0].r)]=PIECE_SYMBOLS[quiz.typeA];
+  pieces[sqName(quiz.pathB[0].f,quiz.pathB[0].r)]=PIECE_SYMBOLS[quiz.typeB];
+  applyHighlights(); hideTextInput(); recordAnswer(false);
+  autoNext(()=>{hideSeq();nextTwoPiecePath();});
+}
+
+// ════════════════════════════════════════════════════
+//  HELPER: parse "e4 dark" / "e4 d" / "e4 l" etc.
+// ════════════════════════════════════════════════════
+function parseSquareColor(input){
+  const s=input.toLowerCase().trim();
+  // compact: "e4d" or "e4l"
+  if(s.length===3&&(s[2]==='d'||s[2]==='l')){
+    return {sq:normSq(s.slice(0,2)), color:s[2]==='d'?'dark':'light'};
+  }
+  // spaced: "e4 d" / "e4 dark" / "e4 light"
+  const parts=s.split(/\s+/);
+  const sq=normSq(parts[0]);
+  let color=null;
+  if(parts[1]){
+    if(parts[1].startsWith('d')) color='dark';
+    else if(parts[1].startsWith('l')) color='light';
+  }
+  return {sq,color};
+}
+function sqColorName(f,r){ return (f+r)%2===0?'dark':'light'; }
+
+// ════════════════════════════════════════════════════
+//  MODE: PATH + COLORS  (intermediate squares + their color)
+// ════════════════════════════════════════════════════
+function modePathColors(){
+  setInfo(`<strong>Path + Colors</strong><br><br>
+    A bishop or rook moves from start to end. Name each intermediate square <em>and</em> its color.<br><br>
+    Type: <kbd>e4d</kbd> (dark) or <kbd>e4l</kbd> (light) — square + color in one shot.<br><br>
+    Combines path tracing with color awareness — the key dual-skill for blindfold play.`);
+  nextPathColors();
+}
+
+function nextPathColors(){
+  const useBishop=Math.random()<0.5;
+  let sf,sr,ef,er,intermediates,tries=0;
+  do {
+    ({f:sf,r:sr}=randSq());
+    const candidates=useBishop?bishopSquares(sf,sr):rookSquares(sf,sr);
+    const pick=candidates[Math.floor(Math.random()*candidates.length)];
+    ef=pick.f; er=pick.r;
+    intermediates=getIntermediates(sf,sr,ef,er);
+    tries++;
+  } while(intermediates.length<1&&tries<30);
+
+  if(intermediates.length===0){ nextPathColors(); return; }
+
+  const type=useBishop?'bishop':'rook';
+  // precompute expected answers: [{sq:'e4', color:'dark'}, ...]
+  const expected=intermediates.map(name=>{
+    const {f,r}=parseSq(name);
+    return {sq:name, color:sqColorName(f,r)};
+  });
+
+  quiz={type,sf,sr,ef,er,intermediates,expected,idx:0,answered:false};
+
+  clearBoard(); showBlind();
+  highlights[sqName(sf,sr)]='sel';
+  highlights[sqName(ef,er)]='dest';
+  pieces[sqName(sf,sr)]=PIECE_SYMBOLS[type];
+  applyHighlights();
+
+  const batch=settings.entry==='batch';
+  setEx('Path + Colors',
+    `${PIECE_SYMBOLS[type]} <strong>${PIECE_NAMES[type]}</strong>: ${sqName(sf,sr).toUpperCase()} → ${sqName(ef,er).toUpperCase()}<br>${intermediates.length} intermediate square${intermediates.length>1?'s':''}`,
+    batch?'Type ALL in order with colors, e.g. <kbd>b2d c3l d4d</kbd>':`Square 1 of ${intermediates.length} — type e.g. <kbd>e4d</kbd> or <kbd>e4l</kbd>`
+  );
+  showTextInput(batch?{batch:true,placeholder:'in order: b2d c3l …'}:{}); focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealPathColors}]);
+}
+
+function submitPathColors(input){
+  if(quiz.answered) return;
+  if(settings.entry==='batch'){
+    const tokens=parseSqColorTokens(input);
+    if(!tokens.length){ shakeInput(); return; }
+    quiz.answered=true;
+    const exp=quiz.expected;
+    let err=null;
+    if(tokens.length!==exp.length) err=`expected ${exp.length} squares, got ${tokens.length}`;
+    else{
+      for(let i=0;i<exp.length;i++){
+        if(tokens[i].sq!==exp[i].sq){ err=`position ${i+1}: expected ${exp[i].sq.toUpperCase()}, got ${tokens[i].sq.toUpperCase()}`; break; }
+        if(tokens[i].color!==exp[i].color){ err=`${exp[i].sq.toUpperCase()} is <strong>${exp[i].color}</strong>, not ${tokens[i].color}`; break; }
+      }
+    }
+    const ok=!err;
+    recordAnswer(ok);
+    quiz.idx=ok?exp.length:0;
+    if(ok){
+      hideBlind();
+      exp.forEach(e=>{ highlights[e.sq]='ok'; });
+      highlights[sqName(quiz.sf,quiz.sr)]='sel';
+      highlights[sqName(quiz.ef,quiz.er)]='sel';
+      pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+      applyHighlights();
+      showFeedback(true,`✓ All ${exp.length} squares and colors correct!`);
+      hideTextInput();
+      autoNext(nextPathColors);
+    } else {
+      revealPathColors(`✗ ${err}. Path: ${exp.map(e=>e.sq.toUpperCase()+' ('+e.color+')').join(' → ')}`);
+    }
+    return;
+  }
+  const {sq,color}=parseSquareColor(input);
+  if(!isValidSqName(sq)||!color){ shakeInput(); return; }
+  clearInput();
+
+  const exp=quiz.expected[quiz.idx];
+  if(sq!==exp.sq){
+    quiz.answered=true; recordAnswer(false);
+    revealPathColors(`✗ Expected ${exp.sq.toUpperCase()}, got ${sq.toUpperCase()}`);
+    return;
+  }
+  if(color!==exp.color){
+    quiz.answered=true; recordAnswer(false);
+    revealPathColors(`✗ ${exp.sq.toUpperCase()} is <strong>${exp.color}</strong>, not ${color}`);
+    return;
+  }
+  const {f,r}=parseSq(sq);
+  highlights[sqName(f,r)]='ok';
+  applyHighlights();
+  quiz.idx++;
+  if(quiz.idx>=quiz.expected.length){
+    quiz.answered=true; recordAnswer(true);
+    showFeedback(true,`✓ Perfect — all ${quiz.expected.length} squares and colors correct!`);
+    hideTextInput();
+    autoNext(nextPathColors);
+  } else {
+    setEx('Path + Colors',
+      `${PIECE_SYMBOLS[quiz.type]} ${sqName(quiz.sf,quiz.sr).toUpperCase()} → ${sqName(quiz.ef,quiz.er).toUpperCase()} — ✓ ${exp.sq.toUpperCase()} (${exp.color})`,
+      `Square ${quiz.idx+1} of ${quiz.expected.length} — type e.g. <kbd>e4d</kbd>`
+    );
+    focusInput();
+  }
+}
+
+function revealPathColors(msg){
+  quiz.answered=true; lastRight=false; hideBlind();
+  quiz.intermediates.forEach((sq,i)=>{
+    const {f,r}=parseSq(sq);
+    highlights[sqName(f,r)]=i<quiz.idx?'ok':'dest';
+  });
+  highlights[sqName(quiz.sf,quiz.sr)]='sel';
+  highlights[sqName(quiz.ef,quiz.er)]='sel';
+  pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+  applyHighlights(); hideTextInput();
+  if(msg) showFeedback(false,msg);
+  autoNext(nextPathColors);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: COLORED DESTINATIONS (blind dest. + color each)
+// ════════════════════════════════════════════════════
+function modeColoredDest(){
+  setInfo(`<strong>Colored Destinations</strong><br><br>
+    A piece is placed on a hidden square. Name every square it can reach — <em>and</em> its color.<br><br>
+    Type: <kbd>e4d</kbd> (dark) or <kbd>e4l</kbd> (light) — square + color in one shot.<br><br>
+    The hardest destinations drill — combines piece movement memory with color recall.`);
+  nextColoredDest();
+}
+
+function nextColoredDest(){
+  const types=['knight','bishop','rook'];
+  const type=types[Math.floor(Math.random()*types.length)];
+  const {f,r}=randSq();
+
+  let targets;
+  if(type==='knight')      targets=knightMoves(f,r);
+  else if(type==='bishop') targets=bishopSquares(f,r);
+  else                     targets=rookSquares(f,r);
+
+  // Map sq name → expected color
+  const targetMap={};
+  targets.forEach(s=>{ targetMap[sqName(s.f,s.r)]=sqColorName(s.f,s.r); });
+
+  quiz={type,sf:f,sr:r,targetMap,found:new Set(),answered:false};
+
+  clearBoard();
+  document.getElementById('blind-cover').classList.remove('off');
+
+  const total=Object.keys(targetMap).length;
+  const batch=settings.entry==='batch';
+  setEx('Colored Destinations',
+    `${PIECE_SYMBOLS[type]} <strong>${PIECE_NAMES[type]}</strong> on <strong>${sqName(f,r).toUpperCase()}</strong><br>Name all ${total} reachable squares with their color.`,
+    batch?'Type ALL in one line, e.g. <kbd>c3d e3l d2d</kbd>':`0 / ${total} — type e.g. <kbd>e4d</kbd> or <kbd>e4l</kbd>`
+  );
+  showTextInput(batch?{batch:true,placeholder:'c3d e3l d2d …'}:{}); focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealColoredDest}]);
+}
+
+function submitColoredDest(input){
+  if(quiz.answered) return;
+  if(settings.entry==='batch'){
+    const tokens=parseSqColorTokens(input);
+    if(!tokens.length){ shakeInput(); return; }
+    quiz.answered=true;
+    const seen=new Set();
+    const hit=[],wrongCol=[],extra=[];
+    tokens.forEach(t=>{
+      if(seen.has(t.sq)) return; seen.add(t.sq);
+      const exp=quiz.targetMap[t.sq];
+      if(!exp) extra.push(t.sq);
+      else if(t.color===exp) hit.push(t.sq);
+      else wrongCol.push(t.sq);
+    });
+    const miss=Object.keys(quiz.targetMap).filter(s=>!hit.includes(s)&&!wrongCol.includes(s));
+    const ok=!miss.length&&!extra.length&&!wrongCol.length;
+    recordAnswer(ok);
+    hideBlind();
+    hit.forEach(s=>highlights[s]='ok');
+    miss.forEach(s=>highlights[s]='dest');
+    wrongCol.forEach(s=>highlights[s]='err');
+    extra.forEach(s=>highlights[s]='err');
+    pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+    applyHighlights();
+    let fb=batchTags(hit,miss,extra);
+    if(wrongCol.length) fb+=`<div>WRONG COLOR ${wrongCol.map(s=>`<span class="tg tg-extra">${s.toUpperCase()} (is ${quiz.targetMap[s]})</span>`).join('')}</div>`;
+    showFeedback(ok, ok?'✓ All squares and colors correct!':fb);
+    hideTextInput();
+    autoNext(nextColoredDest);
+    return;
+  }
+  const {sq,color}=parseSquareColor(input);
+  if(!isValidSqName(sq)||!color){ shakeInput(); return; }
+  clearInput();
+
+  if(quiz.found.has(sq)){ focusInput(); return; }
+  const expectedColor=quiz.targetMap[sq];
+  if(!expectedColor){ shakeInput(); focusInput(); return; }
+
+  if(color===expectedColor){
+    quiz.found.add(sq);
+    const total=Object.keys(quiz.targetMap).length;
+    const rem=total-quiz.found.size;
+    if(rem===0){
+      quiz.answered=true; recordAnswer(true); hideBlind();
+      Object.keys(quiz.targetMap).forEach(s=>{ highlights[s]='ok'; });
+      pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+      applyHighlights();
+      showFeedback(true,'✓ All squares and colors correct!');
+      hideTextInput();
+      autoNext(nextColoredDest);
+    } else {
+      setEx('Colored Destinations',
+        `${PIECE_SYMBOLS[quiz.type]} on ${sqName(quiz.sf,quiz.sr).toUpperCase()} — ✓ ${sq.toUpperCase()} (${color})`,
+        `${quiz.found.size} / ${total} — ${rem} remaining`
+      );
+      focusInput();
+    }
+  } else {
+    shakeInput();
+    setEx('Colored Destinations',
+      `✗ ${sq.toUpperCase()} is <strong>${expectedColor}</strong>, not ${color}`,
+      `${quiz.found.size} / ${Object.keys(quiz.targetMap).length} — try next square`
+    );
+    focusInput();
+  }
+}
+
+function revealColoredDest(){
+  quiz.answered=true; hideBlind(); recordAnswer(false);
+  Object.entries(quiz.targetMap).forEach(([sq,col])=>{
+    highlights[sq]=quiz.found.has(sq)?'ok':'dest';
+  });
+  pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+  applyHighlights(); hideTextInput();
+  const found=quiz.found.size, total=Object.keys(quiz.targetMap).length;
+  showFeedback(false,`Found ${found} / ${total} with correct colors`);
+  autoNext(nextColoredDest);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: STEP TRACER  (follow move-by-move descriptions)
+// ════════════════════════════════════════════════════
+function modeStepTracer(){
+  setInfo(`<strong>Step Tracer</strong><br><br>
+    A piece makes several moves described one at a time.<br>
+    After each description, type the square the piece lands on.<br><br>
+    Rook: <em>"3 up"</em>, <em>"4 right"</em>, <em>"2 down"</em>…<br>
+    Bishop: <em>"2 up-right"</em>, <em>"3 down-left"</em>…<br><br>
+    No board. No starting position shown between steps. Pure calculation.`);
+  nextStepTracer();
+}
+
+function nextStepTracer(){
+  const numMoves=Math.min(2+Math.floor(score.streak/3),7);
+  const types=['bishop','rook'];
+  const type=types[Math.floor(Math.random()*2)];
+  let sq, path, tries=0;
+  do{ sq=randSq(); path=generateSequence(type,sq.f,sq.r,numMoves); tries++; }
+  while(path.length<3&&tries<20);
+  if(path.length<3){ nextStepTracer(); return; }
+
+  quiz={type,path,step:0,answered:false};
+
+  clearBoard(); showBlind();
+  const start=sqName(path[0].f,path[0].r).toUpperCase();
+  const desc=describeMoveStep(type,path[0],path[1]);
+  setEx('Step Tracer',
+    `${PIECE_SYMBOLS[type]} <strong>${PIECE_NAMES[type]}</strong> starts on <strong>${start}</strong><br>Move 1 of ${numMoves}: ${desc}`,
+    'Where does it land?'
+  );
+  showTextInput(); focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealStepTracer}]);
+}
+
+function submitStepTracer(input){
+  if(quiz.answered) return;
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  clearInput();
+
+  const step=quiz.step;
+  const expected=sqName(quiz.path[step+1].f,quiz.path[step+1].r);
+  if(ans!==expected){
+    quiz.answered=true; recordAnswer(false);
+    revealStepTracer(`✗ Expected ${expected.toUpperCase()}, got ${ans.toUpperCase()}`);
+    return;
+  }
+
+  quiz.step++;
+  const numMoves=quiz.path.length-1;
+  if(quiz.step>=numMoves){
+    quiz.answered=true; recordAnswer(true);
+    hideBlind();
+    quiz.path.forEach((s,i)=>{ highlights[sqName(s.f,s.r)]=i===0?'sel':i===quiz.path.length-1?'ok':'path'; });
+    pieces[sqName(quiz.path[0].f,quiz.path[0].r)]=PIECE_SYMBOLS[quiz.type];
+    applyHighlights();
+    showFeedback(true,`✓ Perfect — all ${numMoves} steps correct!`);
+    hideTextInput();
+    autoNext(nextStepTracer);
+  } else {
+    const desc=describeMoveStep(quiz.type,quiz.path[quiz.step],quiz.path[quiz.step+1]);
+    setEx('Step Tracer',
+      `✓ ${expected.toUpperCase()} — Move ${quiz.step+1} of ${numMoves}: ${desc}`,
+      'Where does it land?'
+    );
+    focusInput();
+  }
+}
+
+function revealStepTracer(msg){
+  quiz.answered=true; lastRight=false; hideBlind();
+  quiz.path.forEach((s,i)=>{
+    highlights[sqName(s.f,s.r)]=i===0?'sel':i<=quiz.step?'ok':'dest';
+  });
+  pieces[sqName(quiz.path[0].f,quiz.path[0].r)]=PIECE_SYMBOLS[quiz.type];
+  applyHighlights(); hideTextInput();
+  if(msg) showFeedback(false,msg);
+  autoNext(nextStepTracer);
+}
+
+// ════════════════════════════════════════════════════
+//  BATCH ENTRY HELPERS
+// ════════════════════════════════════════════════════
+// parse "c3 e3, d2 -> f2" → ['c3','e3','d2','f2'] (order kept, no dedupe)
+function parseSquares(str){
+  return (str||'').toLowerCase().split(/[\s,;>→-]+/).filter(isValidSqName);
+}
+// parse "e4d f5l" → [{sq,color},...]
+function parseSqColorTokens(str){
+  const out=[];
+  (str||'').toLowerCase().split(/[\s,;]+/).forEach(t=>{
+    if(t.length===3&&isValidSqName(t.slice(0,2))&&(t[2]==='d'||t[2]==='l')){
+      out.push({sq:t.slice(0,2), color:t[2]==='d'?'dark':'light'});
+    }
+  });
+  return out;
+}
+function batchTags(hit,miss,extra){
+  let h='';
+  if(miss.length)  h+=`<div>MISSED ${miss.map(s=>`<span class="tg tg-miss">${s.toUpperCase()}</span>`).join('')}</div>`;
+  if(extra.length) h+=`<div>EXTRA ${extra.map(s=>`<span class="tg tg-extra">${s.toUpperCase()}</span>`).join('')}</div>`;
+  if(hit.length)   h+=`<div>GOT ${hit.map(s=>`<span class="tg tg-hit">${s.toUpperCase()}</span>`).join('')}</div>`;
+  return h;
+}
+
+// ════════════════════════════════════════════════════
+//  GENERIC PIECE MOVES + BFS (any piece)
+// ════════════════════════════════════════════════════
+function genericMoves(type,f,r){
+  if(type==='knight') return knightMoves(f,r);
+  if(type==='bishop') return bishopSquares(f,r);
+  if(type==='rook')   return rookSquares(f,r);
+  if(type==='queen')  return [...bishopSquares(f,r),...rookSquares(f,r)];
+  if(type==='king')   return kingNeighbors(f,r);
+  return [];
+}
+function genericBFS(type,sf,sr,ef,er){
+  if(sf===ef&&sr===er) return [{f:sf,r:sr}];
+  const prev={}; const q=[{f:sf,r:sr}];
+  prev[sqName(sf,sr)]=null;
+  while(q.length){
+    const cur=q.shift();
+    for(const nx of genericMoves(type,cur.f,cur.r)){
+      const k=sqName(nx.f,nx.r);
+      if(k in prev) continue;
+      prev[k]=cur;
+      if(nx.f===ef&&nx.r===er){
+        const path=[{f:nx.f,r:nx.r}]; let n=cur;
+        while(n){path.unshift({f:n.f,r:n.r});n=prev[sqName(n.f,n.r)];}
+        return path;
+      }
+      q.push({f:nx.f,r:nx.r});
+    }
+  }
+  return null;
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: SHORTEST PATH  (any piece, BFS-validated)
+// ════════════════════════════════════════════════════
+function modeShortestPath(){
+  setInfo(`<strong>Shortest Path</strong><br><br>
+    A piece must travel from A to B in the minimum number of moves.<br><br>
+    <strong>One at a time:</strong> type each square the piece lands on, hop by hop.<br>
+    <strong>All at once</strong> (⚙ setting): type the whole route including start and end, e.g. <kbd>a1 c2 e3</kbd>.<br><br>
+    Any legal route of optimal length counts — there is often more than one.<br>
+    Pieces: Knight, King, Queen, Rook, Bishop. Knight and King give the longest routes.`);
+  nextShortestPath();
+}
+
+function nextShortestPath(){
+  const types=['knight','knight','king','queen','rook','bishop']; // knight weighted ×2 — the key training piece
+  const type=types[Math.floor(Math.random()*types.length)];
+  let sf,sr,ef,er,path,tries=0;
+  do{
+    ({f:sf,r:sr}=randSq());
+    let t;
+    do{ t=randSq(); }
+    while((t.f===sf&&t.r===sr)||(type==='bishop'&&sqColor(t.f,t.r)!==sqColor(sf,sr)));
+    ef=t.f; er=t.r;
+    path=genericBFS(type,sf,sr,ef,er);
+    tries++;
+  }while((!path||path.length<3)&&tries<200);
+  if(!path||path.length<3){ nextShortestPath(); return; }
+
+  quiz={type,sf,sr,ef,er,path,userPath:[{f:sf,r:sr}],answered:false};
+
+  clearBoard(); showBlind();
+  highlights[sqName(sf,sr)]='sel';
+  highlights[sqName(ef,er)]='dest';
+  pieces[sqName(sf,sr)]=PIECE_SYMBOLS[type];
+  applyHighlights();
+
+  const opt=path.length-1;
+  const batch=settings.entry==='batch';
+  setEx('Shortest Path',
+    `${PIECE_SYMBOLS[type]} <strong>${PIECE_NAMES[type]}</strong>: ${sqName(sf,sr).toUpperCase()} → ${sqName(ef,er).toUpperCase()}<br>Minimum: <strong>${opt} move${opt>1?'s':''}</strong>`,
+    batch?`Type the whole route: <kbd>${sqName(sf,sr)} … ${sqName(ef,er)}</kbd>`:'Type each landing square, hop by hop'
+  );
+  showTextInput(batch?{batch:true,placeholder:`${sqName(sf,sr)} … ${sqName(ef,er)}`}:{});
+  focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealShortestPath}]);
+}
+
+function submitShortestPath(input){
+  if(quiz.answered) return;
+  if(settings.entry==='batch'){ submitShortestPathBatch(input); return; }
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  const cur=quiz.userPath[quiz.userPath.length-1];
+  const legal=genericMoves(quiz.type,cur.f,cur.r).some(s=>sqName(s.f,s.r)===ans);
+  if(!legal){
+    showFeedback(false,`✗ ${ans.toUpperCase()} is not a legal ${quiz.type} move from ${sqName(cur.f,cur.r).toUpperCase()}`);
+    setTimeout(hideFeedback,900); return;
+  }
+  clearInput();
+  const {f,r}=parseSq(ans);
+  quiz.userPath.push({f,r});
+  if(!highlights[ans]) highlights[ans]='path';
+  applyHighlights();
+  hideFeedback();
+  if(f===quiz.ef&&r===quiz.er){
+    quiz.answered=true;
+    const moves=quiz.userPath.length-1, opt=quiz.path.length-1;
+    const right=moves===opt;
+    recordAnswer(right);
+    hideBlind();
+    showFeedback(right,
+      right?`✓ ${moves} moves — optimal!`
+           :`Valid but not optimal: ${moves} vs ${opt}. Optimal e.g.: ${quiz.path.map(s=>sqName(s.f,s.r).toUpperCase()).join(' → ')}`
+    );
+    hideTextInput();
+    autoNext(nextShortestPath);
+  }
+}
+
+function submitShortestPathBatch(input){
+  const tokens=parseSquares(input);
+  if(tokens.length<2){ shakeInput(); return; }
+  quiz.answered=true;
+  const startN=sqName(quiz.sf,quiz.sr), endN=sqName(quiz.ef,quiz.er);
+  let err=null;
+  if(tokens[0]!==startN)                      err=`must start at ${startN.toUpperCase()}`;
+  else if(tokens[tokens.length-1]!==endN)     err=`must end at ${endN.toUpperCase()}`;
+  else{
+    for(let i=0;i<tokens.length-1;i++){
+      const a=parseSq(tokens[i]);
+      if(!genericMoves(quiz.type,a.f,a.r).some(s=>sqName(s.f,s.r)===tokens[i+1])){
+        err=`${quiz.type} can't go ${tokens[i].toUpperCase()} → ${tokens[i+1].toUpperCase()}`; break;
+      }
+    }
+  }
+  const right=!err&&tokens.length===quiz.path.length;
+  recordAnswer(right);
+  hideBlind();
+  tokens.forEach((sq,i)=>{ if(!highlights[sq]) highlights[sq]=i===0?'sel':'path'; });
+  quiz.path.forEach(s=>{ const k=sqName(s.f,s.r); if(!highlights[k]) highlights[k]='ghost'; });
+  highlights[endN]=right?'ok':'dest';
+  pieces[startN]=PIECE_SYMBOLS[quiz.type];
+  applyHighlights();
+  const optStr=quiz.path.map(s=>sqName(s.f,s.r).toUpperCase()).join(' → ');
+  showFeedback(right,
+    right?`✓ ${tokens.length-1} moves — optimal!`
+         :err?`✗ ${err}. Optimal: ${optStr}`
+             :`Valid but ${tokens.length-1} moves vs optimal ${quiz.path.length-1}: ${optStr}`
+  );
+  hideTextInput();
+  autoNext(nextShortestPath);
+}
+
+function revealShortestPath(){
+  quiz.answered=true; lastRight=false; hideBlind();
+  quiz.path.forEach((s,i)=>{
+    const k=sqName(s.f,s.r);
+    highlights[k]=i===0?'sel':i===quiz.path.length-1?'ok':'path';
+  });
+  pieces[sqName(quiz.sf,quiz.sr)]=PIECE_SYMBOLS[quiz.type];
+  applyHighlights(); hideTextInput();
+  showFeedback(false,`Optimal: ${quiz.path.map(s=>sqName(s.f,s.r).toUpperCase()).join(' → ')}`);
+  autoNext(nextShortestPath);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: HANDS-FREE 🎧  (audio-only TTS loop)
+// ════════════════════════════════════════════════════
+let hfCfg={sub:'color',think:8,rest:3,rate:0.9};
+let hf={sid:0,timer:null,count:0};
+
+function sqTTS(s){ return s[0].toUpperCase()+' '+s[1]; }
+
+function modeHandsFree(){
+  document.getElementById('blind-cover').classList.remove('off');
+  setEx('🎧 Hands-Free',
+    'Audio-only training: the question is spoken aloud, you answer in your head, then the answer is spoken.',
+    'Headphones on · eyes closed or screen away');
+  setInfo(`<strong>Hands-Free</strong><br><br>
+    Pure audio loop — no typing, no looking. Self-scored: count your own hits.<br><br>
+    <strong>🎨 Color</strong>: square → light or dark?<br>
+    <strong>📡 Destinations</strong>: knight/king on a square → say every reachable square.<br>
+    <strong>🧭 Path</strong>: knight/king A→B → say the shortest route.<br>
+    <strong>🔀 Mixed</strong>: all three shuffled.<br><br>
+    This is the final stage of visualization training — everything happens in your head. Use it lying down, walking, or with eyes closed.`);
+  renderHFSettings();
+}
+
+function renderHFSettings(){
+  const a=document.getElementById('ans-area');
+  const sub=(id,l)=>`<button class="sbtn${hfCfg.sub===id?' on':''}" data-hf="${id}">${l}</button>`;
+  a.innerHTML=`
+    <div style="width:100%">
+      <div class="set-row" style="margin-top:0"><span class="set-lbl">Question type</span>
+        ${sub('color','🎨 Color')}${sub('dest','📡 Destinations')}${sub('path','🧭 Path')}${sub('mixed','🔀 Mixed')}
+      </div>
+      <div class="hf-row"><label>Think time <span class="hf-val" id="hf-think-v">${hfCfg.think}s</span></label>
+        <input type="range" id="hf-think" min="3" max="45" value="${hfCfg.think}"></div>
+      <div class="hf-row"><label>Pause after answer <span class="hf-val" id="hf-rest-v">${hfCfg.rest}s</span></label>
+        <input type="range" id="hf-rest" min="1" max="12" value="${hfCfg.rest}"></div>
+      <div class="hf-row"><label>Speech rate <span class="hf-val" id="hf-rate-v">${hfCfg.rate.toFixed(2)}×</span></label>
+        <input type="range" id="hf-rate" min="0.5" max="1.5" step="0.05" value="${hfCfg.rate}"></div>
+      <div style="margin-top:12px"><button class="abtn accent" id="hf-start">▶ Start audio session</button></div>
+    </div>`;
+  a.querySelectorAll('[data-hf]').forEach(b=>b.addEventListener('click',()=>{hfCfg.sub=b.dataset.hf;renderHFSettings();}));
+  a.querySelector('#hf-think').addEventListener('input',e=>{hfCfg.think=+e.target.value;a.querySelector('#hf-think-v').textContent=hfCfg.think+'s';});
+  a.querySelector('#hf-rest').addEventListener('input',e=>{hfCfg.rest=+e.target.value;a.querySelector('#hf-rest-v').textContent=hfCfg.rest+'s';});
+  a.querySelector('#hf-rate').addEventListener('input',e=>{hfCfg.rate=+e.target.value;a.querySelector('#hf-rate-v').textContent=hfCfg.rate.toFixed(2)+'×';});
+  a.querySelector('#hf-start').addEventListener('click',hfStart);
+}
+
+function hfGen(){
+  const pick=hfCfg.sub==='mixed'?['color','dest','path'][Math.floor(Math.random()*3)]:hfCfg.sub;
+  if(pick==='color'){
+    const {f,r}=randSq(); const n=sqName(f,r);
+    return {text:sqTTS(n)+'. Light or dark?', show:n.toUpperCase(),
+            ansText:`${sqTTS(n)} is ${sqColor(f,r)}.`, ansShow:`${n.toUpperCase()} — ${sqColor(f,r)}`};
+  }
+  if(pick==='dest'){
+    const type=['knight','king'][Math.floor(Math.random()*2)];
+    const {f,r}=randSq(); const n=sqName(f,r);
+    const targets=genericMoves(type,f,r).map(s=>sqName(s.f,s.r)).sort();
+    return {text:`${PIECE_NAMES[type]} on ${sqTTS(n)}. Name every square it can reach.`,
+            show:`${PIECE_SYMBOLS[type]} ${PIECE_NAMES[type]} on ${n.toUpperCase()} → all destinations?`,
+            ansText:`${targets.length} squares: ${targets.map(sqTTS).join(', ')}.`,
+            ansShow:`${targets.length}: ${targets.map(s=>s.toUpperCase()).join(' ')}`};
+  }
+  // path
+  const type=['knight','king'][Math.floor(Math.random()*2)];
+  let sf,sr,ef,er,path;
+  do{ ({f:sf,r:sr}=randSq()); ({f:ef,r:er}=randSq()); path=genericBFS(type,sf,sr,ef,er); }
+  while(!path||path.length<3||path.length>5);
+  const names=path.map(s=>sqName(s.f,s.r));
+  return {text:`${PIECE_NAMES[type]}. From ${sqTTS(names[0])} to ${sqTTS(names[names.length-1])}. Shortest path.`,
+          show:`${PIECE_SYMBOLS[type]} ${names[0].toUpperCase()} → ${names[names.length-1].toUpperCase()} — shortest route?`,
+          ansText:`${names.length-1} moves: ${names.map(sqTTS).join(', ')}.`,
+          ansShow:names.map(s=>s.toUpperCase()).join(' → ')};
+}
+
+function hfSpeak(text,mySid){
+  return new Promise(res=>{
+    if(hf.sid!==mySid||!('speechSynthesis' in window)){ res(); return; }
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=hfCfg.rate; u.lang='en-US';
+    u.onend=()=>res(); u.onerror=()=>res();
+    speechSynthesis.speak(u);
+  });
+}
+
+function hfCountdown(secs,mySid,label){
+  return new Promise(res=>{
+    if(hf.sid!==mySid){ res(); return; }
+    let rem=secs;
+    const hint=document.getElementById('ex-hint');
+    hint.textContent=`${label} — ${rem}s`;
+    hf.timer=setInterval(()=>{
+      if(hf.sid!==mySid){ clearInterval(hf.timer); hf.timer=null; res(); return; }
+      rem--;
+      if(rem<=0){ clearInterval(hf.timer); hf.timer=null; res(); return; }
+      hint.textContent=`${label} — ${rem}s`;
+    },1000);
+  });
+}
+
+async function hfLoop(mySid){
+  while(hf.sid===mySid){
+    const q=hfGen(); hf.count++;
+    hideFeedback();
+    setEx('🎧 Hands-Free',
+      `<span style="font-size:1.4rem;font-weight:800;letter-spacing:1px">${q.show}</span>`,
+      `Question #${hf.count} · 🔊 speaking…`);
+    await hfSpeak(q.text,mySid);          if(hf.sid!==mySid) return;
+    await hfCountdown(hfCfg.think,mySid,'💭 Think'); if(hf.sid!==mySid) return;
+    showFeedback(true,q.ansShow);
+    document.getElementById('ex-hint').textContent='💬 Answer…';
+    await hfSpeak(q.ansText,mySid);       if(hf.sid!==mySid) return;
+    await hfCountdown(hfCfg.rest,mySid,'⏭ Next in'); if(hf.sid!==mySid) return;
+  }
+}
+
+function hfStart(){
+  if(!('speechSynthesis' in window)){ showFeedback(false,'This browser has no speech synthesis (TTS).'); return; }
+  hf.sid=Date.now(); hf.count=0;
+  document.getElementById('blind-cover').classList.remove('off');
+  const a=document.getElementById('ans-area');
+  a.innerHTML='<button class="abtn neutral" id="hf-stop">■ Stop session</button>';
+  a.querySelector('#hf-stop').addEventListener('click',hfStop);
+  hfLoop(hf.sid);
+}
+
+function hfStop(){
+  if(hf.sid===0) return;
+  hf.sid=0;
+  if(hf.timer){ clearInterval(hf.timer); hf.timer=null; }
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  if(mode==='hands-free'){ hideFeedback(); modeHandsFree(); }
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: GUIDE 📖  (progression + usage manual)
+// ════════════════════════════════════════════════════
+function modeGuide(){
+  hideBlind();
+  setEx('📖 Training Guide',
+    'A structured path through every exercise — click any chip to jump straight into that mode.',
+    'Based on the AliouneBT Protocol & the blindfold training guide');
+  const chip=id=>{const m=MODES.find(x=>x.id===id);return `<button class="gjump" data-m="${id}">${m?m.name:id}</button>`;};
+  setInfo(`
+    <h3>0 · Before anything — the color formula</h3>
+    File letter → number (a=1 … h=8), add the rank number. <strong>Even = dark · Odd = light.</strong>
+    e4 → 5+4=9 odd → light. d4 → 4+4=8 even → dark.
+    Train it to a pure reflex in ${chip('color-quiz')} — and never look at the board while answering. Under 1 second per square is the bar.
+
+    <h3>1 · Level 0 — Board geometry</h3>
+    ${chip('color-quiz')} ${chip('color-pair')} ${chip('square-namer')} ${chip('coord-drill')} ${chip('region-scan')} ${chip('explore')}<br>
+    Goal: any square named + colored instantly. Coord Drill target: 20+ in 30 seconds. Most players skip this level and pay for it forever — don't.
+
+    <h3>2 · Level 1 — Single-piece vision</h3>
+    ${chip('neighbor-quiz')} ${chip('rook-vision')} ${chip('bishop-diag')} ${chip('diagonals')} ${chip('knight-color')} ${chip('reachability')} ${chip('destinations')}<br>
+    Rays for rook &amp; bishop, orbits for the knight. Knight parity rule: even number of moves = same color as start, odd = opposite. Diagonal Quiz: recite whole diagonals in order — all one color, use that as a self-check.
+
+    <h3>3 · Level 2 — Spatial reasoning</h3>
+    ${chip('knight-path')} ${chip('shortest-path')} ${chip('knight-tour')} ${chip('knight-web')}<br>
+    Shortest Path is the classic maneuvering drill: see the whole route before committing — exactly what you do in a real game. Any optimal route counts. Knight Tour adds the color call on every hop, board covered — the protocol's eyes-closed drill.
+
+    <h3>4 · Level 3 — Board covered</h3>
+    ${chip('piece-tracker')} ${chip('path-tracer')} ${chip('blind-destinations')} ${chip('two-piece')} ${chip('two-piece-path')}<br>
+    Track a running position — never rebuild from scratch (the Diff Model). Two pieces = two threads: fully checkpoint piece A ("rook is on e5") before touching piece B.
+
+    <h3>5 · Level 4–5 — Combined skills</h3>
+    ${chip('dest-colors')} ${chip('colored-dest')} ${chip('path-colors')} ${chip('step-tracer')} ${chip('position-flash')}<br>
+    Position + color simultaneously — the dual skill blindfold play runs on.
+    Position Flash: read the pawn/piece skeleton first, then details. Never memorize piece-by-piece — it always fails.
+
+    <h3>6 · Eyes-free</h3>
+    ${chip('hands-free')}<br>
+    Headphones on, screen away. The question is spoken, you answer in your head, the answer is spoken. The final stage: the whole board lives in your mind. Works on walks, in bed, eyes closed.
+
+    <h3>Daily anchors — real positions</h3>
+    ${chip('spatial-sprints')} ${chip('library')}<br>
+    <strong>Sprints</strong> is the protocol's morning drill: replay a real line mentally (board covered), then get quizzed on the final position. The built-in lines ARE your repertoire — Ruy Exchange, Ruy Closed, Berlin, French Advance, Winawer, Nimzo — so every sprint doubles as repertoire familiarity. <strong>Library</strong> holds them plus anything you add: paste PGN from chess.com, load a .pgn file, or store endgame FEN positions. Games use the first N moves (grows with streak); endgames are flash-studied as real positions.
+
+    <h3>Recommended order (first weeks)</h3>
+    Color Quiz → Coord Drill → Square Namer → Rook/Bishop Vision → Knight Parity → Destinations → Knight Path → Shortest Path → Piece Tracker → Blind Dest. → Two-Piece → Step Tracer → Position Flash → Hands-Free.
+    <br>Move up only when the current mode feels <em>automatic</em>, not just doable.
+
+    <h3>Session recipes</h3>
+    <table class="gtable">
+      <tr><th>15 min/day</th><td>10 min Color Quiz + Coord Drill · 5 min Piece Tracker</td></tr>
+      <tr><th>30 min/day</th><td>5 min geometry warm-up · 15 min tracking (Piece Tracker, Knight Path, Blind Dest.) · 10 min Step Tracer or Two-Piece</td></tr>
+      <tr><th>60 min/day</th><td>10 min geometry · 20 min Two-Piece + Step Tracer + Path+Colors · 15 min Position Flash · 15 min Hands-Free</td></tr>
+    </table>
+
+    <h3>Settings — and when to use what</h3>
+    <strong>⚡ Instant pace</strong> (default): correct answers jump straight to the next question — pure flow. Wrong answers freeze the reveal until you press <kbd>Enter</kbd>: study the board as long as you need, never rushed, never waiting.<br><br>
+    <strong>Entry mode</strong> (⚙ Settings): <em>One at a time</em> gives instant per-square correction — best while learning a mode. <em>All at once</em> forces you to hold the complete answer in your head before typing anything — closer to real calculation, best once you're accurate. The feedback then shows GOT / MISSED / EXTRA.<br><br>
+    <strong>Session timer</strong>: off = calm practice. On (3–5 min blocks) = pressure training — your accuracy under a clock is the honest number. Summary shows accuracy + best streak at the end.<br><br>
+    <strong>🙈 Blind toggle</strong>: covers the board in supported modes. Switch it on the moment a mode feels comfortable with the board visible — the cover is where the real training starts.
+
+    <h3>Beyond this app (from the protocol)</h3>
+    <strong>Board Removal Drill</strong> — the single most effective visualization exercise: set up a real middlegame position, study it 3 minutes, remove it, analyze aloud 5 minutes from memory, verify. Daily. Results compound over months. (🏃 Sprints with a full game from your Library is the in-app approximation — the physical-board version is still worth doing.)<br>
+    <strong>Spatial Sprints</strong> — now built in: ${chip('spatial-sprints')}. Do your repertoire lines every morning.<br>
+    <strong>Knight's Tour</strong> — now built in: ${chip('knight-tour')}. Eyes closed, hop by hop, calling each landing square's color.<br><br>
+    Full theory in <em>blindfold-chess-training.md</em> and <em>chess-training-general.md</em> (same folder as this app).
+  `);
+  document.querySelectorAll('.gjump').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));
+  setAns([]);
+}
+
+// ════════════════════════════════════════════════════
+//  PGN/SAN CHESS ENGINE  (full legality: castling, ep,
+//  promotion, disambiguation — tested in .dev/engine-test.js)
+// ════════════════════════════════════════════════════
+const START_FEN='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+const SLIDE_R=[[1,0],[-1,0],[0,1],[0,-1]], SLIDE_B=[[1,1],[1,-1],[-1,1],[-1,-1]];
+const KN_D=[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+
+function fenToPos(fen){
+  const parts=fen.trim().split(/\s+/);
+  const rows=parts[0].split('/');
+  const board={};
+  for(let ri=0;ri<8;ri++){
+    const rank=8-ri; let file=0;
+    for(const ch of rows[ri]){
+      if(/\d/.test(ch)){ file+=+ch; continue; }
+      board[FILES[file]+rank]={t:ch.toLowerCase(), c:ch===ch.toUpperCase()?'w':'b'};
+      file++;
+    }
+  }
+  return { board, turn:parts[1]||'w',
+           castle:(parts[2]&&parts[2]!=='-')?parts[2]:'',
+           ep:(parts[3]&&parts[3]!=='-')?parts[3]:null };
+}
+function clonePos(p){ return {board:Object.assign({},p.board),turn:p.turn,castle:p.castle,ep:p.ep}; }
+function sqFR(sq){ return [FILES.indexOf(sq[0]), +sq[1]-1]; }
+function frSq(f,r){ return FILES[f]+(r+1); }
+function onB(f,r){ return f>=0&&f<8&&r>=0&&r<8; }
+
+function attacked(pos,sq,by){
+  const fr=sqFR(sq), f=fr[0], r=fr[1];
+  for(const d of KN_D){
+    if(!onB(f+d[0],r+d[1])) continue;
+    const p=pos.board[frSq(f+d[0],r+d[1])];
+    if(p&&p.c===by&&p.t==='n') return true;
+  }
+  for(let df=-1;df<=1;df++)for(let dr=-1;dr<=1;dr++){
+    if(!df&&!dr) continue;
+    if(!onB(f+df,r+dr)) continue;
+    const p=pos.board[frSq(f+df,r+dr)];
+    if(p&&p.c===by&&p.t==='k') return true;
+  }
+  const pd=by==='w'?1:-1;
+  for(const df of [-1,1]){
+    if(!onB(f+df,r-pd)) continue;
+    const p=pos.board[frSq(f+df,r-pd)];
+    if(p&&p.c===by&&p.t==='p') return true;
+  }
+  for(const grp of [[SLIDE_R,'rq'],[SLIDE_B,'bq']]){
+    for(const d of grp[0]){
+      let nf=f+d[0],nr=r+d[1];
+      while(onB(nf,nr)){
+        const p=pos.board[frSq(nf,nr)];
+        if(p){ if(p.c===by&&grp[1].includes(p.t)) return true; break; }
+        nf+=d[0]; nr+=d[1];
+      }
+    }
+  }
+  return false;
+}
+function kingSqOf(pos,c){ for(const sq in pos.board){ const p=pos.board[sq]; if(p.t==='k'&&p.c===c) return sq; } return null; }
+
+function pieceDests(pos,from){
+  const p=pos.board[from]; if(!p) return [];
+  const fr=sqFR(from), f=fr[0], r=fr[1]; const out=[];
+  const tryAdd=(nf,nr)=>{ if(!onB(nf,nr)) return false;
+    const q=pos.board[frSq(nf,nr)];
+    if(!q){ out.push(frSq(nf,nr)); return true; }
+    if(q.c!==p.c) out.push(frSq(nf,nr));
+    return false; };
+  if(p.t==='n'){ for(const d of KN_D) tryAdd(f+d[0],r+d[1]); }
+  else if(p.t==='k'){ for(let df=-1;df<=1;df++)for(let dr=-1;dr<=1;dr++){ if(df||dr) tryAdd(f+df,r+dr); } }
+  else if(p.t==='p'){
+    const d=p.c==='w'?1:-1, startR=p.c==='w'?1:6;
+    if(onB(f,r+d)&&!pos.board[frSq(f,r+d)]){
+      out.push(frSq(f,r+d));
+      if(r===startR&&!pos.board[frSq(f,r+2*d)]) out.push(frSq(f,r+2*d));
+    }
+    for(const df of [-1,1]){
+      if(!onB(f+df,r+d)) continue;
+      const t=frSq(f+df,r+d), q=pos.board[t];
+      if((q&&q.c!==p.c)||t===pos.ep) out.push(t);
+    }
+  }
+  else {
+    const dirs=p.t==='r'?SLIDE_R:p.t==='b'?SLIDE_B:SLIDE_R.concat(SLIDE_B);
+    for(const d of dirs){
+      let nf=f+d[0],nr=r+d[1];
+      while(tryAdd(nf,nr)){ nf+=d[0]; nr+=d[1]; }
+    }
+  }
+  return out;
+}
+
+function makeMove(pos,from,to,promo){
+  const np=clonePos(pos); const p=np.board[from];
+  delete np.board[from];
+  if(p.t==='p'&&to===pos.ep&&!pos.board[to]){
+    const tfr=sqFR(to);
+    delete np.board[frSq(tfr[0], p.c==='w'?tfr[1]-1:tfr[1]+1)];
+  }
+  np.board[to]=promo?{t:promo,c:p.c}:p;
+  if(p.t==='k'){
+    const ff=sqFR(from)[0], tf=sqFR(to)[0];
+    if(Math.abs(tf-ff)===2){
+      const rank=from[1];
+      if(tf>ff){ np.board['f'+rank]=np.board['h'+rank]; delete np.board['h'+rank]; }
+      else     { np.board['d'+rank]=np.board['a'+rank]; delete np.board['a'+rank]; }
+    }
+    np.castle=np.castle.replace(p.c==='w'?/[KQ]/g:/[kq]/g,'');
+  }
+  for(const pair of [['a1','Q'],['h1','K'],['a8','q'],['h8','k']]){
+    if(from===pair[0]||to===pair[0]) np.castle=np.castle.replace(pair[1],'');
+  }
+  np.ep=null;
+  if(p.t==='p'){
+    const ffr=sqFR(from), tfr=sqFR(to);
+    if(Math.abs(tfr[1]-ffr[1])===2) np.ep=frSq(ffr[0],(ffr[1]+tfr[1])/2);
+  }
+  np.turn=pos.turn==='w'?'b':'w';
+  return np;
+}
+function legalAfter(pos,from,to,promo){
+  const np=makeMove(pos,from,to,promo);
+  const k=kingSqOf(np,pos.turn);
+  return !!k&&!attacked(np,k,np.turn);
+}
+
+function parseSAN(pos,sanRaw){
+  let san=sanRaw.replace(/[+#!?]+$/,'');
+  if(/^(O-O-O|0-0-0)$/.test(san)||/^(O-O|0-0)$/.test(san)){
+    const long=/^(O-O-O|0-0-0)$/.test(san);
+    const rank=pos.turn==='w'?'1':'8';
+    const from='e'+rank, to=(long?'c':'g')+rank;
+    const p=pos.board[from];
+    if(!p||p.t!=='k'||p.c!==pos.turn) throw new Error('castle: no king on '+from);
+    const need=pos.turn==='w'?(long?'Q':'K'):(long?'q':'k');
+    if(!pos.castle.includes(need)) throw new Error('castle: no rights');
+    const between=long?['d'+rank,'c'+rank,'b'+rank]:['f'+rank,'g'+rank];
+    for(const s of between) if(pos.board[s]) throw new Error('castle: blocked');
+    const opp=pos.turn==='w'?'b':'w';
+    const walk=long?['e'+rank,'d'+rank,'c'+rank]:['e'+rank,'f'+rank,'g'+rank];
+    for(const s of walk) if(attacked(pos,s,opp)) throw new Error('castle: through check');
+    return {from,to,promo:null};
+  }
+  let promo=null;
+  const pm=san.match(/=([QRBN])$/i);
+  if(pm){ promo=pm[1].toLowerCase(); san=san.slice(0,pm.index); }
+  const m=san.match(/^([KQRBN]?)([a-h]?)([1-8]?)x?([a-h][1-8])$/);
+  if(!m) throw new Error('unreadable move: '+sanRaw);
+  const pt=m[1]?m[1].toLowerCase():'p', df=m[2], dr=m[3], to=m[4];
+  const cands=[];
+  for(const sq in pos.board){
+    const p=pos.board[sq];
+    if(p.c!==pos.turn||p.t!==pt) continue;
+    if(df&&sq[0]!==df) continue;
+    if(dr&&sq[1]!==dr) continue;
+    if(pieceDests(pos,sq).indexOf(to)===-1) continue;
+    if(!legalAfter(pos,sq,to,promo)) continue;
+    cands.push(sq);
+  }
+  if(cands.length===0) throw new Error('illegal move: '+sanRaw);
+  if(cands.length>1)  throw new Error('ambiguous move: '+sanRaw);
+  return {from:cands[0],to,promo};
+}
+
+function pgnToSANs(text){
+  let fen=null;
+  const fm=text.match(/\[FEN\s+"([^"]+)"/);
+  if(fm) fen=fm[1];
+  const noHdr=text.replace(/\[[^\]]*\]/g,' ').replace(/\{[^}]*\}/g,' ');
+  let depth=0,out='';
+  for(const ch of noHdr){
+    if(ch==='(') depth++;
+    else if(ch===')') depth=Math.max(0,depth-1);
+    else if(depth===0) out+=ch;
+  }
+  const sans=out.replace(/\$\d+/g,' ')
+    .replace(/\d+\.{1,3}/g,' ')
+    .split(/\s+/)
+    .filter(s=>s&&!/^(1-0|0-1|1\/2-1\/2|\*)$/.test(s));
+  return {fen,sans};
+}
+
+// returns {startFen, steps[], positions[] (position AFTER each ply), finalPos}
+function parseGame(text){
+  const parsed=pgnToSANs(text);
+  let pos=fenToPos(parsed.fen||START_FEN);
+  const steps=[], positions=[];
+  for(const san of parsed.sans){
+    const mv=parseSAN(pos,san);
+    steps.push({san,from:mv.from,to:mv.to,promo:mv.promo,
+                piece:pos.board[mv.from].t,color:pos.turn});
+    pos=makeMove(pos,mv.from,mv.to,mv.promo);
+    positions.push(pos);
+  }
+  return {startFen:parsed.fen||START_FEN,steps,positions,finalPos:pos};
+}
+
+function splitPGNGames(text){
+  const games=[];
+  let cur='';
+  for(const line of text.split(/\r?\n/)){
+    if(/^\[Event\b/i.test(line)&&cur.trim()&&/[a-h1-8]/.test(cur.replace(/\[[^\]]*\]/g,''))){
+      games.push(cur.trim()); cur=line;
+    } else cur+='\n'+line;
+  }
+  if(cur.trim()) games.push(cur.trim());
+  return games.length?games:[text.trim()];
+}
+
+// ════════════════════════════════════════════════════
+//  FULL-POSITION RENDERING (both colors)
+// ════════════════════════════════════════════════════
+const WSYM={k:'♔',q:'♕',r:'♖',b:'♗',n:'♘',p:'♙'};
+const BSYM={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+const T2NAME={p:'pawn',n:'knight',b:'bishop',r:'rook',q:'queen',k:'king'};
+function renderPosition(pos){
+  clearBoard();
+  for(const sq in pos.board){
+    const p=pos.board[sq];
+    pieces[sq]=(p.c==='w'?WSYM:BSYM)[p.t];
+  }
+  applyHighlights();
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ════════════════════════════════════════════════════
+//  LIBRARY  (built-in Protocol repertoire + user PGNs)
+// ════════════════════════════════════════════════════
+const BUILTIN_LIBRARY=[
+ {id:'bi-ruy-ex',    name:'Ruy Lopez Exchange (repertoire)',      cat:'opening', plies:20,
+  pgn:'1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Bxc6 dxc6 5.O-O f6 6.d4 exd4 7.Nxd4 c5 8.Nb3 Qxd1 9.Rxd1 Bg4 10.f3 Be6'},
+ {id:'bi-ruy-closed',name:'Ruy Lopez Closed — main tabiya',       cat:'opening', plies:17,
+  pgn:'1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.O-O Be7 6.Re1 b5 7.Bb3 d6 8.c3 O-O 9.h3'},
+ {id:'bi-berlin',    name:'Ruy Lopez Berlin endgame',             cat:'opening', plies:16,
+  pgn:'1.e4 e5 2.Nf3 Nc6 3.Bb5 Nf6 4.O-O Nxe4 5.d4 Nd6 6.Bxc6 dxc6 7.dxe5 Nf5 8.Qxd8+ Kxd8'},
+ {id:'bi-french-adv',name:'French Advance (repertoire)',          cat:'opening', plies:16,
+  pgn:'1.e4 e6 2.d4 d5 3.e5 c5 4.c3 Nc6 5.Nf3 Qb6 6.a3 Bd7 7.b4 cxd4 8.cxd4 Rc8'},
+ {id:'bi-winawer',   name:'French Winawer (repertoire)',          cat:'opening', plies:18,
+  pgn:'1.e4 e6 2.d4 d5 3.Nc3 Bb4 4.e5 c5 5.a3 Bxc3+ 6.bxc3 Ne7 7.Qg4 Qc7 8.Qxg7 Rg8 9.Qxh7 cxd4'},
+ {id:'bi-nimzo',     name:'Nimzo-Indian Classical 4.Qc2',         cat:'opening', plies:18,
+  pgn:'1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.Qc2 O-O 5.a3 Bxc3+ 6.Qxc3 b6 7.Bg5 Bb7 8.f3 h6 9.Bh4 d5'},
+ {id:'bi-nimzo-rub', name:'Nimzo-Indian Rubinstein 4.e3',         cat:'opening', plies:11,
+  pgn:'1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.e3 O-O 5.Bd3 d5 6.Nf3'},
+ {id:'bi-nimzo-sam', name:'Nimzo-Indian Sämisch 4.f3',            cat:'opening', plies:14,
+  pgn:'1.d4 Nf6 2.c4 e6 3.Nc3 Bb4 4.f3 d5 5.a3 Bxc3+ 6.bxc3 c5 7.cxd5 Nxd5'},
+ {id:'bi-opera',     name:'Opera Game — Morphy 1858',             cat:'game',    plies:33,
+  pgn:'1.e4 e5 2.Nf3 d6 3.d4 Bg4 4.dxe5 Bxf3 5.Qxf3 dxe5 6.Bc4 Nf6 7.Qb3 Qe7 8.Nc3 c6 9.Bg5 b5 10.Nxb5 cxb5 11.Bxb5+ Nbd7 12.O-O-O Rd8 13.Rxd7 Rxd7 14.Rd1 Qe6 15.Bxd7+ Nxd7 16.Qb8+ Nxb8 17.Rd8#'},
+ {id:'bi-lucena',    name:'Lucena position (R+P win — build the bridge)', cat:'endgame', plies:0,
+  pgn:'[FEN "1K1k4/1P6/8/8/8/8/r7/2R5 w - - 0 1"]'},
+];
+const CAT_ICON={opening:'📖',game:'♟',endgame:'🏁'};
+let memLibrary=[];   // session fallback when localStorage is blocked (sandboxed previews)
+function loadLibrary(){ try{ return JSON.parse(localStorage.getItem('cvt-library')||'[]'); }catch(e){ return memLibrary; } }
+function saveLibrary(v){ memLibrary=v; try{ localStorage.setItem('cvt-library',JSON.stringify(v)); }catch(e){} }
+function allLibraryItems(){ return BUILTIN_LIBRARY.concat(loadLibrary()); }
+let libCat='opening';        // category selected in the add-form
+let sprintPickId=null;       // set by a Library "Sprint" button
+
+function pgnDefaultName(text){
+  const w=(text.match(/\[White\s+"([^"]*)"/)||[])[1];
+  const b=(text.match(/\[Black\s+"([^"]*)"/)||[])[1];
+  if(w||b) return (w||'?')+' vs '+(b||'?');
+  const ev=(text.match(/\[Event\s+"([^"]*)"/)||[])[1];
+  return ev||'Untitled';
+}
+
+function modeLibrary(){
+  hideBlind();
+  setEx('📚 Library','Your games & openings database — the source for 🏃 Sprints.',
+    'Built-ins come from the AliouneBT Protocol repertoire');
+  setInfo(`<strong>Library</strong><br><br>
+    Add anything: paste a PGN or plain moves from chess.com (headers, clocks, comments and variations are handled), or load a <kbd>.pgn</kbd> file — multi-game files are split automatically.<br><br>
+    Categories: <strong>📖 opening</strong> (short lines — Sprints replays the whole line), <strong>♟ game</strong> (full games — Sprints uses the first N plies, N grows with your streak), <strong>🏁 endgame</strong> (FEN positions — studied as a real-position flash drill).<br><br>
+    Your items are saved in this browser. Every entry is legality-checked at add time — a bad move is reported with its name.`);
+  renderLibrary();
+}
+
+function renderLibrary(msg,isErr){
+  const a=document.getElementById('ans-area');
+  const user=loadLibrary();
+  const row=(it,del)=>`
+    <div style="display:flex;align-items:center;gap:6px;width:100%;padding:4px 0;border-bottom:1px solid var(--border)">
+      <span style="flex:1;font-size:.78rem;line-height:1.35">${CAT_ICON[it.cat]||''} ${escapeHtml(it.name)}
+        <span style="color:var(--muted)">· ${it.cat}${it.plies?' · '+it.plies+' plies':''}</span></span>
+      <button class="sbtn" data-sprint="${it.id}">🏃</button>
+      ${del?`<button class="sbtn" data-del="${it.id}" style="border-color:var(--red);color:var(--red)">✕</button>`:''}
+    </div>`;
+  const catBtn=c=>`<button class="sbtn${libCat===c?' on':''}" data-cat="${c}">${CAT_ICON[c]} ${c}</button>`;
+  a.innerHTML=`<div style="width:100%">
+    ${msg?`<div style="font-size:.75rem;color:${isErr?'var(--red)':'var(--green)'};margin-bottom:6px">${msg}</div>`:''}
+    <div class="card-label">Built-in — Protocol repertoire</div>
+    ${BUILTIN_LIBRARY.map(it=>row(it,false)).join('')}
+    <div class="card-label" style="margin-top:12px">Your items (${user.length})</div>
+    ${user.map(it=>row(it,true)).join('')||'<div style="font-size:.75rem;color:var(--muted);padding:2px 0">none yet — add below</div>'}
+    <div class="card-label" style="margin-top:14px">Add new</div>
+    <input id="lib-name" placeholder="name (optional — taken from PGN headers)"
+      style="width:100%;margin:4px 0;padding:7px 10px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:.8rem;outline:none">
+    <div class="set-row" style="margin:2px 0 6px">${catBtn('opening')}${catBtn('game')}${catBtn('endgame')}</div>
+    <textarea id="lib-pgn" rows="4" placeholder="paste PGN or moves… e.g. 1.e4 e5 2.Nf3 Nc6 — or a [FEN ...] position"
+      style="width:100%;padding:7px 10px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:monospace;font-size:.76rem;outline:none;resize:vertical"></textarea>
+    <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+      <button class="abtn accent" id="lib-add" style="font-size:.78rem;padding:7px 12px">＋ Add from text</button>
+      <button class="abtn neutral" id="lib-file-btn" style="font-size:.78rem;padding:7px 12px">📂 Load .pgn file</button>
+      <input type="file" id="lib-file" accept=".pgn,.txt" style="display:none">
+    </div>
+  </div>`;
+
+  a.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{ libCat=b.dataset.cat; renderLibrary(); }));
+  a.querySelectorAll('[data-sprint]').forEach(b=>b.addEventListener('click',()=>{
+    sprintPickId=b.dataset.sprint; setMode('spatial-sprints');
+  }));
+  a.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+    saveLibrary(loadLibrary().filter(x=>x.id!==b.dataset.del));
+    renderLibrary('Deleted.');
+  }));
+  a.querySelector('#lib-add').addEventListener('click',()=>{
+    const text=a.querySelector('#lib-pgn').value.trim();
+    if(!text){ renderLibrary('Nothing to add — paste moves first.',true); return; }
+    const nameIn=a.querySelector('#lib-name').value.trim();
+    addLibraryText(text,nameIn);
+  });
+  a.querySelector('#lib-file-btn').addEventListener('click',()=>a.querySelector('#lib-file').click());
+  a.querySelector('#lib-file').addEventListener('change',e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>addLibraryText(String(reader.result),'');
+    reader.readAsText(file);
+  });
+}
+
+function addLibraryText(text,nameIn){
+  const games=splitPGNGames(text);
+  const user=loadLibrary();
+  let added=0; const errors=[];
+  games.forEach((g,i)=>{
+    try{
+      const parsed=parseGame(g);
+      const name=(games.length===1&&nameIn)?nameIn:(pgnDefaultName(g)+(games.length>1&&pgnDefaultName(g)==='Untitled'?' #'+(i+1):''));
+      user.push({id:'u'+Date.now()+'-'+i, name, cat:libCat, plies:parsed.steps.length, pgn:g});
+      added++;
+    }catch(err){ errors.push('game '+(i+1)+': '+err.message); }
+  });
+  saveLibrary(user);
+  const msg=added+' added'+(errors.length?' · '+errors.length+' failed — '+escapeHtml(errors[0]):'');
+  renderLibrary(msg,!added);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: SPATIAL SPRINTS 🏃  (mental replay of real lines)
+// ════════════════════════════════════════════════════
+let replayToken=0;
+
+function modeSprints(){
+  setInfo(`<strong>Spatial Sprints</strong><br><br>
+    The daily drill from the protocol: play through a real line <em>mentally</em> — board covered — then answer questions about the final position.<br><br>
+    You will find the pieces by <em>logic</em> (pawn structure, where pieces belong), not raw memory. That is the point.<br><br>
+    <strong>Openings</strong>: the whole line. <strong>Games</strong>: first N plies, N grows with streak. <strong>Endgames</strong>: real-position flash study.<br><br>
+    Do your repertoire lines every morning. Add your own chess.com games in 📚 Library.`);
+  if(sprintPickId){
+    const it=allLibraryItems().find(x=>x.id===sprintPickId);
+    sprintPickId=null;
+    if(it){ startSprint(it); return; }
+  }
+  renderSprintPicker();
+}
+
+function renderSprintPicker(){
+  hideSeq(); hideTextInput(); hideBlind(); clearBoard();
+  setEx('🏃 Spatial Sprints','Pick a line to replay in your head.','Manage entries in 📚 Library');
+  const a=document.getElementById('ans-area');
+  const items=allLibraryItems();
+  const group=cat=>{
+    const list=items.filter(x=>x.cat===cat);
+    if(!list.length) return '';
+    return `<div class="card-label" style="margin-top:8px">${CAT_ICON[cat]} ${cat}s</div>`+
+      list.map(it=>`<button class="sbtn" data-go="${it.id}" style="display:block;width:100%;text-align:left;margin:3px 0">${escapeHtml(it.name)}${it.plies?' <span style="color:var(--muted)">('+it.plies+' plies)</span>':''}</button>`).join('');
+  };
+  a.innerHTML=`<div style="width:100%">
+    <button class="abtn accent" id="sprint-random" style="width:100%">🎲 Random opening</button>
+    ${group('opening')}${group('game')}${group('endgame')}
+  </div>`;
+  a.querySelector('#sprint-random').addEventListener('click',()=>{
+    const ops=items.filter(x=>x.cat==='opening'&&x.plies>0);
+    if(ops.length) startSprint(ops[Math.floor(Math.random()*ops.length)]);
+  });
+  a.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{
+    const it=items.find(x=>x.id===b.dataset.go);
+    if(it) startSprint(it);
+  }));
+}
+
+function startSprint(item){
+  let g;
+  try{ g=parseGame(item.pgn); }
+  catch(e){ showFeedback(false,'Cannot parse "'+escapeHtml(item.name)+'": '+escapeHtml(e.message)); renderSprintPicker(); return; }
+  if(g.steps.length===0){ startPositionStudy(item,g); return; }
+  const total=g.steps.length;
+  const plies=item.cat==='game'?Math.min(10+2*Math.floor(score.streak/2),total):total;
+  quiz={item,g,plies,pos:g.positions[plies-1],qNum:0,q:null,answered:false};
+  clearBoard();
+  document.getElementById('blind-cover').classList.remove('off');
+  showSprintMoves(item,g,plies);
+  sprintReadyUI();
+}
+
+function showSprintMoves(item,g,plies){
+  const el=document.getElementById('seq-display');
+  el.innerHTML=''; el.classList.add('show');
+  const h=document.createElement('div'); h.className='seq-start'; h.textContent=item.name; el.appendChild(h);
+  const lines=[]; let line='';
+  for(let i=0;i<plies;i++){
+    const s=g.steps[i];
+    if(s.color==='w'){ if(line) lines.push(line); line=(Math.floor(i/2)+1)+'. '+s.san; }
+    else { line+=(line?' ':'…')+s.san; lines.push(line); line=''; }
+  }
+  if(line) lines.push(line);
+  lines.forEach(l=>{
+    const d=document.createElement('div');
+    d.style.cssText='color:var(--text);font-family:monospace;font-size:.86rem;padding-left:8px';
+    d.textContent=l; el.appendChild(d);
+  });
+}
+
+function sprintReadyUI(){
+  setEx('🏃 Spatial Sprint',
+    `<strong>${escapeHtml(quiz.item.name)}</strong> — play these ${quiz.plies} plies in your head.`,
+    'Board covered. Press Ready when you can see the final position.');
+  setAns([
+    {label:'✅ Ready — quiz me',cls:'accent', cb:sprintAsk},
+    {label:'▶ Watch replay',   cls:'neutral',cb:sprintReplay},
+    {label:'↩ Pick another',   cls:'neutral',cb:renderSprintPicker},
+  ]);
+}
+
+function sprintReplay(){
+  const token=++replayToken;
+  hideBlind();
+  const frames=[fenToPos(quiz.g.startFen)].concat(quiz.g.positions.slice(0,quiz.plies));
+  let i=0;
+  renderPosition(frames[0]);
+  document.getElementById('ex-hint').textContent='Replay — start position';
+  setAns([{label:'■ Stop replay',cls:'neutral',cb:()=>{replayToken++;}}]);
+  const iv=setInterval(()=>{
+    if(mode!=='spatial-sprints'||token!==replayToken){ clearInterval(iv);
+      if(mode==='spatial-sprints'){ clearBoard(); document.getElementById('blind-cover').classList.remove('off'); sprintReadyUI(); }
+      return; }
+    i++;
+    if(i>=frames.length){
+      clearInterval(iv);
+      setTimeout(()=>{ if(mode==='spatial-sprints'&&token===replayToken){
+        clearBoard(); document.getElementById('blind-cover').classList.remove('off'); sprintReadyUI();
+      }},1200);
+      return;
+    }
+    const step=quiz.g.steps[i-1];
+    renderPosition(frames[i]);
+    highlights[step.from]='sel'; highlights[step.to]='dest';
+    applyHighlights();
+    // re-add pieces on top (applyHighlights cleared them)
+    for(const sq in frames[i].board){ const p=frames[i].board[sq]; pieces[sq]=(p.c==='w'?WSYM:BSYM)[p.t]; }
+    applyHighlights();
+    document.getElementById('ex-hint').textContent='Replay — '+(step.color==='w'?Math.floor((i+1)/2)+'.':'…')+step.san;
+  },850);
+}
+
+function sprintAsk(){
+  hideSeq(); hideTextInput();
+  quiz.qNum++;
+  const pos=quiz.pos;
+  const entries=Object.entries(pos.board);
+  const lbl=p=>`${(p.c==='w'?WSYM:BSYM)[p.t]} ${p.c==='w'?'White':'Black'} ${PIECE_NAMES[T2NAME[p.t]]}`;
+
+  // unique pieces (exactly one of that color+type on the board)
+  const counts={};
+  entries.forEach(([,p])=>{ counts[p.c+p.t]=(counts[p.c+p.t]||0)+1; });
+  const uniques=entries.filter(([,p])=>counts[p.c+p.t]===1);
+
+  if(Math.random()<0.5||!uniques.length){
+    // WHAT is on square X?
+    const pick=entries[Math.floor(Math.random()*entries.length)];
+    const correct=pick[1];
+    const opts=[{c:correct.c,t:correct.t}];
+    const types=Object.keys(T2NAME);
+    while(opts.length<3){
+      const o={c:Math.random()<0.5?'w':'b', t:types[Math.floor(Math.random()*types.length)]};
+      if(!opts.some(x=>x.c===o.c&&x.t===o.t)) opts.push(o);
+    }
+    opts.sort(()=>Math.random()-.5);
+    quiz.q={type:'what',sq:pick[0],p:correct};
+    setEx('🏃 Sprint — question '+quiz.qNum+' / 3',
+      `What is on <strong>${pick[0].toUpperCase()}</strong>?`,'Board stays covered');
+    setAns(opts.map(o=>({label:lbl(o),cls:'neutral',cb:()=>answerSprintWhat(o)})));
+  } else {
+    // WHERE is unique piece Y?
+    const pick=uniques[Math.floor(Math.random()*uniques.length)];
+    quiz.q={type:'where',sq:pick[0],p:pick[1]};
+    setEx('🏃 Sprint — question '+quiz.qNum+' / 3',
+      `Where is the ${lbl(pick[1])}?`,'Type the square — board stays covered');
+    showTextInput({}); focusInput(); setAns([]);
+  }
+}
+
+function answerSprintWhat(o){
+  if(!quiz.q||quiz.q.type!=='what') return;
+  const right=o.c===quiz.q.p.c&&o.t===quiz.q.p.t;
+  const lbl=`${(quiz.q.p.c==='w'?WSYM:BSYM)[quiz.q.p.t]} ${quiz.q.p.c==='w'?'White':'Black'} ${PIECE_NAMES[T2NAME[quiz.q.p.t]]}`;
+  quiz.q=null;
+  recordAnswer(right);
+  showFeedback(right, right?'✓ correct':'✗ it was '+lbl);
+  autoNext(quiz.qNum<3?sprintAsk:sprintFinish);
+}
+
+function submitSprintWhere(input){
+  if(!quiz.q||quiz.q.type!=='where') return;
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  const right=ans===quiz.q.sq;
+  const target=quiz.q.sq.toUpperCase();
+  quiz.q=null;
+  clearInput(); hideTextInput();
+  recordAnswer(right);
+  showFeedback(right, right?'✓ '+target:'✗ it was on '+target);
+  autoNext(quiz.qNum<3?sprintAsk:sprintFinish);
+}
+
+function sprintFinish(){
+  hideBlind();
+  renderPosition(quiz.pos);
+  setEx('🏃 Sprint complete',
+    `<strong>${escapeHtml(quiz.item.name)}</strong> — final position revealed.`,
+    'Check what you had wrong, then go again.');
+  setAns([
+    {label:'🔁 Same line again',cls:'accent', cb:()=>startSprint(quiz.item)},
+    {label:'▶ Watch replay',    cls:'neutral',cb:sprintReplay},
+    {label:'📚 Pick another',   cls:'neutral',cb:renderSprintPicker},
+  ]);
+}
+
+function startPositionStudy(item,g){
+  // FEN-only items (endgames): study the position, then recall it
+  quiz={item,g,plies:0,pos:g.finalPos,qNum:0,q:null};
+  hideBlind();
+  renderPosition(g.finalPos);
+  let countdown=8;
+  setEx('🏁 Position study',
+    `<strong>${escapeHtml(item.name)}</strong> — memorize the position. Pawn structure first, then pieces.`,
+    'Covering in '+countdown+'s…');
+  setAns([{label:'Skip — quiz me now',cls:'accent',cb:()=>{ countdown=0; }}]);
+  const tick=setInterval(()=>{
+    if(mode!=='spatial-sprints'){ clearInterval(tick); return; }
+    countdown--;
+    if(countdown>0){ document.getElementById('ex-hint').textContent='Covering in '+countdown+'s…'; }
+    else{
+      clearInterval(tick);
+      clearBoard();
+      document.getElementById('blind-cover').classList.remove('off');
+      sprintAsk();
+    }
+  },1000);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: KNIGHT TOUR ♞  (hop + color, eyes closed)
+// ════════════════════════════════════════════════════
+function modeKnightTour(){
+  setInfo(`<strong>Knight Tour</strong><br><br>
+    The protocol drill: trace a knight from A to B hop by hop, naming each landing square <em>with its color</em> — board covered the whole way.<br><br>
+    Type each hop as square+color: <kbd>c3d</kbd> (dark) or <kbd>f5l</kbd> (light).<br><br>
+    Any legal route counts — the minimum is shown for reference. A wrong color or an illegal hop ends the run.<br><br>
+    Remember: the knight ALWAYS changes square color on every hop.`);
+  nextKnightTour();
+}
+
+function nextKnightTour(){
+  let sf,sr,ef,er,opt;
+  if(Math.random()<0.15){ sf=0;sr=0;ef=7;er=7; }   // the classic a1 → h8
+  else{
+    do{
+      ({f:sf,r:sr}=randSq()); ({f:ef,r:er}=randSq());
+      const p=knightPath(sf,sr,ef,er);
+      opt=p?p.length-1:0;
+    }while(opt<3||opt>5);
+  }
+  opt=knightPath(sf,sr,ef,er).length-1;
+  quiz={sf,sr,ef,er,opt,cur:{f:sf,r:sr},hops:0,answered:false};
+  clearBoard();
+  document.getElementById('blind-cover').classList.remove('off');
+  highlights[sqName(sf,sr)]='sel';
+  highlights[sqName(ef,er)]='dest';
+  pieces[sqName(sf,sr)]='♞';
+  applyHighlights();
+  setEx('Knight Tour',
+    `♞ <strong>${sqName(sf,sr).toUpperCase()}</strong> → reach <strong>${sqName(ef,er).toUpperCase()}</strong><br>Minimum: ${opt} hops`,
+    'Type each hop WITH its color, e.g. <kbd>c3d</kbd> · knight alternates colors every hop');
+  showTextInput({placeholder:'hop + color, e.g. c3d'}); focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealKnightTour}]);
+}
+
+function submitKnightTour(input){
+  if(quiz.answered) return;
+  const {sq,color}=parseSquareColor(input);
+  if(!isValidSqName(sq)||!color){ shakeInput(); return; }
+  const legal=knightMoves(quiz.cur.f,quiz.cur.r).some(s=>sqName(s.f,s.r)===sq);
+  if(!legal){
+    quiz.answered=true; recordAnswer(false);
+    revealKnightTour(`✗ ${sq.toUpperCase()} is not a knight hop from ${sqName(quiz.cur.f,quiz.cur.r).toUpperCase()}`);
+    return;
+  }
+  const {f,r}=parseSq(sq);
+  const realColor=sqColorName(f,r);
+  if(color!==realColor){
+    quiz.answered=true; recordAnswer(false);
+    revealKnightTour(`✗ ${sq.toUpperCase()} is <strong>${realColor}</strong>, not ${color}`);
+    return;
+  }
+  clearInput();
+  quiz.cur={f,r}; quiz.hops++;
+  if(!highlights[sq]) highlights[sq]='path';
+  applyHighlights();
+  if(f===quiz.ef&&r===quiz.er){
+    quiz.answered=true;
+    recordAnswer(true);
+    hideBlind();
+    showFeedback(true,`✓ Reached in ${quiz.hops} hops${quiz.hops===quiz.opt?' — optimal!':' (minimum '+quiz.opt+')'}`);
+    hideTextInput();
+    autoNext(nextKnightTour);
+  } else {
+    setEx('Knight Tour',
+      `✓ ${sq.toUpperCase()} (${color}) — hop ${quiz.hops}<br>♞ now reach <strong>${sqName(quiz.ef,quiz.er).toUpperCase()}</strong>`,
+      'Next hop + color, e.g. <kbd>c3d</kbd>');
+    focusInput();
+  }
+}
+
+function revealKnightTour(msg){
+  quiz.answered=true; lastRight=false; hideBlind();
+  const path=knightPath(quiz.sf,quiz.sr,quiz.ef,quiz.er);
+  path.forEach((s,i)=>{
+    const k=sqName(s.f,s.r);
+    highlights[k]=i===0?'sel':i===path.length-1?'ok':'path';
+  });
+  pieces[sqName(quiz.sf,quiz.sr)]='♞';
+  applyHighlights(); hideTextInput();
+  const route=path.map(s=>sqName(s.f,s.r).toUpperCase()+' ('+sqColorName(s.f,s.r)[0]+')').join(' → ');
+  showFeedback(false,(msg?msg+'<br>':'')+'Optimal: '+route);
+  autoNext(nextKnightTour);
+}
+
+// ════════════════════════════════════════════════════
+//  MODE: DIAGONAL QUIZ ⤢  (name a diagonal in order)
+// ════════════════════════════════════════════════════
+function modeDiagonals(){
+  setInfo(`<strong>Diagonal Quiz</strong><br><br>
+    A diagonal is named by its two ends. Type every square on it IN ORDER, starting after the first end.<br><br>
+    Self-check: all squares on one diagonal share the same color — if your color formula disagrees mid-diagonal, you slipped.<br><br>
+    Entry mode setting applies: one at a time, or the whole diagonal in one line.`);
+  nextDiagonals();
+}
+
+function nextDiagonals(){
+  let cells=[];
+  do{
+    const {f,r}=randSq();
+    const dir=Math.random()<0.5?[1,1]:[1,-1];
+    let cf=f,cr=r;
+    while(valid(cf-dir[0],cr-dir[1])){ cf-=dir[0]; cr-=dir[1]; }
+    cells=[];
+    while(valid(cf,cr)){ cells.push(sqName(cf,cr)); cf+=dir[0]; cr+=dir[1]; }
+  }while(cells.length<4);
+
+  quiz={cells,idx:1,answered:false};
+  clearBoard();
+  document.getElementById('blind-cover').classList.remove('off');
+  const batch=settings.entry==='batch';
+  const a=cells[0].toUpperCase(), b=cells[cells.length-1].toUpperCase();
+  setEx('Diagonal Quiz',
+    `Diagonal <strong>${a}</strong> → <strong>${b}</strong> (${cells.length} squares, all ${sqColorName(...parseSqArr(cells[0]))})<br>Name them in order, starting AFTER ${a}.`,
+    batch?'Type the remaining '+(cells.length-1)+' squares in one line':'Square 2 of '+cells.length);
+  showTextInput(batch?{batch:true,placeholder:'in order after '+a.toLowerCase()}:{});
+  focusInput();
+  setAns([{label:'Give up',cls:'neutral',cb:revealDiagonals}]);
+}
+
+function submitDiagonals(input){
+  if(quiz.answered) return;
+  if(settings.entry==='batch'){
+    const given=parseSquares(input);
+    if(!given.length){ shakeInput(); return; }
+    quiz.answered=true;
+    const exp=quiz.cells.slice(1);
+    let ok=given.length===exp.length;
+    if(ok) for(let i=0;i<exp.length;i++){ if(given[i]!==exp[i]){ ok=false; break; } }
+    recordAnswer(ok);
+    quiz.idx=ok?quiz.cells.length:1;
+    if(ok){
+      hideBlind();
+      quiz.cells.forEach(sq=>{ highlights[sq]='ok'; });
+      applyHighlights();
+      showFeedback(true,'✓ Whole diagonal correct!');
+      hideTextInput();
+      autoNext(nextDiagonals);
+    } else {
+      revealDiagonals('✗ Diagonal: '+quiz.cells.map(s=>s.toUpperCase()).join(' → '));
+    }
+    return;
+  }
+  const ans=normSq(input);
+  if(!isValidSqName(ans)){ shakeInput(); return; }
+  clearInput();
+  const expected=quiz.cells[quiz.idx];
+  if(ans!==expected){
+    quiz.answered=true; recordAnswer(false);
+    revealDiagonals(`✗ Expected ${expected.toUpperCase()}, got ${ans.toUpperCase()}`);
+    return;
+  }
+  quiz.idx++;
+  if(quiz.idx>=quiz.cells.length){
+    quiz.answered=true; recordAnswer(true);
+    hideBlind();
+    quiz.cells.forEach(sq=>{ highlights[sq]='ok'; });
+    applyHighlights();
+    showFeedback(true,'✓ Whole diagonal correct!');
+    hideTextInput();
+    autoNext(nextDiagonals);
+  } else {
+    setEx('Diagonal Quiz',
+      `✓ ${expected.toUpperCase()} — diagonal ${quiz.cells[0].toUpperCase()} → ${quiz.cells[quiz.cells.length-1].toUpperCase()}`,
+      `Square ${quiz.idx+1} of ${quiz.cells.length}`);
+    focusInput();
+  }
+}
+
+function revealDiagonals(msg){
+  quiz.answered=true; lastRight=false; hideBlind();
+  quiz.cells.forEach((sq,i)=>{ highlights[sq]=i<quiz.idx?'ok':'dest'; });
+  applyHighlights(); hideTextInput();
+  if(msg) showFeedback(false,msg);
+  autoNext(nextDiagonals);
+}
+
+// ════════════════════════════════════════════════════
+//  MAIN CLICK HANDLER
+// ════════════════════════════════════════════════════
+function onSquareClick(f,r){
+  switch(mode){
+    case 'explore':       exploreSquare(f,r); break;
+    case 'bishop-diag':   showBishopDiag(f,r); break;
+    case 'rook-vision':   showRookVision(f,r); break;
+    case 'knight-web': {
+      const isKm=(quiz.km||[]).some(s=>s.f===f&&s.r===r);
+      if(isKm){ quiz.chain=[...(quiz.chain||[]),{f:quiz.f,r:quiz.r}]; showKnightWeb(f,r); }
+      else    { quiz.chain=[]; showKnightWeb(f,r); }
+      break;
+    }
+    case 'coord-drill': clickCoordDrill(f,r); break;
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  TEXT INPUT HANDLER
+// ════════════════════════════════════════════════════
+function onTextSubmit(){
+  const val=document.getElementById('sq-input').value.trim();
+  switch(mode){
+    case 'square-namer':    submitSquareNamer(val);   break;
+    case 'piece-tracker':   submitPieceTracker(val);  break;
+    case 'destinations':    submitDestination(val);   break;
+    case 'neighbor-quiz':   submitNeighborQuiz(val);  break;
+    case 'knight-path':     submitKnightPath(val);    break;
+    case 'shortest-path':   submitShortestPath(val);  break;
+    case 'knight-tour':     submitKnightTour(val);    break;
+    case 'diagonals':       submitDiagonals(val);     break;
+    case 'spatial-sprints': submitSprintWhere(val);   break;
+    case 'two-piece':         submitTwoPiece(val);       break;
+    case 'position-flash':    submitPositionFlash(val);  break;
+    case 'path-tracer':       submitPathTracer(val);     break;
+    case 'blind-destinations':submitBlindDest(val);      break;
+    case 'dest-colors':       submitDestColors(val);     break;
+    case 'two-piece-path':    submitTwoPiecePath(val);   break;
+    case 'path-colors':       submitPathColors(val);     break;
+    case 'colored-dest':      submitColoredDest(val);    break;
+    case 'step-tracer':       submitStepTracer(val);     break;
+  }
+}
+
+document.getElementById('sq-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    e.stopPropagation();   // never let the same keystroke reach the document handler
+    if(pendingNext){ continueNext(); return; }
+    onTextSubmit();
+  }
+});
+document.getElementById('submit-btn').addEventListener('click',onTextSubmit);
+
+// ════════════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ════════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  const inp=document.getElementById('sq-input');
+  if(document.activeElement===inp) return; // let input handle typing (incl. its own Enter-continue)
+  if(pendingNext&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); continueNext(); return; }
+
+  switch(e.key.toLowerCase()){
+    // color quiz / knight color shortcuts
+    case 'l':
+      if(mode==='color-quiz')                              answerColor('light');
+      if(mode==='knight-color')                            answerKnightColor('light');
+      if(mode==='colored-dest'&&quiz.pendingSq) { e.preventDefault(); submitColoredDest('l'); }
+      if(mode==='path-colors'&&quiz.pendingSq)  { e.preventDefault(); submitPathColors('l'); }
+      break;
+    case 'd':
+      if(mode==='color-quiz')    answerColor('dark');
+      if(mode==='knight-color')  answerKnightColor('dark');
+      if(mode==='colored-dest'&&quiz.pendingSq) { e.preventDefault(); submitColoredDest('d'); }
+      if(mode==='path-colors'&&quiz.pendingSq)  { e.preventDefault(); submitPathColors('d'); }
+      break;
+    case 'y':
+      if(mode==='color-pair')    answerColorPair(true);
+      if(mode==='reachability')  answerReachability(true);
+      break;
+    case 'n':
+      if(mode==='color-pair')    answerColorPair(false);
+      if(mode==='reachability')  answerReachability(false);
+      if(mode==='explore'&&quiz.lastF!==undefined){
+        clearBoard();
+        const f=quiz.lastF,r=quiz.lastR;
+        highlights[sqName(f,r)]='sel'; pieces[sqName(f,r)]='♞';
+        knightMoves(f,r).forEach(s=>{highlights[sqName(s.f,s.r)]='dot';});
+        applyHighlights();
+      }
+      break;
+
+    // explore overlays
+    case 'k':
+      if(mode==='explore'&&quiz.lastF!==undefined){
+        clearBoard();
+        const f=quiz.lastF,r=quiz.lastR;
+        highlights[sqName(f,r)]='sel'; pieces[sqName(f,r)]='♞';
+        knightMoves(f,r).forEach(s=>{highlights[sqName(s.f,s.r)]='dot';});
+        applyHighlights();
+      }
+      break;
+    case 'b': if(mode==='explore'&&quiz.lastF!==undefined) showBishopDiag(quiz.lastF,quiz.lastR); break;
+    case 'r': if(mode==='explore'&&quiz.lastF!==undefined) showRookVision(quiz.lastF,quiz.lastR); break;
+    case 's':
+      if(mode==='explore'&&quiz.lastF!==undefined){
+        clearBoard();
+        const f=quiz.lastF,r=quiz.lastR,col=sqColor(f,r);
+        highlights[sqName(f,r)]='sel';
+        sameColorNeighbors(f,r).forEach(s=>{highlights[sqName(s.f,s.r)]='same-color';});
+        applyHighlights();
+        setEx(sqName(f,r).toUpperCase()+' same-color',`Same-color (${col}) neighbors: <strong>${sameColorNeighbors(f,r).length}</strong>`,'');
+      }
+      break;
+
+    case 'escape': clearBoard(); break;
+
+    // mode shortcuts
+    case '1': setMode('explore');       break;
+    case '2': setMode('square-namer');  break;
+    case '3': setMode('color-quiz');    break;
+    case '4': setMode('color-pair');    break;
+    case '5': setMode('neighbor-quiz'); break;
+    case '6': setMode('knight-color');  break;
+    case '7': setMode('piece-tracker'); break;
+    case '8': setMode('destinations');  break;
+    case '9': setMode('knight-path');   break;
+  }
+});
+
+// Peek button
+document.getElementById('peek-btn').addEventListener('click',()=>{
+  quiz.peeked=true;
+  score.hints++;
+  updateScoreDisplay();
+  // Temporarily hide the cover for 2s
+  document.getElementById('blind-cover').classList.add('off');
+  setTimeout(()=>{
+    if(blindMode&&!quiz.answered) document.getElementById('blind-cover').classList.remove('off');
+  },2000);
+});
+
+// Blind toggle
+document.getElementById('blind-toggle').addEventListener('click',()=>{
+  blindMode=!blindMode;
+  const btn=document.getElementById('blind-toggle');
+  btn.textContent=blindMode?'🙈 Blind ON':'🙈 Blind OFF';
+  btn.classList.toggle('on',blindMode);
+  if(blindMode) document.getElementById('blind-cover').classList.remove('off');
+  else hideBlind();
+});
+
+// Flip
+document.getElementById('flip-btn').addEventListener('click',()=>{ flipped=!flipped; buildBoard(); });
+
+// ════════════════════════════════════════════════════
+//  UI HELPERS
+// ════════════════════════════════════════════════════
+function setEx(title,prompt,hint=''){
+  document.getElementById('ex-title').textContent=title;
+  document.getElementById('ex-prompt').innerHTML=prompt;
+  document.getElementById('ex-hint').innerHTML=hint;
+}
+function setInfo(html){ document.getElementById('info-box').innerHTML=html; }
+function setAns(btns){
+  const c=document.getElementById('ans-area'); c.innerHTML='';
+  btns.forEach(({label,cls,cb})=>{
+    const b=document.createElement('button');
+    b.className='abtn '+cls; b.innerHTML=label;
+    b.addEventListener('click',cb); c.appendChild(b);
+  });
+}
+function showFeedback(ok,msg){
+  const el=document.getElementById('feedback');
+  el.innerHTML=msg; el.className=ok?'ok':'err';
+}
+function hideFeedback(){
+  const el=document.getElementById('feedback');
+  el.className=''; el.textContent='';
+}
+function recordAnswer(right){
+  score.total++;
+  lastRight=right;
+  if(right){score.correct++;score.streak++;if(score.streak>score.best)score.best=score.streak;}
+  else{score.streak=0;}
+  updateScoreDisplay();
+}
+function continueNext(){
+  if(!pendingNext) return;
+  const fn=pendingNext; pendingNext=null;
+  hideFeedback(); fn();
+}
+function autoNext(fn, delay=1500){
+  setAns([]);
+  if(settings.pace==='instant'){
+    if(lastRight){
+      // correct → straight to the next question, zero wait
+      hideFeedback(); fn();
+    } else {
+      // wrong → keep the reveal on screen; continue when the user is ready
+      pendingNext=fn;
+      setAns([{label:'Continue ↵',cls:'accent',cb:continueNext}]);
+    }
+  } else {
+    setTimeout(()=>{ hideFeedback(); fn(); }, delay);
+  }
+}
+function updateScoreDisplay(){
+  document.getElementById('s-streak').textContent=score.streak;
+  document.getElementById('s-correct').textContent=score.correct;
+  document.getElementById('s-total').textContent=score.total;
+  document.getElementById('s-hints').textContent=score.hints;
+}
+function showTextInput(opts={}){
+  document.getElementById('text-row').classList.remove('hidden');
+  const inp=document.getElementById('sq-input');
+  if(opts.batch){
+    inp.removeAttribute('maxlength');
+    inp.placeholder=opts.placeholder||'all squares: c3 e3 d2 …';
+  } else {
+    inp.setAttribute('maxlength', opts.maxlength||3);
+    inp.placeholder=opts.placeholder||'type square (e.g. e4)';
+  }
+}
+function hideTextInput(){
+  document.getElementById('text-row').classList.add('hidden');
+  document.getElementById('sq-input').value='';
+}
+function clearInput(){ document.getElementById('sq-input').value=''; }
+function focusInput(){ setTimeout(()=>document.getElementById('sq-input').focus(),50); }
+function shakeInput(){
+  const el=document.getElementById('sq-input');
+  el.style.borderColor='var(--red)';
+  setTimeout(()=>{el.style.borderColor='';},600);
+}
+function showSeq(piece,path){
+  const el=document.getElementById('seq-display');
+  el.innerHTML=''; el.classList.add('show');
+  const s=document.createElement('div'); s.className='seq-start';
+  s.textContent=`${PIECE_NAMES[piece]} on ${sqName(path[0].f,path[0].r).toUpperCase()}`;
+  el.appendChild(s);
+  for(let i=1;i<path.length;i++){
+    const d=document.createElement('div'); d.className='seq-move';
+    d.textContent=i<path.length-1?sqName(path[i].f,path[i].r).toUpperCase():'?';
+    el.appendChild(d);
+  }
+}
+function hideSeq(){ document.getElementById('seq-display').classList.remove('show'); }
+function showProg(found,total){
+  const row=document.getElementById('prog-row');
+  row.classList.add('show');
+  document.getElementById('prog-label').textContent=`${found}/${total}`;
+  document.getElementById('prog-fill').style.width=`${total?found/total*100:0}%`;
+}
+function hideProg(){ document.getElementById('prog-row').classList.remove('show'); }
+
+// ════════════════════════════════════════════════════
+//  SETTINGS PANEL
+// ════════════════════════════════════════════════════
+function renderSettingsPanel(){
+  const p=document.getElementById('settings-panel');
+  const b=(on,attr,label)=>`<button class="sbtn${on?' on':''}" ${attr}>${label}</button>`;
+  p.innerHTML=`
+    <div class="card-label">⚙ Settings</div>
+    <div class="set-row"><span class="set-lbl">Pace — after an answer</span>
+      ${b(settings.pace==='instant','data-pace="instant"','⚡ Instant')}
+      ${b(settings.pace==='auto','data-pace="auto"','🐢 Auto-advance 1.5s')}
+    </div>
+    <div class="set-row"><span class="set-lbl">Multi-square answers</span>
+      ${b(settings.entry==='single','data-entry="single"','One at a time')}
+      ${b(settings.entry==='batch','data-entry="batch"','All at once')}
+    </div>
+    <div class="set-row"><span class="set-lbl">Session timer</span>
+      ${b(settings.timerMin===0,'data-timer="0"','Off')}
+      ${b(settings.timerMin===1,'data-timer="1"','1 min')}
+      ${b(settings.timerMin===3,'data-timer="3"','3 min')}
+      ${b(settings.timerMin===5,'data-timer="5"','5 min')}
+      ${b(settings.timerMin===10,'data-timer="10"','10 min')}
+      ${settings.timerMin>0?`<button class="sbtn" id="session-start" style="border-color:var(--green);color:var(--green)">▶ Start ${settings.timerMin} min</button>`:''}
+    </div>
+    <div style="font-size:.68rem;color:var(--muted);margin-top:10px;line-height:1.55">
+      <strong>⚡ Instant:</strong> correct → next question immediately · wrong → the reveal stays until you press <kbd>Enter</kbd>.<br>
+      <strong>All at once:</strong> type every square in one line, space-separated — <kbd>c3 e3 d2</kbd>, with colors <kbd>e4d f5l</kbd>. Applies from the next question.
+    </div>`;
+  p.querySelectorAll('[data-pace]').forEach(x=>x.addEventListener('click',()=>{
+    settings.pace=x.dataset.pace; saveSettings(); renderSettingsPanel();
+  }));
+  p.querySelectorAll('[data-entry]').forEach(x=>x.addEventListener('click',()=>{
+    settings.entry=x.dataset.entry; saveSettings(); renderSettingsPanel();
+    if(['destinations','blind-destinations','colored-dest','path-tracer','path-colors','shortest-path','diagonals'].includes(mode)) setMode(mode);
+  }));
+  p.querySelectorAll('[data-timer]').forEach(x=>x.addEventListener('click',()=>{
+    settings.timerMin=+x.dataset.timer; saveSettings(); renderSettingsPanel();
+  }));
+  const ss=p.querySelector('#session-start');
+  if(ss) ss.addEventListener('click',startSession);
+}
+
+document.getElementById('settings-btn').addEventListener('click',()=>{
+  const p=document.getElementById('settings-panel');
+  p.classList.toggle('hidden');
+  if(!p.classList.contains('hidden')) renderSettingsPanel();
+});
+
+// ════════════════════════════════════════════════════
+//  SESSION TIMER
+// ════════════════════════════════════════════════════
+function fmtClock(s){ return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+
+function startSession(){
+  if(sessionTimer){ clearInterval(sessionTimer); }
+  score={correct:0,total:0,streak:0,hints:0,best:0};
+  updateScoreDisplay();
+  sessionLeft=settings.timerMin*60;
+  const chip=document.getElementById('session-chip');
+  chip.classList.remove('hidden');
+  chip.textContent='⏱ '+fmtClock(sessionLeft);
+  chip.style.borderColor='var(--accent)'; chip.style.color='var(--accent)';
+  document.getElementById('settings-panel').classList.add('hidden');
+  sessionTimer=setInterval(()=>{
+    sessionLeft--;
+    chip.textContent='⏱ '+fmtClock(Math.max(sessionLeft,0));
+    if(sessionLeft<=10){ chip.style.borderColor='var(--red)'; chip.style.color='var(--red)'; }
+    if(sessionLeft<=0) endSession();
+  },1000);
+}
+
+function endSession(){
+  if(sessionTimer){ clearInterval(sessionTimer); sessionTimer=null; }
+  document.getElementById('session-chip').classList.add('hidden');
+  const acc=score.total?Math.round(score.correct/score.total*100):0;
+  document.getElementById('sum-score').textContent=`${score.correct} / ${score.total}`;
+  document.getElementById('sum-detail').innerHTML=
+    `${acc}% accuracy · best streak <strong style="color:var(--accent)">${score.best}</strong> · ${score.hints} hint${score.hints!==1?'s':''}`;
+  document.getElementById('session-overlay').classList.remove('hidden');
+}
+
+document.getElementById('session-chip').addEventListener('click',endSession);
+document.getElementById('sum-again').addEventListener('click',()=>{
+  document.getElementById('session-overlay').classList.add('hidden');
+  startSession();
+});
+document.getElementById('sum-close').addEventListener('click',()=>{
+  document.getElementById('session-overlay').classList.add('hidden');
+});
+
+// ════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════
+buildBoard();
+buildModeTabs();
+modeExplore();
+</script>
+</body>
+</html>

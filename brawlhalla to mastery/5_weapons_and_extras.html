@@ -1,0 +1,673 @@
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+*{box-sizing:border-box;margin:0;padding:0}
+.search-wrap{position:relative;margin-bottom:1.25rem}
+#searchInput{width:100%;padding:9px 12px 9px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg,12px);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;outline:none}
+#searchInput:focus{border-color:var(--color-border-primary)}
+.cat-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cat-btn{padding:5px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;font-size:12px;color:var(--color-text-secondary);white-space:nowrap;transition:all 0.15s}
+.cat-btn:hover:not(.active){background:var(--color-background-secondary)}
+.cat-btn.active{font-weight:500;border-color:transparent}
+.c-wpn.active{background:#EEEDFE;color:#3C3489}
+.c-tech.active{background:#E1F5EE;color:#085041}
+.c-legend.active{background:#FAEEDA;color:#633806}
+.c-online.active{background:#FAECE7;color:#993C1D}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-text-tertiary);margin:1.25rem 0 0.5rem}
+.term-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md,8px);margin-bottom:6px;overflow:hidden;cursor:pointer;transition:border-color 0.12s}
+.term-row:hover{border-color:var(--color-border-secondary)}
+.term-row.open{border-color:var(--color-border-primary)}
+.term-head{display:flex;align-items:center;gap:10px;padding:9px 12px}
+.abbr{font-size:11px;font-weight:500;padding:2px 7px;border-radius:8px;white-space:nowrap;min-width:44px;text-align:center;flex-shrink:0}
+.term-name{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1;min-width:0}
+.term-short{font-size:12px;color:var(--color-text-tertiary);flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chevron{font-size:14px;color:var(--color-text-tertiary);transition:transform 0.18s;flex-shrink:0}
+.term-row.open .chevron{transform:rotate(180deg)}
+.term-body{display:none;padding:10px 12px 12px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.term-body.open{display:block}
+.def{font-size:13px;color:var(--color-text-secondary);line-height:1.65;white-space:pre-line}
+.ex{margin-top:8px;font-size:12px;color:var(--color-text-secondary);border-left:2px solid var(--color-border-info);padding-left:10px;line-height:1.6}
+.ex strong{color:var(--color-text-info);font-weight:500}
+.warn{margin-top:8px;font-size:12px;border-left:2px solid var(--color-border-warning);padding:6px 10px;background:var(--color-background-warning);color:var(--color-text-warning);border-radius:0 var(--border-radius-md,8px) var(--border-radius-md,8px) 0;line-height:1.6}
+.warn strong{font-weight:500}
+.combo-chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.hit{display:inline-block;font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;background:#EEEDFE;color:#3C3489}
+.arr{font-size:13px;color:var(--color-text-tertiary)}
+.pct-label{font-size:11px;color:var(--color-text-tertiary);margin-top:3px;margin-bottom:8px}
+.chain-group{margin-top:10px}
+.chain-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em}
+.wpn-tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:#EEEDFE;color:#3C3489;font-weight:500;margin-bottom:8px}
+.no-results{padding:2rem;text-align:center;color:var(--color-text-tertiary);font-size:14px}
+@media(max-width:500px){.term-short{display:none}}
+</style>
+
+<h2 class="sr-only">Brawlhalla guide 5 - all weapon combos, missing techniques, legend selection, online play</h2>
+
+<div style="padding:1rem 0">
+<div class="search-wrap"><input id="searchInput" placeholder="Search weapons, techniques, concepts..." oninput="render()"></div>
+<div class="cat-nav" id="catNav"></div>
+<div id="content"></div>
+</div>
+
+<script>
+const CATS=[
+  {id:'all',label:'All',cls:''},
+  {id:'wpn',label:'Weapon combos',cls:'c-wpn'},
+  {id:'tech',label:'Missing techniques',cls:'c-tech'},
+  {id:'legend',label:'Legend selection',cls:'c-legend'},
+  {id:'online',label:'Online play',cls:'c-online'},
+];
+
+const COLORS={
+  wpn:'background:#EEEDFE;color:#3C3489',
+  tech:'background:#E1F5EE;color:#085041',
+  legend:'background:#FAEEDA;color:#633806',
+  online:'background:#FAECE7;color:#993C1D',
+};
+
+const CAT_NAMES={wpn:'Weapon combos',tech:'Missing techniques',legend:'Legend selection',online:'Online play'};
+const CAT_ORDER=['wpn','tech','legend','online'];
+
+function chain(hits){
+  return '<div class="combo-chain">'+hits.map((h,i)=>
+    `<span class="hit">${h}</span>${i<hits.length-1?'<span class="arr">&#8594;</span>':''}`
+  ).join('')+'</div>';
+}
+
+function chains(groups){
+  return groups.map(g=>`
+    <div class="chain-group">
+      <div class="chain-label">${g.label}</div>
+      ${chain(g.hits)}
+      <div class="pct-label">${g.pct}</div>
+    </div>`).join('');
+}
+
+const TERMS=[
+
+// WEAPON COMBOS
+{cat:'wpn',abbr:'Spear',name:'Spear combos',short:'Long range poke weapon with chase potential',
+def:`Spear is a long-range weapon with fast, sweeping attacks. Its strength is poking safely from distance in neutral. Its DL has great hitstun for combo starting. SAir has large horizontal range, excellent for chasing and edgeguarding.
+
+Spear gameplan: control mid-range with SL and NL pokes. Land a DL as combo starter. Convert into SAir chains. At high percent confirm into SSig for horizontal KO.
+
+LOW PERCENT (0-50%):
+DL -> NAir (core true combo)
+DL -> NAir -> NAir (extra hit)
+DL -> NAir -> SAir (horizontal ender)
+SL -> NAir (side light into aerial)
+NL -> DL (ground chain at very low percent)
+
+MID PERCENT (50-80%):
+DL -> NAir -> GP (ground pound ender)
+SAir -> SAir (chase aerial chain)
+NAir -> SL (land from aerial into side light)
+
+HIGH PERCENT (80%+):
+DL -> SSig (most reliable kill confirm)
+SL -> SSig (faster setup)
+SAir -> SSig (aerial confirm)
+
+EDGEGUARD:
+SAir offstage (wide hitbox covers many recovery angles)
+DAir spike (hit downward at recovering opponent)
+NL at ledge (poke at recovering opponent from safe position)`,
+groups:[
+  {label:'Core (0-50%)',hits:['DL','NAir','SAir'],pct:'0-50% true combo'},
+  {label:'Mid route',hits:['SAir','SAir'],pct:'40-80% aerial chain'},
+  {label:'Kill confirm',hits:['DL','SSig'],pct:'80%+ kill confirm'},
+  {label:'Edgeguard',hits:['SAir','DAir'],pct:'Offstage - spike'},
+],
+ex:`Spear neutral: walk to mid-range, throw NL as a poke. Opponent gets hit or has to dodge. If they dodge, you see the cooldown and dash in with DL into the combo. Spear wins neutral by making the opponent respect the range, then converting when they flinch.`,
+warn:`Spear is often misplayed as a run-in weapon. It is not. Stay at range, poke, and punish approaches. Running straight in with spear throws away its biggest advantage.`},
+
+{cat:'wpn',abbr:'Axe',name:'Axe combos',short:'Heavy knockback weapon, vertical KO threat',
+def:`Axe is a power weapon with massive knockback on its sigs, especially upward. Its main strength is vertical KO threat - the NSig and DSig send opponents sharply upward, KOing earlier than most weapons vertically. Ground pound from axe is devastating.
+
+Axe gameplan: build damage with DL combos at low percent. At high percent, one confirmed hit into NSig or DSig ends the stock.
+
+LOW PERCENT (0-50%):
+DL -> NAir (universal starter)
+DL -> NAir -> NAir (damage build)
+NL -> DL -> NAir (open with neutral light)
+DL -> NL (very low percent only)
+
+MID PERCENT (50-80%):
+DL -> NAir -> GP (ground pound strong ender)
+DL -> SAir (horizontal send)
+NAir -> DL (aerial into ground continue)
+
+HIGH PERCENT (80%+):
+DL -> NSig (vertical KO, axe specialty)
+DL -> DSig (downward spike variant)
+NL -> NSig (faster confirm into vertical sig)
+GP -> confirm (ground pound at mid-height into follow-up)
+
+EDGEGUARD:
+GP offstage (ground pound downward on recovering opponent)
+DAir spike
+NSig if they recover high (vertical sig sends them up into top blast zone)`,
+groups:[
+  {label:'Core (0-50%)',hits:['DL','NAir','NAir'],pct:'0-50% true combo'},
+  {label:'Power route',hits:['DL','NAir','GP'],pct:'40-70% string'},
+  {label:'Kill confirm',hits:['DL','NSig'],pct:'80%+ vertical KO'},
+  {label:'Edgeguard',hits:['GP','DAir'],pct:'Offstage'},
+],
+ex:`Axe at 90% is a stock threat on every single interaction. Your opponent knows one confirmed DL -> NSig ends their stock. That threat alone changes how they play - they play more defensively, which opens up other options for you.`,
+warn:`Axe sigs are slow. Never throw NSig or DSig raw in neutral without a confirm. The startup is long enough that a patient opponent will always dodge and punish. Confirm first, always.`},
+
+{cat:'wpn',abbr:'Gaunts',name:'Gauntlets combos',short:'Fastest weapon, longest true combo chains',
+def:`Gauntlets are the fastest weapon in the game. High dexterity legends with gauntlets have the longest true combo strings - you can chain 5-6 hits into a true combo at low percent. Short range means you need to get inside the opponent but once you are in, the combo potential is unmatched.
+
+Gauntlets gameplan: get inside range (this is the challenge), land a DL or SL, chain as many hits as possible, end with NSig or GP.
+
+LOW PERCENT (0-40%):
+DL -> NAir -> NAir -> NAir (triple aerial chain, true combo)
+SL -> SL -> NAir (side light chain into aerial)
+DL -> NAir -> NAir -> GP (ground pound finisher)
+NL -> DL -> NAir -> NAir (4-hit from neutral light)
+
+MID PERCENT (40-70%):
+DL -> NAir -> NAir -> SAir (horizontal send)
+SL -> NAir -> NAir (two aerials after side light)
+NAir -> SL -> NAir (aerial ground aerial)
+
+HIGH PERCENT (70%+):
+DL -> NSig (confirm into sig, gauntlets NSig has good KO power)
+SL -> SSig (horizontal confirm)
+NAir -> SSig (aerial into sig)
+
+EDGEGUARD:
+NAir chains offstage (follow opponent off stage with aerial chain)
+DAir spike
+GP offstage (if opponent is directly below)`,
+groups:[
+  {label:'Core (0-40%)',hits:['DL','NAir','NAir','NAir'],pct:'0-40% true combo chain'},
+  {label:'Mid route',hits:['DL','NAir','NAir','SAir'],pct:'40-70% string'},
+  {label:'Kill confirm',hits:['SL','SSig'],pct:'70%+ kill confirm'},
+],
+ex:`Gauntlets at low percent are oppressive if you get the first hit. A triple NAir chain does 50+ damage and puts the opponent in a terrible position. The challenge is landing the first DL - gauntlets range is short so you need good approach mixups.`,
+warn:`Short range is a real disadvantage. Against bow or spear players who can poke from distance, getting inside is the whole problem. Use wavedash approach and empty approaches to close distance without getting poked.`},
+
+{cat:'wpn',abbr:'Scythe',name:'Scythe combos',short:'Arcing hitboxes, strong aerial coverage',
+def:`Scythe has unique arcing hitbox shapes - the attacks swing in wide curves rather than straight lines. This gives scythe unusual coverage above and around the legend. SAir in particular has a large arcing hitbox that covers recovery angles very well. Strong aerial-to-aerial combat.
+
+Scythe gameplan: use the arcing hitboxes to cover angles opponents do not expect. SAir is your best neutral tool aerially. DL starts combos. SSig is your horizontal KO option.
+
+LOW PERCENT (0-50%):
+DL -> NAir (standard starter)
+SL -> NAir (side light into aerial)
+NAir -> NAir (aerial chain, arcing hitboxes connect well)
+DL -> NAir -> SAir (SAir arcing ender)
+
+MID PERCENT (50-80%):
+DL -> SAir (direct into SAir)
+SAir -> SAir (aerial chain)
+NAir -> SL (land into side light continue)
+
+HIGH PERCENT (80%+):
+DL -> SSig (horizontal KO)
+SAir -> SSig (aerial confirm into sig)
+SL -> SSig (ground confirm)
+
+EDGEGUARD:
+SAir offstage (arcing hitbox covers wide recovery angle)
+DAir (scythe DAir has strong downward coverage)
+NAir at ledge (covers snap and high recovery)`,
+groups:[
+  {label:'Core (0-50%)',hits:['DL','NAir','SAir'],pct:'0-50% true or string'},
+  {label:'Aerial chain',hits:['SAir','SAir'],pct:'40-80% aerial chase'},
+  {label:'Kill confirm',hits:['SAir','SSig'],pct:'80%+ kill confirm'},
+  {label:'Edgeguard',hits:['SAir','DAir'],pct:'Offstage coverage'},
+],
+ex:`Scythe edgeguarding is its best feature. The SAir arcing hitbox can cover an opponent recovering from below OR from the side at the same time. You do not need to hard-read their recovery angle - the hitbox covers both. Position at ledge, throw SAir, and let the arc do the work.`,
+warn:`Scythe hitboxes look wider than they are. New scythe players often throw moves thinking the arc will reach and are surprised when it does not. Learn the exact arc shape of each move in training mode before relying on them in ranked.`},
+
+{cat:'wpn',abbr:'Bow',name:'Bow combos',short:'Projectile weapon - different neutral game entirely',
+def:`Bow completely changes the neutral game. NL fires an arrow forward as a projectile - this is a neutral poke that reaches across the stage without you moving. Opponents must approach you or dodge the arrow, both of which create openings.
+
+Bow gameplan: control space with NL arrow. Force the opponent to come to you or dodge. When they commit to an approach, DL or SL on their landing. At high percent confirm into DSig or SSig.
+
+PROJECTILE (unique to bow):
+NL on the ground: fires arrow forward at mid-range
+NL in the air: fires arrow at a downward angle
+These are your neutral tools - opponents cannot ignore them
+
+LOW PERCENT (0-50%):
+DL -> NAir (standard starter, works on bow too)
+SL -> NAir (side light into aerial)
+NL (arrow) -> dash in -> DL (force dodge with arrow, punish dodge landing)
+
+MID PERCENT (50-80%):
+DL -> NAir -> SAir
+NAir -> SAir (aerial chain)
+Arrow -> DL (opponent dodged arrow, you read the dodge landing)
+
+HIGH PERCENT (80%+):
+DL -> DSig (down sig has strong upward-diagonal KO power)
+SL -> SSig (side confirm)
+NL -> SSig (if opponent walks into arrow from close range)
+
+EDGEGUARD:
+Fire arrow offstage at recovering opponent (they must dodge it, using dodge cooldown)
+Then jump out and DAir or SAir into the dodgeless opponent
+DAir spike directly`,
+groups:[
+  {label:'Neutral poke',hits:['NL arrow','dash in','DL'],pct:'Forces dodge -> punish landing'},
+  {label:'Core combo',hits:['DL','NAir','SAir'],pct:'0-50% true or string'},
+  {label:'Kill confirm',hits:['DL','DSig'],pct:'80%+ kill confirm'},
+  {label:'Edgeguard',hits:['Arrow offstage','DAir'],pct:'Force dodge then punish'},
+],
+ex:`Bow edgeguard: opponent is offstage right at 80%. You fire an arrow toward them. They dodge it. Their dodge is now on cooldown. You jump out immediately and DAir - they cannot dodge your follow-up. Arrow forced the dodge, you punished the cooldown. This is bow\'s unique edgeguard power.`,
+warn:`Bow players who only use projectiles and never approach lose to anyone who learns to dodge through arrows consistently. You need real ground and aerial combos too - arrows create openings, but you have to go close the deal.`},
+
+{cat:'wpn',abbr:'Katars',name:'Katars combos',short:'Fast dual blades, similar to gauntlets with better range',
+def:`Katars are similar to gauntlets in speed and combo potential but have slightly better range and different hitbox shapes. Like gauntlets, katars excel at long true combo chains at low percent. DSig is a particularly strong move - downward diagonal spike that is lethal offstage.
+
+Katars gameplan: get inside range, land DL, chain as many hits as possible. DSig is your edgeguard ace - one confirmed DSig offstage is often a stock.
+
+LOW PERCENT (0-45%):
+DL -> NAir -> NAir -> NAir (triple chain, true at low %)
+SL -> SL -> NAir (side light chain)
+DL -> NAir -> NAir -> GP
+NL -> DL -> NAir -> NAir
+
+MID PERCENT (45-75%):
+DL -> NAir -> NAir -> SAir (horizontal send)
+SL -> NAir -> NAir
+NAir -> SL -> NAir
+
+HIGH PERCENT (75%+):
+DL -> NSig (vertical KO)
+NAir -> SSig
+SL -> SSig
+
+EDGEGUARD (katars specialty):
+DSig offstage: jump out, DSig fires at downward-diagonal angle, catches many recovery paths
+DAir spike
+NAir chain offstage`,
+groups:[
+  {label:'Core (0-45%)',hits:['DL','NAir','NAir','NAir'],pct:'0-45% true combo'},
+  {label:'Mid route',hits:['DL','NAir','NAir','SAir'],pct:'45-75% string'},
+  {label:'Kill confirm',hits:['DL','NSig'],pct:'75%+ kill confirm'},
+  {label:'Edgeguard ace',hits:['DSig'],pct:'Offstage diagonal spike'},
+],
+ex:`Katars DSig offstage is one of the strongest edgeguard tools in the game. Jump out toward recovering opponent, fire DSig - it launches diagonally downward covering the most common recovery angles. At 60%+ offstage, this is a stock. Learn this one move and your edgeguard game transforms.`,
+warn:`Same problem as gauntlets: short range. The wavedash approach into DL is your best way in. If you are getting poked out before you reach combo range, your approach needs more variation.`},
+
+{cat:'wpn',abbr:'Lance',name:'Lance combos',short:'Longest reach, dominant at its specific range',
+def:`Lance (Rocket Lance) has the longest horizontal reach of any weapon. At its max range, lance attacks hit where most other weapons cannot respond. SL has enormous range and is a dominant poke. The tradeoff: up close lance is unsafe because the hitboxes extend forward, not around you.
+
+Lance gameplan: stay at max range. Use SL and NL as long-range pokes. Force the opponent into your range and convert. Never let opponents get inside your weapon range.
+
+LOW PERCENT (0-50%):
+DL -> NAir (standard)
+SL -> NAir (long-range side light into aerial chase)
+NL -> DL (ground chain)
+NAir -> DL (aerial into ground)
+
+MID PERCENT (50-80%):
+DL -> NAir -> SAir
+SL -> SAir (direct from side light to aerial)
+SAir -> SAir (aerial chase, lance SAir has great range)
+
+HIGH PERCENT (80%+):
+SL -> SSig (side light range makes this hard to avoid)
+DL -> SSig
+NAir -> SSig
+NL at ledge -> punish recovery (long range poke at recovering opponent)
+
+EDGEGUARD:
+SL at ledge (enormous range covers wide recovery arc)
+SAir offstage
+DAir spike`,
+groups:[
+  {label:'Core (0-50%)',hits:['DL','NAir','SAir'],pct:'0-50% true or string'},
+  {label:'Range route',hits:['SL','SAir'],pct:'All percents - use max range'},
+  {label:'Kill confirm',hits:['SL','SSig'],pct:'80%+ long range confirm'},
+  {label:'Edgeguard',hits:['SL ledge','SAir'],pct:'Range control at edge'},
+],
+ex:`Lance at the ledge is particularly strong. Your SL reaches so far that you can hit an opponent recovering from below without even being at the edge itself. You stand slightly back from the ledge, throw SL - it reaches the recovery path. They cannot come back through the top without entering your range.`,
+warn:`Up close lance is weak. If an opponent gets inside your SL range you are in trouble - your attacks extend forward and they are beside or behind you. If they close distance, immediately jump out and reset to your range. Never let them camp inside your hitboxes.`},
+
+{cat:'wpn',abbr:'Blast',name:'Blasters combos',short:'Ranged projectile poke with solid ground game',
+def:`Blasters are similar to bow in that NL fires projectiles - two short-range blasts forward. But blasters also have a strong ground game. DL is a very fast low attack. The projectile NL forces opponents to dodge or approach, creating the same openings as bow but at shorter range.
+
+Blasters gameplan: use NL blasts to zone at mid-range. Close in after forcing a dodge. DL starter into combo. DSig is your KO sig - powerful upward diagonal.
+
+PROJECTILE:
+NL ground: fires two blasts forward at close-mid range
+NL air (angled): fires blasts downward, useful for aerial pressure
+
+LOW PERCENT (0-50%):
+DL -> NAir (very fast DL, reliable starter)
+SL -> NAir
+NL blasts -> dash in -> DL (same bow concept: force dodge, punish)
+DL -> NAir -> NAir
+
+MID PERCENT (50-80%):
+DL -> NAir -> SAir
+NAir -> SAir
+NL -> DL (if opponent walks into close range blasts)
+
+HIGH PERCENT (80%+):
+DL -> DSig (strong upward-diagonal KO)
+SL -> SSig
+NL -> DSig (if they walk into point-blank blasts)
+
+EDGEGUARD:
+Fire NL blasts at recovering opponent (force dodge, punish cooldown)
+DAir spike
+SAir offstage`,
+groups:[
+  {label:'Neutral tool',hits:['NL blasts','dash in','DL'],pct:'Force dodge -> punish'},
+  {label:'Core combo',hits:['DL','NAir','NAir'],pct:'0-50% true combo'},
+  {label:'Kill confirm',hits:['DL','DSig'],pct:'80%+ kill confirm'},
+  {label:'Edgeguard',hits:['NL offstage','DAir'],pct:'Force dodge then spike'},
+],
+ex:`Blasters vs a defensive opponent: you fire NL blasts at mid range. They dodge away from them. Their dodge is on cooldown. You dash in immediately - they cannot dodge your DL. Land the DL, combo to 50 damage. Blasters at mid range creates the same forced-dodge openings as bow but you are closer so the follow-up is easier to land.`,
+warn:`Blasters NL projectiles are shorter range than bow arrows. Do not play it like bow - your range advantage is smaller so your ground game needs to supplement the projectiles more.`},
+
+{cat:'wpn',abbr:'Orb',name:'Orb combos',short:'Unique movement stall, strong aerial coverage',
+def:`Orb has unique physics - some orb moves have momentum-stalling properties that make your aerial movement unpredictable. NSig in particular sends you forward with a floating movement that is hard to read. SAir has excellent coverage. Orb rewards creative aerial play.
+
+Orb gameplan: use aerial mobility to make your position hard to read. DL to start combos. Convert into SAir chains. NSig as a mid-air approach that opponents struggle to react to.
+
+LOW PERCENT (0-50%):
+DL -> NAir (standard)
+SL -> NAir -> NAir
+NAir -> NAir (aerial chain)
+DL -> NAir -> SAir
+
+MID PERCENT (50-80%):
+SAir -> SAir (orb SAir chases well)
+DL -> SAir
+NAir -> SL -> NAir
+
+HIGH PERCENT (80%+):
+DL -> DSig (strong KO move for orb)
+SAir -> SSig
+SL -> SSig
+
+NSig USE:
+NSig in neutral: floats forward at mid-height, hard to react to
+At 80%+ it is also a KO confirm from certain positions
+
+EDGEGUARD:
+SAir offstage coverage
+DAir spike
+NSig at edge (the floating movement can intercept specific recovery angles)`,
+groups:[
+  {label:'Core (0-50%)',hits:['DL','NAir','SAir'],pct:'0-50% true or string'},
+  {label:'Aerial chain',hits:['SAir','SAir'],pct:'40-80% string'},
+  {label:'Kill confirm',hits:['DL','DSig'],pct:'80%+ kill confirm'},
+  {label:'NSig approach',hits:['NSig'],pct:'Mid-height approach / KO at 80%+'},
+],
+ex:`Orb NSig mid-neutral: you are airborne at mid-height. You fire NSig - it floats you forward at a low arc. The opponent sees an aerial but cannot react to the exact trajectory. If they try to anti-air under, the float goes over them. If they dodge away, you land safe. The movement ambiguity is orb\'s unique tool.`,
+warn:`Orb is one of the harder weapons to use well because its unique properties require you to understand its specific movement. Spend time in training mode with orb NSig specifically until the trajectory feels natural to you.`},
+
+{cat:'wpn',abbr:'RLance',name:'Rocket Lance combos',short:'Momentum weapon - movement and attack fused',
+def:`Rocket Lance (the weapon, distinct from Lance) uses momentum differently from every other weapon. Its sigs fire you forward with movement attached - you become a projectile. This gives it unique offensive angles but also makes it dangerous to misuse since you commit your body to the attack.
+
+SL has massive range and knockback. NSig rockets you forward. The key to rocket lance is using its momentum to your advantage, not against you.
+
+LOW PERCENT (0-50%):
+DL -> NAir (standard opener)
+NL -> DL (ground chain)
+SL -> NAir (after long-range SL hit)
+NAir -> DL (aerial into ground)
+
+MID PERCENT (50-80%):
+DL -> NAir -> SAir
+SAir -> SAir (chase with aerial chain)
+SL -> SAir (confirm from side light range)
+
+HIGH PERCENT (80%+):
+DL -> SSig (SSig rockets you sideways into them, KO horizontally)
+SL -> SSig (long-range confirm into rocket)
+NAir -> SSig
+
+NSig USE:
+NSig fires you forward as an attack - use as a read in neutral or a kill confirm
+At 90%+ NSig is a clean kill if it lands
+
+EDGEGUARD:
+SSig offstage: rocket into recovering opponent from above
+DAir spike
+SAir offstage`,
+groups:[
+  {label:'Core (0-50%)',hits:['DL','NAir','SAir'],pct:'0-50% string'},
+  {label:'Range route',hits:['SL','SAir'],pct:'All percents'},
+  {label:'Kill confirm',hits:['DL','SSig'],pct:'80%+ horizontal rocket KO'},
+  {label:'Edgeguard',hits:['SSig offstage','DAir'],pct:'Rocket into recovery path'},
+],
+ex:`Rocket lance SSig KO: opponent at 90% near the right blast zone. You land a DL. From the DL pop-up you immediately go into SSig - it rockets you both rightward with huge knockback. At 90% near the side blast zone this is a guaranteed stock. The rocket movement of SSig turns a grounded confirm into a fast, hard-hitting KO move.`,
+warn:`NSig and SSig both rocket your body forward. If you miss, you are flying through the air past the opponent in their range. They will punish the whiff hard. Only use these sigs when you have a confirm or a read - never raw in neutral.`},
+
+// MISSING TECHNIQUES
+{cat:'tech',abbr:'LandLag',name:'Landing lag',short:'Frames you cannot act after landing from an aerial',
+def:`Every aerial attack has landing lag - a number of frames after you land where you cannot do anything. During this window you are vulnerable to punish.
+
+Short landing lag = the aerial is relatively safe on landing.
+Long landing lag = the aerial is punishable if the opponent is close when you land.
+
+This is why short hop matters so much: short hop aerials land faster AND have less time for the opponent to reach you before the landing lag ends. Full hop aerials give the opponent more time to position under you and punish the landing.
+
+Landing lag is also why fast fall matters after aerials: fast falling after an aerial gets you to the ground faster, reducing the time the opponent has to respond. But fast falling straight down in front of the opponent into landing lag is a free punish - they just wait for you to land.`,
+ex:`You short hop NAir. Landing lag: 8 frames. Opponent would need to be right next to you and already moving to punish that. You full hop NAir. Same landing lag 8 frames, but you were in the air for 30 extra frames giving the opponent time to walk under you and position perfectly. Full hop made the landing lag punishable even though the number is the same.`,
+warn:`If you keep getting punished after your aerials land, the fix is not a different aerial - it is shorter hops and fast falling away from the opponent after the hit.`},
+
+{cat:'tech',abbr:'FallSpd',name:'Fall speed',short:'How fast each legend falls - changes everything',
+def:`Every legend has a different fall speed stat. Fast fallers drop through the air quickly. Slow fallers float for longer.
+
+Fast fallers:
+Advantage: harder to juggle (they land before you can chain aerials), shorter combo window for opponents.
+Disadvantage: harder to recover from below (drop too fast toward bottom blast zone), more susceptible to grounded combos since they land faster.
+
+Slow fallers (floaties):
+Advantage: more time to act in the air, easier offstage recovery since gravity pulls them down less.
+Disadvantage: easier to juggle (opponents have more time to chase aerials), vulnerable to wall of pain.
+
+Knowing your legend\'s fall speed changes:
+- How you DI after being hit (fast fallers DI differently to survive)
+- How you land after aerials (fast fallers need to be more careful about landing in front of opponents)
+- What combos work against you (floaty legends get juggled more)`,
+ex:`You play a fast-falling legend. Opponent hits you upward. Because you fall fast, you are back on the ground in 20 frames - much faster than they expected. They set up a juggle but you landed before they could continue. Fast fall speed ended their combo. But against grounded opponents you need to be careful - fast falling straight toward them is easy to punish.`},
+
+{cat:'tech',abbr:'TwoFrame',name:'Two-frame window',short:'Hit the opponent the exact moment they snap to ledge',
+def:`When an opponent grabs the ledge (snaps to it during recovery), there is a 2-frame window right as they snap where they are vulnerable to being hit before the game grants them ledge invincibility.
+
+If you have a hitbox active during those 2 frames, you hit them even though they "made it back." This is called two-framing.
+
+How to do it: position a hitbox at the exact ledge snap point timed with the opponent\'s arrival. DAir placed just above the ledge snap point as they arrive is the most common two-frame setup.
+
+This is a high-level edgeguard tech that converts recoveries that would otherwise be safe. You cannot react to it in real time - you have to predict the snap timing and pre-position the hitbox.`,
+ex:`Opponent recovers and snaps to the right ledge. Normally safe. But you predicted the snap and jumped with a DAir timed to be active right at the ledge level as they snapped. They got hit in the 2-frame window even though their recovery visually "touched" the stage. Two-frame.`,
+warn:`Two-framing requires predicting the snap timing, which comes from match experience with that legend\'s recovery. Do not try to react to it - pre-position based on your read.`},
+
+{cat:'tech',abbr:'Stall',name:'Stall moves',short:'Moves that slow or pause your aerial fall to bait reads',
+def:`Some aerials and recovery moves have momentum-slowing properties - they briefly pause or slow your fall mid-air. These are called stall moves. Using one mid-air can completely disrupt an opponent\'s read on your position.
+
+Common stall applications:
+- Use a stall move as you approach a landing - the opponent times an anti-air for where you would land without the stall. The stall shifts your landing point and timing.
+- Use a stall move during recovery to shift your trajectory and confuse the edgeguard read.
+- Fake an approach by stalling mid-air, making the opponent commit early.
+
+Which moves stall depends on the weapon and legend. Orb NSig has a clear stall. Some recovery moves stall briefly. The gravity cancel technique (covered in guide 3) is itself a form of stall.`,
+ex:`You are approaching from above. Normally you would fast fall and land at point X at frame 30. You throw a stall move mid-air. You now land at point Y at frame 38. The opponent\'s anti-air was timed for point X at frame 30. They hit nothing. You land free and punish.`},
+
+{cat:'tech',abbr:'InputTim',name:'Input timing feel',short:'How fast is fast enough - training your muscle memory timing',
+def:`Frame data tells you the numbers. But in actual play, you need to develop a feel for timing without counting frames. Here is how to think about it:
+
+IMMEDIATE: inputs that need to happen as fast as possible after the previous action. CDC (chase dodge cancel), combo extenders after a starter. You are training yourself to press the next input before your brain consciously processes the first hit.
+
+SLIGHT DELAY: inputs where pressing immediately would be too early and miss. Some combo enders at mid percent need a tiny delay because the opponent floats a moment before your move can connect. Feel for the peak of their float.
+
+REACTABLE: inputs you fire in response to seeing something. Whiff punishes. You see the whiff, you move and attack. Training this reaction comes from repetition - lab the specific sequence until the react-and-punish becomes one motion.
+
+How to train timing without frame data: in training mode, run a combo slowly, feel where each hit lands, then gradually speed up. The feel of each transition is the data. Your muscle memory stores timing as kinesthetic sensation, not numbers.`,
+ex:`You keep dropping DL -> NAir -> GP at the GP step. The GP is going out too late - they floated past it. The fix: in training mode, run just NAir -> GP 50 times slowly. Feel the exact moment NAir hits and how fast you need to press GP after. That feel is what you are training, not the number.`},
+
+// LEGEND SELECTION
+{cat:'legend',abbr:'Begin',name:'Best legends for beginners',short:'Which legends to start with and why',
+def:`Not all legends are equally good for learning the game. Some have forgiving hit boxes, clear strengths, and straightforward sigs. Others require deep understanding of specific mechanics.
+
+BEST FOR BEGINNERS:
+Bodvar (sword + spear): the tutorial character. Versatile, balanced, good combo potential, sigs are clear and powerful. Learn the game on Bodvar.
+Cassidy (hammer + pistol): hammer teaches power-hit confirmation, pistol teaches projectile neutral. Good for learning two different playstyles.
+Brynn (axe + spear): defensive stats make her forgiving. Axe teaches KO confirms, spear teaches range control.
+Ember (bow + spear): teaches projectile neutral and range. Good for players who prefer reactive playstyle.
+
+AVOID AS YOUR FIRST MAIN:
+Orb users: orb movement properties require advanced understanding.
+Rocket lance users: momentum commitment punishes beginners hard.
+Legends with very low defense stats: die too early to learn from mistakes.
+
+HOW TO PICK YOUR MAIN:
+Play each weapon type for 10 matches. Note which felt most natural in neutral. Pick the legend with that weapon who has stats matching your preferred playstyle (speed if you like fast combos, strength if you like power hits).`,
+ex:`You have been playing sword and hammer. Sword felt more natural - the combo chains clicked. This tells you sword is likely your weapon. Now pick a legend with sword whose second weapon you also enjoy. Lab their specific combos. That is your main.`},
+
+{cat:'legend',abbr:'TierLog',name:'Tier list logic',short:'What makes a legend top tier vs low tier',
+def:`Tier lists rank legends by competitive viability. Understanding WHY a legend is top or bottom tier is more useful than memorizing the list.
+
+What makes a legend top tier:
+Strong sigs: high knockback, good coverage, reliable confirms.
+Good combo weapon: at least one weapon with solid DL hitstun and follow-up options.
+Stat balance: not too specialized (a legend with 10 strength but 2 speed is exploitable).
+Versatile recovery: recovery move that can mix angles and has a strong recovery attack.
+
+What makes a legend low tier:
+Sigs that are too slow, too short range, or too easy to avoid.
+Weapons with poor hitstun making combos short or unreliable.
+Extreme stat specialization that creates obvious weaknesses.
+Recovery that is linear and easy to edgeguard.
+
+Tier lists also shift with patches. A legend nerfed last month may have dropped two tiers. Always check current tier lists from the community rather than relying on outdated information.`,
+ex:`A new legend releases with very fast sigs that have huge range. Community immediately identifies it as S tier. Anthropic patches the sig startup from 12 frames to 18 frames. It drops to A tier. The tier list changed not because players got worse but because the specific numbers changed.`,
+warn:`Low tier legends can still reach Diamond. Tier lists reflect the ceiling of the legend at the very top level of play. For climbing Gold to Plat, your fundamentals matter 10x more than which legend you pick.`},
+
+{cat:'legend',abbr:'SecMain',name:'When to pick up a secondary',short:'One main first, secondary only when needed',
+def:`A secondary is a second legend you learn to cover matchups your main struggles with.
+
+When to pick up a secondary:
+You consistently lose to one specific weapon or playstyle with your main.
+Your main has a clear weakness (e.g. your main loses to bow at range and you keep facing bow players).
+You have already reached at least Platinum with your main - you have real fundamentals to transfer.
+
+When NOT to pick up a secondary:
+You are still in Gold or early Plat - split focus delays fundamental development.
+You want to avoid a bad matchup instead of learning to handle it - avoidance does not build skill.
+You have not identified a specific matchup problem - just general losing is a fundamentals issue, not a matchup issue.
+
+How to choose your secondary:
+It should cover your main\'s worst matchup specifically.
+It should use different weapons than your main (so you learn new tools).
+You only need to be competent with it, not excellent - it is a coverage pick, not a co-main.`,
+ex:`Your main uses sword and hammer. You consistently lose to fast gauntlet players who get inside your slower startup. Your secondary pick: a legend with gauntlets and a fast second weapon. You lab gauntlets combos for 2 hours. Now you can counterpick the matchup instead of losing it every time.`},
+
+// ONLINE PLAY
+{cat:'online',abbr:'Rollback',name:'Rollback netcode',short:'How online play handles network delay',
+def:`Brawlhalla uses rollback netcode for online play. Understanding what this means helps you understand why online sometimes feels different from local.
+
+Rollback netcode: the game predicts what both players will do for the frames that are delayed by the network. If the prediction is wrong, it quickly corrects (rolls back) to the true state. This happens in fractions of a second.
+
+What you experience: very brief visual stutters or repositions when the rollback correction fires. In good connections this is invisible. In poor connections you see your opponent suddenly teleport a small distance.
+
+What it means for your play:
+On low-delay connections (under 50ms): play feels nearly identical to local.
+On medium delay (50-100ms): fast reactions are slightly harder. True combos with tight timing windows may not connect as reliably.
+On high delay (100ms+): the game feels sluggish, combos drop, reads become harder. This is connection quality, not skill.`,
+ex:`You lose a match because your DL -> NAir combo dropped at a critical moment. You check the connection indicator - it was showing red (high delay). The NAir input arrived late due to rollback correction. This is not a skill issue - it is a connection issue. On a green connection the same combo lands consistently.`},
+
+{cat:'online',abbr:'Delay',name:'Input delay and timing adjustment',short:'How to adapt your timing for online play',
+def:`Even on good connections, online play has slightly more input delay than local. Your input takes a few milliseconds to reach the other player and the game compensates by adding a small buffer.
+
+How this affects combos: the timing feel of combos online is slightly different from offline. True combos that are tight (extender needs to land in a very small window) may feel like they drop more online. This is real - the timing window is compressed by the delay.
+
+Adjustments to make online:
+Favor combos with more generous timing windows (DL -> NAir has a generous window, some CDC chains are tighter).
+Give slight extra delay to combo extenders - your input arrives slightly later than it feels.
+Avoid relying on very tight 1-2 frame punish windows - on high delay connections these become unreactable.
+If a specific combo keeps dropping online, practice it specifically on online connections, not just training mode (which has zero delay).`,
+ex:`In offline training mode your DL -> NAir -> GP lands 100% of the time. Online it drops 30% of the time. The difference: GP in training needs to be pressed at frame 18 after DL. Online, with 3 frames of added delay, it needs to be pressed at frame 15 to arrive at frame 18. You adjusted your timing feel and the combo became consistent online too.`},
+
+{cat:'online',abbr:'PingMatch',name:'Reading connection quality',short:'Using the connection indicator to manage expectations',
+def:`Before and during matches, the connection indicator shows you the quality of the connection:
+
+Green (low ping): play normally. The game feels close to local.
+Yellow (medium ping): combos still land but tight timing windows are less reliable. Favor simpler, more forgiving combo routes.
+Red (high ping): expect inconsistency. Focus on fundamentals over execution. Do not practice new techniques in red-connection matches - the timing feedback is unreliable.
+
+Practical rule: do not lab new combos against red-connection opponents. The timing you develop will not transfer to normal connections. Play your established gameplan, accept some dropped combos, and move on.
+
+Also: consistently losing to red-connection opponents often means they are adapting to the lag better than you. Lag-adapted playstyle: slower attacks, fewer tight-window punishes, more emphasis on reads over reactions.`,
+ex:`You face an opponent on a red connection. They keep doing a slow sig that you should be able to dodge easily - but the lag makes it arrive a few frames earlier than it looks. You keep getting hit. This is them intentionally using the lag - slow moves that look telegraphed but arrive earlier than the visual suggests. Adapt: dodge earlier than you normally would.`},
+
+];
+
+let activeCat='all';
+let openMap={};
+
+function render(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  const terms=TERMS.filter(t=>{
+    const matchCat=activeCat==='all'||t.cat===activeCat;
+    const matchQ=!q||(
+      t.name.toLowerCase().includes(q)||
+      t.abbr.toLowerCase().includes(q)||
+      t.short.toLowerCase().includes(q)||
+      (t.def&&t.def.toLowerCase().includes(q))
+    );
+    return matchCat&&matchQ;
+  });
+
+  document.getElementById('catNav').innerHTML=CATS.map(c=>
+    `<button class="cat-btn ${c.cls}${activeCat===c.id?' active':''}" onclick="setCat('${c.id}')">${c.label}</button>`
+  ).join('');
+
+  let html='';
+  if(activeCat==='all'){
+    CAT_ORDER.forEach(cat=>{
+      const list=terms.filter(t=>t.cat===cat);
+      if(!list.length)return;
+      html+=`<p class="section-label">${CAT_NAMES[cat]}</p>`;
+      list.forEach(t=>{html+=termHTML(t);});
+    });
+  } else {
+    terms.forEach(t=>{html+=termHTML(t);});
+  }
+
+  if(!html) html=`<div class="no-results">No terms found for "${q}"</div>`;
+  document.getElementById('content').innerHTML=html;
+}
+
+function termHTML(t){
+  const key=t.cat+'_'+t.abbr;
+  const isOpen=!!openMap[key];
+
+  let extra='';
+  if(t.groups) extra+=chains(t.groups);
+
+  return `<div class="term-row${isOpen?' open':''}" id="tr_${key}" onclick="toggle('${key}')">
+    <div class="term-head">
+      <span class="abbr" style="${COLORS[t.cat]}">${t.abbr}</span>
+      <span class="term-name">${t.name}</span>
+      <span class="term-short">${t.short}</span>
+      <span class="chevron">&#8964;</span>
+    </div>
+    <div class="term-body${isOpen?' open':''}">
+      <div class="def">${t.def}</div>
+      ${extra}
+      ${t.warn?`<div class="warn"><strong>Watch out:</strong> ${t.warn}</div>`:''}
+      <div class="ex"><strong>Example:</strong> ${t.ex}</div>
+    </div>
+  </div>`;
+}
+
+function toggle(key){
+  openMap[key]=!openMap[key];
+  render();
+  if(openMap[key]) setTimeout(()=>document.getElementById('tr_'+key)?.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+function setCat(id){activeCat=id;render();}
+render();
+</script>

@@ -1,0 +1,766 @@
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+*{box-sizing:border-box;margin:0;padding:0}
+.search-wrap{position:relative;margin-bottom:1.25rem}
+#searchInput{width:100%;padding:9px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg,12px);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;outline:none}
+#searchInput:focus{border-color:var(--color-border-primary)}
+.cat-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cat-btn{padding:5px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;font-size:12px;color:var(--color-text-secondary);white-space:nowrap;transition:all 0.15s}
+.cat-btn:hover:not(.active){background:var(--color-background-secondary)}
+.cat-btn.active{font-weight:500;border-color:transparent}
+.c-drill.active{background:#EEEDFE;color:#3C3489}
+.c-move.active{background:#E1F5EE;color:#085041}
+.c-strat.active{background:#FAEEDA;color:#633806}
+.c-bodvar.active{background:#FAECE7;color:#993C1D}
+
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-text-tertiary);margin:1.5rem 0 0.5rem}
+.tier-divider{font-size:12px;font-weight:600;color:var(--color-text-primary);background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md,8px);padding:6px 12px;margin:1rem 0 6px;letter-spacing:0.02em}
+
+.term-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md,8px);margin-bottom:6px;overflow:hidden;cursor:pointer;transition:border-color 0.12s}
+.term-row:hover{border-color:var(--color-border-secondary)}
+.term-row.open{border-color:var(--color-border-primary)}
+.term-head{display:flex;align-items:center;gap:10px;padding:9px 12px}
+.abbr{font-size:11px;font-weight:500;padding:2px 7px;border-radius:8px;white-space:nowrap;min-width:40px;text-align:center;flex-shrink:0}
+.term-name{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1;min-width:0}
+.term-short{font-size:12px;color:var(--color-text-tertiary);flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chevron{font-size:14px;color:var(--color-text-tertiary);transition:transform 0.18s;flex-shrink:0}
+.term-row.open .chevron{transform:rotate(180deg)}
+.term-body{display:none;padding:10px 12px 14px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.term-body.open{display:block}
+.def{font-size:13px;color:var(--color-text-secondary);line-height:1.7;white-space:pre-line}
+.ex{margin-top:10px;font-size:12px;color:var(--color-text-secondary);border-left:2px solid var(--color-border-info);padding-left:10px;line-height:1.6}
+.ex strong{color:var(--color-text-info);font-weight:500}
+.warn{margin-top:8px;font-size:12px;border-left:2px solid var(--color-border-warning);padding:6px 10px;background:var(--color-background-warning);color:var(--color-text-warning);border-radius:0 var(--border-radius-md,8px) var(--border-radius-md,8px) 0;line-height:1.6}
+.warn strong{font-weight:500}
+.drill-box{margin-top:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md,8px);padding:10px 12px}
+.drill-title{font-size:12px;font-weight:600;color:var(--color-text-primary);margin-bottom:8px}
+.drill-step{font-size:12px;color:var(--color-text-secondary);line-height:1.75;padding-left:16px;position:relative;margin-bottom:2px}
+.drill-step::before{content:"→";position:absolute;left:0;color:var(--color-text-tertiary)}
+.goal-box{margin-top:8px;font-size:12px;padding:6px 10px;background:var(--color-background-success);color:var(--color-text-success);border-radius:var(--border-radius-md,8px);border:0.5px solid var(--color-border-success)}
+.goal-box strong{font-weight:600}
+.tier-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-right:6px;letter-spacing:0.04em}
+.no-results{padding:2rem;text-align:center;color:var(--color-text-tertiary);font-size:14px}
+@media(max-width:500px){.term-short{display:none}}
+</style>
+
+<h2 class="sr-only">Brawlhalla guide 6 — drills basic to Valhallan, movement architecture, strategy, Bodvar</h2>
+
+<div style="padding:1rem 0">
+<div class="search-wrap"><input id="searchInput" placeholder="Search drills, strategies, movement..." oninput="render()"></div>
+<div class="cat-nav" id="catNav"></div>
+<div id="content"></div>
+</div>
+
+<script>
+const CATS=[
+  {id:"all",label:"All",cls:""},
+  {id:"drill",label:"Drills (basic→Valhallan)",cls:"c-drill"},
+  {id:"move",label:"Movement architecture",cls:"c-move"},
+  {id:"strat",label:"Strategies",cls:"c-strat"},
+  {id:"bodvar",label:"Bodvar roadmap",cls:"c-bodvar"},
+];
+const COLORS={
+  drill:"background:#EEEDFE;color:#3C3489",
+  move:"background:#E1F5EE;color:#085041",
+  strat:"background:#FAEEDA;color:#633806",
+  bodvar:"background:#FAECE7;color:#993C1D",
+};
+const CAT_NAMES={drill:"Drills",move:"Movement architecture",strat:"Strategies",bodvar:"Bodvar roadmap"};
+const CAT_ORDER=["drill","move","strat","bodvar"];
+
+const DRILL_TIERS=[
+  {tier:"TIER 1 — Execution basics (Gold foundation)",ids:["D01","D02","D03","D04"]},
+  {tier:"TIER 2 — Movement habits (Gold → Plat)",ids:["D05","D06","D07","D08"]},
+  {tier:"TIER 3 — Positioning (Plat foundation)",ids:["D09","D10","D11","D12"]},
+  {tier:"TIER 4 — Neutral game (Plat → Diamond)",ids:["D13","D14","D15","D16"]},
+  {tier:"TIER 5 — Advanced conversion (Diamond foundation)",ids:["D17","D18","D19","D20"]},
+  {tier:"TIER 6 — Elite habits (Diamond → Valhallan)",ids:["D21","D22","D23","D24"]},
+];
+
+const TERMS=[
+
+// ============================
+// DRILLS
+// ============================
+
+// TIER 1
+{cat:"drill",abbr:"D01",name:"Fast fall timing",short:"Land fast after every aerial — make it automatic",
+def:`Goal: fast falling after every aerial should become a reflex. Not a decision — a reflex.
+
+Why first: if you cannot fast fall consistently, everything that comes after — short hop aerials, landing mix-ups, combo timing — is harder. Fast fall is the foundation of ground-air transitions.`,
+steps:[
+  "Training mode, stationary dummy. Full hop NAir. The moment the NAir connects or whiffs, hold down. Land fast.",
+  "20 reps NAir. 20 reps SAir. 20 reps DAir. Each time: hit, immediately hold down.",
+  "Now short hop versions. Short hop NAir → fast fall. 20 reps each aerial.",
+  "Add a landing attack: short hop NAir → fast fall → DL on landing. The DL should come out the frame you touch ground.",
+  "Pass condition: you never float slowly to the ground after an aerial. Every landing is sharp.",
+],
+goal:"Fast fall is automatic. You never drift slowly after an aerial in a real match.",
+ex:`You throw a NAir in neutral. Instead of floating for 30 frames after, you fast fall and land in 10 frames. The opponent had no time to position under you for a punish. Fast fall made the aerial safe.`},
+
+{cat:"drill",abbr:"D02",name:"Short hop consistency",short:"Tap, never hold — until it is automatic",
+def:`Goal: short hop is your default jump in neutral, full hop is the exception.
+
+This was covered in guide 4 but it is here because it belongs at the very start of your drill progression. Everything else in neutral offense assumes short hop. If this is not automatic, build it first.`,
+steps:[
+  "Training mode. Jump 50 times. Every single jump must be a short hop. If you full hop, restart count from 0.",
+  "Add direction: dash right → short hop. Dash left → short hop. 20 reps each side. The dash-to-jump transition is where full hops sneak in.",
+  "Add aerial: dash → short hop → NAir → fast fall. 30 reps. This is your basic approach motion.",
+  "Test in a real match: count how many times you full hop unintentionally. Target: zero.",
+],
+goal:"Short hops feel easier than full hops. Full hop requires conscious effort.",
+ex:`In a real match you approach with a short hop NAir. You are in the air for 18 frames. Landing lag ends in 8 frames. The opponent had 26 frames total to react. Compare: full hop NAir gives them 50 frames. Short hop cut their reaction window nearly in half.`},
+
+{cat:"drill",abbr:"D03",name:"Core combo consistency",short:"One combo, both sides, 20 reps no drops",
+def:`Goal: your main combo (DL → NAir → NAir → GP for Bodvar at low percent) executes automatically on both sides without thinking.
+
+Pick ONE combo. Not your whole repertoire. One. Drill it until it is the only thing you can do when you land a DL.`,
+steps:[
+  "Training mode, 50% game speed if available. Run DL → NAir → NAir → GP 10 times slowly. Feel each transition.",
+  "100% speed. 20 reps. If you drop it, restart count. Dropping = GP whiffed or NAir did not connect.",
+  "Now facing left: 20 reps. Most players are 30% worse on one side. Fix this now.",
+  "Simulate a real scenario: run in → DL (as a whiff punish) → full combo. 20 reps. The run-in changes your timing slightly.",
+  "Pass condition: 20 reps facing right, 20 facing left, zero drops.",
+],
+goal:"You land a DL in ranked and the rest of the combo comes out without any conscious decision.",
+warn:"Do not add a second combo until this one is at 20-for-20 on both sides. Two solid combos beat ten half-learned ones.",
+ex:`Match. You whiff punish with DL. Your brain does not think about what comes next. The NAir NAir GP just happens. That is what drilling to automaticity feels like.`},
+
+{cat:"drill",abbr:"D04",name:"Wavedash on the spot",short:"Slide without moving forward — build the muscle memory",
+def:`Goal: wavedash inputs become natural so you can use wavedash approach in neutral without thinking about the execution.
+
+Wavedash is your best neutral approach tool. But if you are thinking about how to do it while in a match, you cannot also think about neutral. It needs to be automatic.`,
+steps:[
+  "Training mode. Stand at center. Wavedash right. Wavedash back left. Back and forth without stopping. 2 minutes continuous.",
+  "Count wavedashes. Target: 30 clean wavedashes in 2 minutes with no stumbles.",
+  "Now add an attack at the end: wavedash right → DL at the end of the slide. 20 reps.",
+  "Wavedash toward the dummy → DL → combo. 20 reps. This is the full wavedash approach sequence.",
+  "Pass condition: you can wavedash without looking at your hands or thinking about the input.",
+],
+goal:"Wavedash input is as natural as dashing.",
+ex:`You use wavedash approach in neutral. You slide toward the opponent low to the ground. They reacted to a run-in and threw a DLight — but wavedash is lower and faster than a run. Their DLight goes over you. You are already inside their range with DL.`},
+
+// TIER 2
+{cat:"drill",abbr:"D05",name:"Dash dance pacing",short:"Back and forth in neutral — never standing still",
+def:`Goal: you never stand still in neutral. Movement is constant. Dash dancing becomes your default idle state.
+
+This is about pacing — the rhythm of your movement in neutral. A player who stands still is a target. A player who is constantly moving is a problem to time.`,
+steps:[
+  "Training mode, CPU on medium. Stand 2 character lengths away. Dash right, dash left, dash right, dash left. No attacks. 3 minutes.",
+  "Set a rule: you cannot stand still for more than 0.5 seconds. If you stop moving, you failed.",
+  "Add an empty approach: mid dash-dance, dash all the way toward the dummy then stop without attacking. Continue dash dancing.",
+  "Now: dash dance for 5 back-and-forths, then throw ONE attack. Back to dash dancing. The attack is rare and deliberate.",
+  "Pass condition: in a real match you catch yourself dash dancing instinctively instead of standing.",
+],
+goal:"Stillness feels wrong. Your baseline state is movement.",
+warn:"Dash dancing without purpose is not the goal. The goal is that movement becomes your default, making stillness a deliberate choice rather than laziness.",
+ex:`You are at Platinum. Opponent stands still waiting for your approach. You dash dance for 4 seconds. They get impatient and throw a grounded SLight forward. You were already stepping back — it whiffs completely. You punish. The dash dance made their patience break.`},
+
+{cat:"drill",abbr:"D06",name:"Empty approach drill",short:"Show the approach, throw nothing, punish the panic",
+def:`Goal: the empty approach becomes a real tool you use every few neutral interactions.
+
+The empty approach is walking or dashing fully toward the opponent then doing nothing. No attack. You stop short or pass through. The opponent has trained themselves to respond to your approach — the empty approach exploits that training.`,
+steps:[
+  "CPU on hardest. Dash toward CPU aggressively as if you will DL. Stop. Do not attack. Watch what they do.",
+  "If they threw an attack: you are outside range, their attack whiffs. Now dash in and punish.",
+  "20 reps of: empty approach → punish their panicked response.",
+  "In real matches: force yourself to do one empty approach per stock. Just one. Note what the opponent does.",
+  "Pass condition: you successfully bait and punish a reaction from an empty approach in a real match.",
+],
+goal:"Empty approaches create real openings that your run-in attacks never could.",
+ex:`You have done DL three times when you run in. Opponent is timing their dodge to your run. Fourth approach: you run in, stop short, do nothing. They dodge. Their dodge cooldown is active. You DL into the cooldown. The empty approach set up a free combo.`},
+
+{cat:"drill",abbr:"D07",name:"Platform circuit",short:"Fluid movement between all stage surfaces",
+def:`Goal: platforms are part of your movement vocabulary. You use them without thinking.
+
+Most Gold players ignore platforms or only land on them by accident. Plat players use platforms deliberately for positioning, approach angles, and escape.`,
+steps:[
+  "Pick a 3-platform stage (Small Brawlhalla or similar). No opponent. Just move.",
+  "Circuit: ground → jump left platform → platform drop → jump right platform → platform drop → jump center top platform → platform drop → ground. Repeat for 3 minutes.",
+  "Add attacks at each platform: land on platform → DL → platform drop → land → DL. Platform as a combo extender.",
+  "Now with CPU: use platforms to escape when pressured. Every time CPU pressures you on the ground, your first escape is a platform jump.",
+  "Pass condition: you platform drop into an attack as a deliberate move in a real match.",
+],
+goal:"The vertical dimension of the stage is part of your movement. You use height naturally.",
+ex:`Opponent is pressuring you at center ground. Instead of dodging, you jump to the left platform above them. They follow. You platform drop through — now you are below them and they are in the air. Complete position reversal using platforms.`},
+
+{cat:"drill",abbr:"D08",name:"Approach variation rotation",short:"Use all 5 approach types in one session",
+def:`Goal: you use at least 3 different approach types in every ranked match, not just run-in.
+
+The 5 approaches: run-in, jump approach, wavedash, platform drop, empty approach. If you only use one, you are a flowchart.`,
+steps:[
+  "Ranked match. After each match, count how many different approach types you used. Write it down.",
+  "If you used fewer than 3: the next match, deliberately attempt each of the 5 types at least once.",
+  "Week 1 target: 3 approach types per match. Week 2 target: 4. Week 3 target: all 5 naturally.",
+  "Lab session: set a CPU on hardest. 5 rounds, each round you are only allowed one specific approach type. Learn each in isolation.",
+],
+goal:"Opponents cannot predict your approach because you genuinely have no single default.",
+warn:"Do not try to use all 5 in the first ranked session. Add one new approach type per week until they are all natural.",
+ex:`Stock 1 you mostly run in. Opponent times your run-in perfectly. Stock 2 you switch to wavedash approach exclusively. They cannot time it the same way — wavedash is lower and faster. Stock 3 you mix platform drop and empty approach. They gave up trying to read your approach and started playing defensively. You controlled the whole stock.`},
+
+// TIER 3
+{cat:"drill",abbr:"D09",name:"Center stage discipline",short:"Always know where center is — return to it",
+def:`Goal: center stage is your default position. After every exchange you return to center. You never drift to an edge without noticing.
+
+This is a positioning drill, not a movement drill. The skill is awareness — knowing where you are on the stage at all times.`,
+steps:[
+  "Ranked match. After each neutral interaction (hit or whiff), ask: where am I on the stage right now?",
+  "If you are within one character length of an edge: your first priority is center, not attacking.",
+  "Drill: in training mode, place yourself at the right edge. CPU at center. Your only goal for 3 minutes: get to center without taking a hit. No attacking — only movement.",
+  "In matches: track how often you end up cornered. If it is more than 3 times per stock, your center discipline is leaking.",
+],
+goal:"You never find yourself cornered without knowing how you got there and having a plan to get out.",
+ex:`After a combo ends, you notice you are near the right edge. Opponent is at center. Instead of attacking immediately — which would happen in their favor zone — you first create space by jumping left toward center. Now you are both at neutral position. The exchange resets fairly instead of with them in advantage.`},
+
+{cat:"drill",abbr:"D10",name:"Stock lead/deficit positioning",short:"Change your position based on score — not just skill",
+def:`Goal: your positioning decisions change based on whether you are winning or losing. Most players play the same regardless of score.
+
+STOCK LEAD: you are up a stock or have significantly less damage. Play defensively. Force the opponent to take risks. Stay at center, do not go offstage unless you are certain, take safe trades.
+
+STOCK DEFICIT: you are down a stock or at high percent. You need to take risks. Be more aggressive, look for reads, accept trades if they give you better damage.`,
+steps:[
+  "In a real match, before each stock starts, say to yourself: am I ahead or behind?",
+  "If ahead: for the first 20 seconds of the stock, do not initiate. Make them come to you.",
+  "If behind: for the first 20 seconds, be the one to initiate. Accept that you need to create something.",
+  "Track: how often do you play passively when behind? That is leaking stocks. Fix it.",
+],
+goal:"Score awareness changes your playstyle automatically. You play different when winning versus losing.",
+warn:"Playing passive when down a stock is one of the most common Gold-Plat errors. Being down means you need to create advantage, not preserve nothing.",
+ex:`You are down a stock at 0% vs their 60%. You are actually ahead in damage terms — if you take one more stock, they need to come back from a deficit. Play slightly more aggressively to end their stock before they build to kill percent.`},
+
+{cat:"drill",abbr:"D11",name:"Edgeguard positioning drill",short:"Practice arriving at the ledge before the opponent does",
+def:`Goal: after any knockback that sends the opponent toward a blast zone, you immediately move toward the ledge. The positioning comes before the edgeguard attack.
+
+Most players land a hit, stand there for a moment processing, then try to edgeguard. By then the opponent is already recovering. Edgeguard positioning must be automatic.`,
+steps:[
+  "Training mode, CPU on medium. Land any hit that sends CPU to the right. Immediately run right to the ledge.",
+  "Do not think about what attack to do yet — just get to the ledge first. 20 reps.",
+  "Now add the attack: get to ledge → DAir down at their recovery path. 20 reps.",
+  "Vary: sometimes position at ledge standing, sometimes run off for aerial, sometimes sit back slightly for a ledge trap.",
+  "Pass condition: after landing a hit that sends the opponent offstage, your legs move to the ledge automatically.",
+],
+goal:"Your body moves toward the ledge before your brain consciously decides to edgeguard.",
+ex:`You land SSig and it sends the opponent off the right side at 70%. You are already moving right before you think about it. You arrive at the ledge as they start recovering. You throw DAir. The positioning was so fast they had no time to attempt a mix-up on their recovery.`},
+
+{cat:"drill",abbr:"D12",name:"Defensive option drill",short:"Practice all 6 escape options so panic dodge stops",
+def:`Goal: when pressured, you choose from all 6 escape options. You stop defaulting to dodge every time.
+
+The 6 escapes: dodge through, dodge away, jump out, platform drop, counter-attack, backdash then jump.
+
+Most players only know escapes 1 and 5. The other four are free if you practice them.`,
+steps:[
+  "Training mode, CPU set to spam one specific attack. Your rule: you cannot dodge for 3 minutes.",
+  "Forced to use only jumps, backdashes, platform drops, and counter-attacks to escape.",
+  "After 3 minutes: now you can dodge again. Notice how it feels like you have more options.",
+  "In ranked: once per stock deliberately use a non-dodge escape. Just once. Track if it worked.",
+  "Build to: dodge is one of 6 options, used when you specifically read an attack to go through.",
+],
+goal:"Pressure no longer makes you reach for dodge automatically.",
+warn:"Your dodge count per stock in practice mode is a direct measurement. 8+ dodges per stock means panic dodging. Target 3-5 intentional dodges.",
+ex:`Opponent rushes you at the edge. Old response: dodge. New response: you jump over them completely. You land at center, they are at the edge now. Complete reversal without using dodge. This kind of escape is impossible if you always reach for dodge automatically.`},
+
+// TIER 4
+{cat:"drill",abbr:"D13",name:"Whiff punish reaction drill",short:"See the whiff, be already moving",
+def:`Goal: whiff punish reaction time drops from 400ms (average) to under 200ms (competitive).
+
+The whiff punish is the most important neutral skill. Improving your reaction to whiffs directly improves your neutral win rate without changing anything else.`,
+steps:[
+  "Training mode, CPU on hardest set to attack frequently. Your only goal: punish every whiffed CPU attack.",
+  "Do not attack proactively. Only punish whiffs. Count how many you get per minute.",
+  "Week 1 baseline: count punishes per minute. Write it down.",
+  "Week 2: same drill, try to beat your baseline count. The improvement comes from your eyes getting faster at seeing the whiff start.",
+  "Add the full combo: see whiff → DL → full combo. Not just a tap punish. Maximum conversion every time.",
+  "Pass condition: you punish 8+ whiffs per minute consistently.",
+],
+goal:"Seeing a whiff and already moving is one motion, not two separate decisions.",
+ex:`Opponent throws a grounded SLight. The attack starts, misses, and they enter recovery frames. You are already stepping in — you saw the startup animation and began moving. By the time their recovery starts you are already at DL range. The punish lands before they can react. That gap between see-and-move is what this drill trains.`},
+
+{cat:"drill",abbr:"D14",name:"Patience threshold drill",short:"Count to 3 before attacking — build neutral patience",
+def:`Goal: you stop attacking without a reason. Every attack in neutral has a specific cause.
+
+This is the hardest mental drill because it fights against every instinct to press buttons.`,
+steps:[
+  "Ranked match. Set a rule: after the round starts, count to 3 silently before throwing your first attack.",
+  "During those 3 counts: observe. What is the opponent doing? Are they running in? Standing? Dash dancing?",
+  "Only attack when one of these is true: they whiffed, they approached and are in your range, you baited a dodge.",
+  "If none of those are true after 3 counts: dash dance, empty approach, reset. Count to 3 again.",
+  "Track: how many of your attacks per stock had no specific reason. Target zero.",
+],
+goal:"Every attack you throw had a reason. You do not attack because time passed.",
+warn:"This drill will feel like you are losing by playing passively. You are not. You are learning to only take favorable interactions. Your win rate per exchange goes up even if total exchanges go down.",
+ex:`Gold player: throws 15 attacks per stock, 6 land. Plat player: throws 8 attacks per stock, 6 land. Same damage output, fewer risks taken, fewer punishes received. The Plat player wins neutral more often not because they are faster but because they only swung when they had a reason.`},
+
+{cat:"drill",abbr:"D15",name:"Anti-air positioning",short:"Be below the opponent — wait for them to land",
+def:`Goal: when the opponent is in the air, you position below them calmly and make them deal with your coverage.
+
+Most players chase opponents into the air. This puts both players in the air which is chaotic and hard to control. Instead: stay grounded, be below, and let them come to you.`,
+steps:[
+  "CPU on hard set to jump frequently. Your rule: never jump when the CPU is already in the air.",
+  "Stay grounded. Walk below them. Throw a grounded attack upward when they are directly above you.",
+  "Practice: DL when they are about to land near you. GP if they are directly above. SL if they drift toward you.",
+  "Learn to read their landing spot 30 frames early — that is where you place your hitbox.",
+  "Pass condition: you consistently threaten landings without going into the air yourself.",
+],
+goal:"You control grounded space while the opponent is airborne, forcing them into your attacks when they land.",
+ex:`Opponent is airborne above you. Old response: jump after them. New response: you stand below, walk slightly left to stay under their drift, and throw DL timed to their landing. They land into your hitbox. You never left the ground.`},
+
+{cat:"drill",abbr:"D16",name:"Conditioning setup drill",short:"Repeat a pattern 3 times then punish the fourth",
+def:`Goal: deliberately condition the opponent during a match and then exploit the conditioning.
+
+This requires tracking what you have done and what the opponent has learned. It is the first drill that requires active thinking during a match, not just trained reflexes.`,
+steps:[
+  "In a ranked match, pick one pattern to show 3 times: for example, always DL when you run in.",
+  "The first 3 times you run in: DL every time. Let them learn it.",
+  "The 4th time you run in: stop before the DL. Watch them react to the run-in (dodge, counter-DL).",
+  "Punish that reaction specifically.",
+  "Track: did the opponent change behavior after seeing the pattern 3 times? What did they do on the 4th?",
+],
+goal:"You make the opponent react to something that does not happen. Their reaction is your real opening.",
+ex:`3 times you DL on run-in. Opponent times a perfect dodge through your DL. Fourth run-in: you stop. They dodge through nothing. Dodge cooldown active. Now you DL into their cooldown. The conditioning created a free hit that your raw DL never would have landed.`},
+
+// TIER 5
+{cat:"drill",abbr:"D17",name:"Maximum conversion drill",short:"Every neutral win becomes maximum possible damage",
+def:`Goal: when you win neutral, you extract maximum damage. Not a tap punish. Not a 2-hit combo. The full route.
+
+This drill lives at the intersection of execution and punish game. The neutral win is worthless if you do not convert it.`,
+steps:[
+  "Training mode. Land a DL on the dummy. Then execute your full combo route — every hit, all the way to the edgeguard.",
+  "Measure total damage. If you got less than 40 damage from a DL starter: you dropped the conversion.",
+  "Lab the full route: DL → NAir → NAir → GP → land near ledge → edgeguard DAir. What is the total damage?",
+  "In ranked: after each stock ends, ask — what was my average damage per neutral win? If under 35, conversion is leaking.",
+,
+  "Pass condition: you consistently get 40+ damage from a DL starter including positioning for edgeguard.",
+],
+goal:"Each neutral win is worth 40-60 damage plus an edgeguard opportunity.",
+ex:`Whiff punish DL. Currently you do DL → SSig for 38 damage. After conversion drill: DL → NAir → NAir → GP → run to ledge → DAir edgeguard = 55 damage + stock threat. Same neutral win. 17 more damage and a stock threat from the extra steps.`},
+
+{cat:"drill",abbr:"D18",name:"Kill confirm consistency",short:"At 80%+ every combo attempt is a kill attempt",
+def:`Goal: at 80%+ percent, your decision tree switches automatically. You stop extending combos and start confirming kills.
+
+Percent awareness during a match is a specific skill — tracking both your percent and the opponent\'s and knowing when kill confirm range starts.`,
+steps:[
+  "Training mode. Set dummy to 85%. Land a DL. Your only option from here is the kill confirm: DL → SSig.",
+  "20 reps at 85%, 20 reps at 95%, 20 reps at 105%. Note when the SSig reaches the blast zone.",
+  "Now set dummy to a light legend (low weight). Repeat — the kill confirm lands 10-15% earlier.",
+  "Set dummy to a heavy legend. Repeat — you need more percent. How much more?",
+  "In ranked: as soon as opponent hits 80%, say to yourself: kill confirm mode. Only go for the confirm.",
+],
+goal:"You never try to extend a combo at kill percent. Every touch at 80%+ is a kill attempt.",
+warn:"The biggest waste in high Gold and Plat: going for a combo extender at 100% and dropping the kill. The opponent was dead. You chose the wrong route.",
+ex:`Opponent at 95%. You land DL. Old response: DL → NAir → NAir (not a kill, just damage). New response: DL → SSig. They die. The kill confirm route ended the stock that the combo extension would have left alive.`},
+
+{cat:"drill",abbr:"D19",name:"Edgeguard read drill",short:"Identify recovery pattern, punish it on third attempt",
+def:`Goal: by the opponent\'s second recovery, you have mapped their pattern. Third recovery, you punish the pattern.
+
+Edgeguarding is not about reacting to the recovery. It is about reading it. The read comes from the first two recoveries.`,
+steps:[
+  "In training mode: CPU set to always recover high. Position and punish the high recovery 10 times.",
+  "CPU set to always recover low. Punish the low recovery 10 times.",
+  "CPU set to random recovery. First two times: observe only. Third time: attempt to punish based on pattern.",
+  "In ranked: stock 1 edgeguard — observe their recovery angle. Stock 2: attempt to punish the pattern you saw.",
+  "Track: how often does your read on the third recovery attempt land?",
+],
+goal:"You are never surprised by a recovery you have already seen twice.",
+ex:`Stock 1: opponent recovers using their ability straight up then snaps to ledge. You note it. Stock 2: they try the same recovery. You timed a DAir at the height where their ability peaks. The read was from stock 1 data, not real-time reaction.`},
+
+{cat:"drill",abbr:"D20",name:"VOD review session",short:"Watch one loss, find the one pattern costing you most",
+def:`Goal: identify the single most common error in your recent play and fix it with one targeted drill.
+
+This is the meta-drill for Diamond level and above. Without external feedback, your bad habits become invisible. VOD review makes them visible.`,
+steps:[
+  "After a session, watch one losing match. No audio, no distractions.",
+  "Every time you die: pause. Ask — what was I doing in the 10 seconds before that death?",
+  "Write down what you notice. After watching: what caused the most deaths?",
+  "That cause becomes your drill focus for the next session. One specific drill addressing that one pattern.",
+  "Repeat weekly: one VOD, one pattern found, one drill assigned.",
+],
+goal:"You are improving the specific thing that is actually costing you, not training randomly.",
+ex:`VOD shows you died 4 times in one match by recovering with the same trajectory. You never noticed during play. 30 minutes of VOD review found what 50 ranked games did not. Next session: recovery variation drill (from guide 4). The pattern is now fixed in one targeted session.`},
+
+// TIER 6
+{cat:"drill",abbr:"D21",name:"Set adaptation speed",short:"Identify and exploit opponent pattern within one stock",
+def:`Goal: you map the opponent\'s most exploitable habit within the first stock and exploit it starting stock 2.
+
+At Diamond and above, your opponents have real gameplan. Beating them requires adapting faster than they do.`,
+steps:[
+  "Stock 1: play standard, but actively look for one exploitable habit. What do they do when pressured? How do they recover? What is their favorite neutral tool?",
+  "Between stocks: say aloud what you noticed. Speaking it reinforces the memory.",
+  "Stock 2: make one specific adaptation. If they always dodge forward when you run in: stop at max range instead of running in.",
+  "Track: did your one adaptation create an opening in stock 2?",
+  "Build to: you can identify and begin exploiting a pattern within the first 60 seconds of a match.",
+],
+goal:"You are fighting the specific person in front of you, not a generic opponent.",
+ex:`Stock 1: you notice every time you approach from the air they throw NSig as an anti-air. Stock 2: you approach from the ground instead. Their NSig is never thrown because your approach removed the trigger. You neutralized their best defensive tool just by changing your approach direction.`},
+
+{cat:"drill",abbr:"D22",name:"Micro-spacing precision",short:"Stay at exactly your weapon\'s optimal range",
+def:`Goal: at all times in neutral, you are at the exact range where your weapon threatens but their weapon does not reach you.
+
+This is footsies taken to its limit. Not approximately in range — exactly at range. The difference is one dash length.`,
+steps:[
+  "Training mode. Using sword: walk to exactly the tip range of SLight. Note where that is relative to the CPU.",
+  "Walk in and out of that range 50 times. Feel the exact distance.",
+  "Now vs Bodvar sword: where does their SLight reach? Walk to just outside it. This is your optimal zone.",
+  "In matches: whenever you feel yourself being hit by a neutral poke, ask — was I slightly too close? Note the distance and adjust.",
+,
+  "Pass condition: opponents\' neutral pokes stop landing because you are exactly one dash too far.",
+],
+goal:"You exist at a range where you threaten and they do not. Consistently. Without thinking about it.",
+ex:`You are at sword SLight tip range. Opponent\'s SLight barely reaches you — sourspot hit, 12 damage, no hitstun for combo. Your SLight, thrown at the same moment from the same distance, hits at tip — sweetspot, 22 damage, full hitstun. Same range, different position within it. Micro-spacing creates that difference.`},
+
+{cat:"drill",abbr:"D23",name:"Frame advantage exploitation",short:"Know which of your moves are safe, which are punishable",
+def:`Goal: you never throw a move that is punishable without a specific reason. Your neutral move selection accounts for safety.
+
+Every move has a safety profile: safe means the opponent cannot punish even if they expect it. Unsafe means they can punish if they react. Knowing which of your moves are which stops you from giving away free damage.`,
+steps:[
+  "Training mode. Throw each of Bodvar\'s moves at the CPU and then stand there. Which moves get you punished?",
+  "NL: safe or unsafe? SL: safe or unsafe? DL: safe or unsafe? Each sig: how punishable?",
+  "Map: Bodvar\'s safe neutral tools vs unsafe options. Write the list.",
+  "In ranked: only throw unsafe moves as punishes or kill confirms. Safe moves are your neutral tools.",
+  "Pass condition: you stop getting punished for moves you threw in neutral.",
+],
+goal:"Your neutral move selection is based on safety. You do not give away free damage.",
+ex:`You realize Bodvar NL on the ground is relatively safe at max range — the recovery frames end before the opponent can reach you. DL is unsafe on whiff — the recovery is long. You start using NL as your neutral poke and DL only as a confirm after you are already in range. Your neutral damage taken drops immediately.`},
+
+{cat:"drill",abbr:"D24",name:"Tilt recognition and reset",short:"Identify tilt mid-match and use a reset cue",
+def:`Goal: you recognize the onset of tilt mid-match and interrupt it with a deliberate reset before it degrades your play.
+
+Tilt is the highest-level skill in this list because it is invisible during play and affects everything else. At Diamond+, everyone has similar execution. Mental game is often the deciding factor.`,
+steps:[
+  "Define your personal tilt signals. For most people: attacking faster than usual, ignoring positioning, making the same mistake multiple times.",
+  "Choose a reset cue. Something simple: take one breath. Look at the center of the stage for one second. Say a single word.",
+  "In practice: the moment you notice a tilt signal, use the reset cue. Then make one deliberate neutral decision — not an attack. A movement.",
+  "Track: how many stocks did you lose primarily to tilt-induced decisions this week? Trending down is the goal.",
+,
+],
+goal:"Tilt no longer runs unchecked. You catch it within one or two bad decisions and interrupt the pattern.",
+warn:"This drill has no pass condition in the traditional sense. Tilt management is a continuous practice, not a skill you unlock.",
+ex:`You just died at 60% to a read you should have seen. You feel the urgency to rush in and get revenge. Tilt signal recognized. You take one breath. You look at center stage. You dash dance for 3 seconds before touching the opponent. The urgency passes. Your next stock is clean.`},
+
+// ============================
+// MOVEMENT ARCHITECTURE
+// ============================
+
+{cat:"move",abbr:"MA",name:"Movement architecture — the full concept",short:"Movement is the strategy. The attack is just its conclusion.",
+def:`You heard something real: there is a way of thinking about neutral where movement and attack are not two separate decisions. The attack is not something you do after moving — the attack is what the movement was building toward all along.
+
+Here is the full framework:
+
+LAYER 1 — PACING (tempo control)
+Pacing is the rhythm of your movement. Fast, slow, stop, fast again. Variable tempo creates timing ambiguity — the opponent cannot time their response to you because your tempo keeps shifting.
+Tools: dash dance, wavedash, empty dash, sudden stops.
+Purpose: disrupt the opponent\'s ability to react at the right moment.
+
+LAYER 2 — SPACING (range control)
+Spacing is controlling the exact distance between you and the opponent. You want to be at a distance where your attack reaches and theirs does not. One step too close and you are in their range. One step too far and your attack whiffs.
+Tools: backdash, wavedash to specific ranges, footsies.
+Purpose: create a range advantage before the attack happens.
+
+LAYER 3 — ANGLE (approach direction)
+The direction from which you threaten changes which of their options can answer. A threat from above bypasses their grounded attacks. A threat from the side forces different dodge timing than a threat from the air.
+Tools: platform approach, run-off aerial, short hop from different heights.
+Purpose: pick an attack angle that removes their best defensive option.
+
+LAYER 4 — TIMING (attack moment)
+After pacing, spacing, and angle are set up, the attack happens at a specific moment — not when you feel like it, but when the setup has created the opening. The attack is the conclusion of the three layers above.
+Purpose: the attack lands not because it is fast but because the position and timing removed the opponent\'s ability to avoid it.
+
+THE KEY INSIGHT:
+A player who attacks with poor movement (just runs in and swings) is fighting the opponent\'s full set of options. A player with good movement architecture is attacking after removing most of those options through positioning. The attack does not have to be faster — it just has to land where the defense cannot reach.`,
+ex:`Full sequence: You dash dance (pacing — disrupting their timing). You wavedash to tip range (spacing — you are in range, they are not). You short hop to change angle (angle — aerial approach instead of grounded). At peak of short hop you throw NAir with fast fall (timing — the attack at the exact moment the angle removed their grounded anti-air option). The NAir lands not because you were fast. It landed because three layers of movement removed their ability to avoid it.`,
+warn:`Movement architecture does not mean slow. It means intentional. The whole setup can happen in 2-3 seconds. At high level it happens faster than opponents can consciously process — which is exactly the point.`},
+
+{cat:"move",abbr:"Tempo",name:"Tempo control",short:"Vary your speed to break the opponent\'s timing",
+def:`Tempo is how fast you are moving at any given moment. Consistent tempo is readable — the opponent times their response to your rhythm. Variable tempo breaks their timing.
+
+FAST: dash toward opponent aggressively. Creates urgency, forces reaction.
+SLOW: walk slowly, stop. Creates confusion — when are you attacking?
+SUDDEN STOP: dash fast then stop completely. Opponent reacted to the fast dash. Now you are standing still and they committed to a response.
+MIXED: fast → stop → fast → stop in irregular patterns.
+
+Tempo control is why dash dancing works. You are not just moving left and right — you are creating a rhythm that the opponent tries to time, and then you break the rhythm.`,
+ex:`You dash toward the opponent fast three times in a row. Each time you DL. They time their dodge to your dash speed. Fourth approach: you walk slowly toward them. Their timing was set for fast — the slow walk confuses them. They dodge too early. Their cooldown is active as you arrive.`},
+
+{cat:"move",abbr:"Spacing2",name:"Spacing precision",short:"The specific distance that makes your attacks land and theirs miss",
+def:`Spacing is not just "stay far" or "get close." It is being at the exact range where your specific move threatens and their specific move does not reach.
+
+Every weapon has an optimal spacing zone:
+Sword: mid-range, just outside SLight sourspot, inside SLight tip range.
+Spear: slightly farther than sword, poke with SL at max extension.
+Gauntlets: close, inside most opponents\' safe poke range.
+
+Finding your spacing zone for Bodvar:
+Stand in training mode. Walk toward the dummy. Throw SLight. Did it hit at the tip? That is your spacing zone. Anything closer and you risk eating a counter. Anything farther and you whiff.
+
+In a match you want to live in that zone — not occasionally visit it.`,
+ex:`You and the opponent both have sword. Their SLight sweetspot range is slightly shorter than yours. You find the range where your SLight tip hits and their SLight tip misses. Every SLight exchange at that range you win. The spacing advantage turns a mirror matchup in your favor.`},
+
+{cat:"move",abbr:"AngleAtk",name:"Attack angle selection",short:"Which direction you attack from changes everything",
+def:`The same attack thrown from different angles creates completely different defensive problems for the opponent.
+
+GROUNDED: standard, expected. They have grounded dodge, aerial dodge, counter-attack, backdash as options.
+SHORT HOP (low aerial): removes grounded dodge timing. They need to anti-air or dodge earlier.
+HIGH AERIAL: threatens from above. Removes many grounded responses. But you are committed to the air longer.
+PLATFORM DROP: attacks from above through a platform. Angle the opponent rarely prepares for.
+RUN-OFF: horizontal momentum carried into aerial. Fast and low, hard to react to.
+
+The attack is the same. The angle is what determines whether it hits. Choosing the angle that removes the opponent\'s best option is movement architecture in practice.`,
+ex:`Opponent always dodges through your grounded DL approach. You switch to short hop NAir from the same starting position. The aerial approach has a different angle and arrives at a slightly different timing. Their dodge — timed for your DL — misses the NAir completely. Same attack intent, different angle, different result.`},
+
+// ============================
+// STRATEGIES
+// ============================
+
+{cat:"strat",abbr:"StLead",name:"Stock lead strategy",short:"How to play when you are winning",
+def:`When you are up a stock or have significantly less damage, your gameplan changes completely.
+
+CORE PRINCIPLE: you have a lead. Do not give it back. Make them take risks to come back, then punish those risks.
+
+Stock lead gameplan:
+1. Play center stage. Do not go to the edges. Let them come to you.
+2. Prioritize whiff punishes over initiating. React, do not act.
+3. Avoid going offstage for edgeguards unless the read is certain. A failed edgeguard risks your lead.
+4. Extend stocks. Take safe damage instead of going for risky kills. They need to kill you twice. Make that as hard as possible.
+5. Make them impatient. A patient player with a lead forces the opponent to act — and acting creates mistakes.
+
+What NOT to do with a lead:
+- Play aggressive and lose the lead through a series of trades.
+- Go for flashy edgeguards when safe ledge trapping would work.
+- Overextend trying to end the match fast. Let the lead work for you.`,
+ex:`You are up a stock. Opponent at 0%, you at 40%. Old response: rush them down. New response: dash dance at center, make them come to you. They rush in out of desperation at :30 seconds left in the stock. Their rush approach is a run-in with no setup. You backdash and whiff punish. The lead forced their mistake.`},
+
+{cat:"strat",abbr:"StDef",name:"Stock deficit strategy",short:"How to play when you are losing",
+def:`When you are down a stock or behind on damage, your gameplan needs to create risk. Passive play when behind just delays a loss.
+
+CORE PRINCIPLE: you need something to change. Playing the same way you played when you got behind will not create that change.
+
+Stock deficit gameplan:
+1. You need to take the first interaction. Initiate more than usual.
+2. Accept trades that are close to even — you need to build damage, even if you take some too.
+3. Look for reads, not just reactions. A read that works changes the momentum. A safe whiff-punish game keeps the deficit.
+4. Change your approach type. If what you were doing was being read, doing more of it will not work.
+5. Play for the edgeguard. An edgeguard KO at 70% is the fastest way back into a match.
+
+What NOT to do when behind:
+- Play even more passively hoping they make a mistake. They are winning — they do not need to take risks.
+- Panic and swing randomly. Desperation swings give away free damage.
+- Keep using the approach that was being read. That pattern cost you the lead.`,
+ex:`You are down a stock at 0%. They are at 50%. You need to end their stock before they end yours again. You switch from wavedash approach (which they have solved) to platform drop approach. The angle change is something they have not seen this match. You land 3 hits in a row from platform drops. You close the gap and take the stock. Adaptation broke the deficit.`},
+
+{cat:"strat",abbr:"DefPlay",name:"Defensive gameplan",short:"Winning by making the opponent make all the mistakes",
+def:`A full defensive gameplan is a legitimate strategy — not passive, but reactive. You win by having better responses to everything the opponent initiates.
+
+Defensive gameplan structure:
+1. Never initiate unless you have a clear advantage (they are cornered, on high damage, coming off a dodge cooldown).
+2. Position at a range where you can react to their approach. Not so close they are already on you, not so far you cannot punish.
+3. Make your defensive options unpredictable: rotate between dodge through, backdash, counter-attack, jump. Never the same escape twice in a row.
+4. Punish every approach attempt they make. Every time they come to you, they should take damage or miss.
+5. Edge: use the ledge as a weapon. Stand slightly inside the blast zone range and let them approach you where you have a KO threat.
+
+This strategy works best against aggressive opponents who commit to run-in approaches. It struggles against patient players who mirror your passivity.`,
+ex:`Opponent plays very aggressive — always running in with DL. You position at mid-range and wait. They run in. You backdash. They whiff. You punish. They try a jump approach. You anti-air DL. Punish. Every time they initiate, they take damage. By the time they understand what is happening, they are at 80% and you have taken almost nothing.`},
+
+{cat:"strat",abbr:"PlatStrat",name:"Platform strategy",short:"Using platforms to control the vertical dimension",
+def:`Platforms are not just escape routes — they are strategic tools that change the entire geometry of a fight.
+
+PLATFORM OFFENSE:
+Platform drop attack: stand on platform → drop through → DL on the way down. The opponent has to defend a threat from above.
+Platform presence: standing on a platform forces the opponent to either come up (giving you high ground advantage) or wait below (letting you dictate timing).
+Run-off aerial: run off platform edge → fast aerial → land. Fast horizontal aerial with platform momentum.
+
+PLATFORM DEFENSE:
+Cornered at ground: jump to platform. You are no longer cornered. Opponent has to follow you up or concede position.
+Platform as a reset: when in disadvantage on the ground, a platform jump resets position and timing.
+
+PLATFORM CONTROL:
+If you control the top platform, the opponent has to attack upward into your range or cede the high ground. High ground is an advantage in every fighting game.`,
+ex:`You are being pressured at center ground. Instead of dodging, you jump to the top platform. Opponent follows. You platform drop the moment they land — DL as you pass through. You were above them, attacked through the platform, and are now below them with momentum. The platform made the whole sequence possible.`},
+
+{cat:"strat",abbr:"Tempo2",name:"Tempo strategy (macro)",short:"Control the pace of the whole match, not just one exchange",
+def:`Tempo at the match level is different from tempo within a single exchange.
+
+FORCING FAST TEMPO: you attack frequently and aggressively. Forces the opponent into reactive mode. Best against players who are slow to adapt, defensive players, or when you have a damage lead and want to close out a stock.
+
+FORCING SLOW TEMPO: you slow everything down — long dash dance sequences, empty approaches, patience. Forces impatient players to commit prematurely. Best against aggressive opponents or when you need to figure out their patterns.
+
+READING THEIR PREFERRED TEMPO: some players play fast naturally. Some play slow. Figure out which they prefer and counter it:
+Against fast players: slow down. Their aggression becomes your whiff punishes.
+Against slow players: apply pressure. Force them to act before they are ready.
+
+TEMPO SHIFT AS A MID-SET ADJUSTMENT:
+If you lost game 1 playing fast, game 2 play slow. The change alone creates confusion.`,
+ex:`Game 1 you played fast and aggressive. They adapted by stock 3 and started reading your rushdowns. Game 2 you open with 8 seconds of pure dash dance at mid-range. Nothing. They expected fast. The slow tempo breaks their prepared read. They start to approach you instead — now they are the aggressor and you are the one whiff-punishing.`},
+
+// ============================
+// BODVAR ROADMAP
+// ============================
+
+{cat:"bodvar",abbr:"BV1",name:"Why Bodvar works all the way up",short:"Sword + spear is genuinely complete at every rank",
+def:`Bodvar uses sword and spear. Both weapons are individually strong and complement each other well.
+
+SWORD strengths: excellent combo potential, strong DL hitstun, versatile combo routes, DAir spike for edgeguard, good kill confirms with SSig.
+
+SPEAR strengths: longest-range poke option for Bodvar, SAir has wide coverage, good at controlling space in neutral, strong edgeguard tool with SAir coverage angles.
+
+TOGETHER: sword gives you a close-range combo game, spear gives you mid-range control. You can fight at any range effectively.
+
+Bodvar stats: balanced. Not the fastest legend, not the strongest, not the highest defense. But balanced stats mean no critical weaknesses. The same reason he is the tutorial character is why he holds up — no glaring exploitable stat hole.
+
+Can Bodvar reach Valhallan? Yes — it has been done. Is he top tier at the absolute ceiling? No. Legends with better sigs or higher combo potential have a small edge at the very top. But the gap at your current rank (Gold/Plat) is almost entirely skill, not character.`,
+ex:`At Gold: Bodvar is fine. At Platinum: Bodvar is fine. At Diamond: Bodvar is solid. At Valhallan: you are working slightly uphill compared to the current top-tier legends, but Valhallan Bodvar players exist. The difference is maybe 5% at the very top. At your level the difference is 0%.`},
+
+{cat:"bodvar",abbr:"BV2",name:"Bodvar-specific combo routes",short:"His actual best combos with both weapons",
+def:`SWORD (use most often for combos):
+
+Low percent (0-50%):
+DL → NAir → NAir → GP (main route, 50+ damage)
+DL → NAir → SAir (horizontal send, good for stage positioning)
+NL → DL → NAir → NAir (open with neutral light)
+
+Mid percent (50-80%):
+DL → NAir → GP (GP ender at this range)
+SAir → SAir (aerial chase, sword SAir has good range)
+NAir → DL (land from aerial, continue ground combo)
+
+High percent (80%+):
+DL → SSig (horizontal KO, Bodvar SSig is a bear charge — huge range)
+SL → SSig (faster setup)
+NAir → SSig (aerial confirm)
+
+SPEAR (use for neutral and edgeguard):
+
+Neutral poke: SL at max range (longest safe neutral tool Bodvar has)
+DL → NAir (spear DL is also a good starter)
+SAir → SAir (spear SAir chasing is excellent)
+Kill confirm: DL → SSig (spear SSig is also strong)
+Edgeguard: SAir coverage from ledge, DAir spike offstage
+
+SWITCH LOGIC:
+Pick up sword when inside range for combo time.
+Pick up spear when at mid-range for poke and edgeguard.
+If both weapons are on stage, sword for punish game, spear for neutral.`,
+ex:`Match flow on Bodvar: you pick up sword early (better combo game at low percent). Build damage to 80% with sword DL → NAir routes. Switch kill confirm: DL → sword SSig (bear charge) for horizontal KO. Edgeguard with spear SAir if you grabbed it. Clean game plan built on Bodvar\'s actual weapon strengths.`},
+
+{cat:"bodvar",abbr:"BV3",name:"Bodvar rank progression roadmap",short:"What to focus on at each rank specifically",
+def:`GOLD (where you are):
+Focus: short hop aerials, one 4-hit combo consistent on both sides, stop full-hop approaching.
+Bodvar tool to master: sword DL → NAir → NAir → GP. Just this one combo, automatic.
+Win condition at Gold: land more DLs than your opponent. Whiff punish their slow attacks. 
+
+EARLY PLATINUM:
+Focus: wavedash approach, empty approaches, stop panic dodging.
+Bodvar tool to master: wavedash → DL → combo as one motion. Spear SL poke at range.
+Win condition at Plat: approach variation means they cannot time your DL. Spear poke creates whiff punishes.
+
+MID PLATINUM:
+Focus: kill confirms, edgeguarding, center stage discipline.
+Bodvar tool to master: at 80%+ DL → SSig is your automatic decision. SAir → DAir edgeguard from ledge.
+Win condition at mid-Plat: you end stocks at 90-110% instead of 130%+ because kill confirm and edgeguard work.
+
+DIAMOND:
+Focus: micro-spacing, tempo control, mid-set adaptation, conditioning.
+Bodvar tool to master: Bodvar NSig as a kill threat from neutral reads (it has armor frames).
+Win condition at Diamond: you fight the specific person, not a generic opponent. Pattern recognition and adaptation.
+
+VALHALLAN (ceiling):
+Focus: frame-perfect execution, optimized matchup knowledge for every legend, reading humans at the highest level.
+Bodvar tool to master: every true combo window per weight class, every safe neutral tool, recovery variation automatic.
+Win condition at Valhallan: the 5% disadvantage of not playing the top-tier meta is overcome by deeper Bodvar mastery than anyone you face.`,
+ex:`You are at Gold. Your roadmap is simple: one combo automatic, short hop automatic, wavedash approach started. Do not read the Diamond section yet. Master the Gold section completely first. Each rank has its own bottleneck. Fixing the current bottleneck is always more valuable than learning the next rank\'s skills early.`},
+
+{cat:"bodvar",abbr:"BV4",name:"Bodvar NSig armor frames",short:"His signature has super armor — use it as a read tool",
+def:`Bodvar\'s NSig (the bear charge forward) has super armor frames during a portion of its startup. This means if the opponent hits you during that window, your NSig still fires through the hit.
+
+This is a significant tool that most Bodvar players at Gold and Plat do not know about or use.
+
+When to use NSig armor:
+1. As a punish on a predictable approach: you see them running in with a DL, you time NSig — they hit you, you armor through and the sig KOs them.
+2. As a mid-range read: you read them throwing SLight at max range. NSig\'s armor eats the SLight and charges through.
+3. As an anti-run-in tool: they always run in with a grounded attack. NSig charged to armor timing catches the habit.
+
+When NOT to use NSig armor:
+1. Raw in neutral with no read. The startup is slow and without armor timing it gets punished.
+2. Against aerial attacks — the armor window timing is specific to grounded-range attacks.
+3. When behind on stocks and you cannot afford to misread.`,
+ex:`Opponent always runs in with DL when you are at mid-range. You have shown them the run-in interaction 5 times. Sixth time: you charge NSig with armor timing exactly when their DL would hit. Their DL connects during armor frames. Your NSig charges through. They die at 90%. The armor turned a free combo into a KO.`},
+
+];
+
+let activeCat="all";
+let openMap={};
+
+function render(){
+  const q=document.getElementById("searchInput").value.toLowerCase().trim();
+  const terms=TERMS.filter(t=>{
+    const matchCat=activeCat==="all"||t.cat===activeCat;
+    const matchQ=!q||(
+      t.name.toLowerCase().includes(q)||
+      t.abbr.toLowerCase().includes(q)||
+      t.short.toLowerCase().includes(q)||
+      (t.def&&t.def.toLowerCase().includes(q))
+    );
+    return matchCat&&matchQ;
+  });
+
+  document.getElementById("catNav").innerHTML=CATS.map(c=>
+    `<button class="cat-btn ${c.cls}${activeCat===c.id?" active":""}" onclick="setCat('${c.id}')">${c.label}</button>`
+  ).join("");
+
+  let html="";
+  if(activeCat==="all"||activeCat==="drill"){
+    const drillTerms=terms.filter(t=>t.cat==="drill");
+    if(drillTerms.length){
+      if(activeCat==="all") html+=`<p class="section-label">Drills</p>`;
+      DRILL_TIERS.forEach(tier=>{
+        const tierTerms=drillTerms.filter(t=>tier.ids.includes(t.abbr));
+        if(!tierTerms.length)return;
+        html+=`<div class="tier-divider">${tier.tier}</div>`;
+        tierTerms.forEach(t=>{html+=termHTML(t);});
+      });
+    }
+  }
+  CAT_ORDER.filter(c=>c!=="drill").forEach(cat=>{
+    const list=terms.filter(t=>t.cat===cat);
+    if(!list.length)return;
+    if(activeCat==="all") html+=`<p class="section-label">${CAT_NAMES[cat]}</p>`;
+    list.forEach(t=>{html+=termHTML(t);});
+  });
+
+  if(!html) html=`<div class="no-results">No results for "${q}"</div>`;
+  document.getElementById("content").innerHTML=html;
+}
+
+function termHTML(t){
+  const key=t.cat+"_"+t.abbr;
+  const isOpen=!!openMap[key];
+  let extra="";
+  if(t.steps){
+    extra+=`<div class="drill-box"><div class="drill-title">Step by step</div>`+
+      t.steps.map(s=>`<div class="drill-step">${s}</div>`).join("")+`</div>`;
+  }
+  if(t.goal){
+    extra+=`<div class="goal-box"><strong>Pass condition:</strong> ${t.goal}</div>`;
+  }
+  return `<div class="term-row${isOpen?" open":""}" id="tr_${key}" onclick="toggle('${key}')">
+    <div class="term-head">
+      <span class="abbr" style="${COLORS[t.cat]}">${t.abbr}</span>
+      <span class="term-name">${t.name}</span>
+      <span class="term-short">${t.short}</span>
+      <span class="chevron">&#8964;</span>
+    </div>
+    <div class="term-body${isOpen?" open":""}">
+      <div class="def">${t.def}</div>
+      ${extra}
+      ${t.warn?`<div class="warn"><strong>Watch out:</strong> ${t.warn}</div>`:""}
+      <div class="ex"><strong>Example:</strong> ${t.ex}</div>
+    </div>
+  </div>`;
+}
+
+function toggle(key){
+  openMap[key]=!openMap[key];
+  render();
+  if(openMap[key]) setTimeout(()=>document.getElementById("tr_"+key)?.scrollIntoView({behavior:"smooth",block:"nearest"}),50);
+}
+function setCat(id){activeCat=id;render();}
+render();
+</script>

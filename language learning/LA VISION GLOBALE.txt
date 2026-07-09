@@ -1,0 +1,687 @@
+LA VISION GLOBALE
+Voilà ce que le programme t'a appris à faire — même si tu l'as pas encore vécu comme un tout cohérent :
+
+DONNÉES          →    LOGIQUE           →    INTERFACE
+(BD, API, IoT)        (Backend, IA)          (Web, Mobile)
+     ↕                     ↕                      ↕
+  MySQL             Node.js / PHP            React / Kotlin
+  MongoDB           ASP.NET / Python         Android / HTML
+  Firebase          scikit-learn             Streamlit / Tkinter
+  Raspberry Pi      Express.js               Jetpack Compose
+
+\
+Ce que ça veut dire concrètement : tu peux construire un système complet — un capteur Raspberry Pi collecte des données, une API Node.js les stocke dans MongoDB, un modèle scikit-learn les analyse, et une app React ou Android les affiche à l'utilisateur.
+Personne à Teccart ne t'a montré cette image complète. Chaque prof t'a donné une pièce. La session 6 c'est le moment où tu assembles tout.
+/
+
+
+MVC — Model, View, Controller
+Oui c'est toujours présent, mais c'est un pattern parmi d'autres, pas l'architecture globale. Dans MVC :
+
+Model = les données et les règles métier
+View = ce que l'utilisateur voit
+Controller = ce qui reçoit les actions de l'utilisateur et fait le lien
+
+Ce que j'ai dessiné c'est plus large — c'est les couches d'un système, pas un pattern spécifique. MVC existe à l'intérieur de chaque couche.
+
+Données — source ou stockage ?
+Les deux sont différents et tu as raison de les séparer :
+Sources de données — d'où vient l'information à l'origine :
+
+Un utilisateur qui tape dans un formulaire
+Un capteur IoT (température, mouvement...)
+Un fichier CSV/Excel
+Une API externe (météo, paiement...)
+Une caméra, un microphone
+
+Stockage — où on la garde :
+
+Base de données relationnelle (MySQL, SQL Server) → données structurées avec relations
+Base de données NoSQL (MongoDB) → données flexibles, documents JSON
+Cloud (Firebase) → temps réel, synchronisation automatique
+Fichiers locaux → simple mais limité
+
+
+Raspberry Pi dans données — pourquoi ?
+Bonne remarque, j'aurais dû mieux placer ça. Le Raspberry Pi c'est à la fois une source ET un serveur selon comment tu l'utilises :
+
+En tant que source → ses capteurs collectent des données physiques réelles (température, présence, lumière)
+En tant que serveur → il peut héberger une API, recevoir des requêtes, stocker des données
+
+Ce n'est pas un utilisateur — c'est une machine autonome qui interagit avec le monde physique.
+
+La logique — tu as bien compris
+Oui exactement. La couche logique c'est tout ce qui se passe entre la donnée brute et l'affichage :
+
+Validation (est-ce que cette donnée est correcte ?)
+Transformation (convertir, formater, calculer)
+Analyse (trouver des patterns, prédire — c'est là que l'IA entre)
+Règles métier (si l'utilisateur est admin, il peut faire ça)
+Réaction (si la température dépasse 30°, envoyer une alerte)
+
+
+Interface — ta définition est exacte
+Et on peut aller plus loin. Il y a trois niveaux d'interaction :
+Lecture seule → tableaux de bord, rapports, affichage de données — l'utilisateur consomme
+Lecture + interaction → navigation, filtres, recherche — l'utilisateur explore
+Lecture + interaction + modification → formulaires, CRUD complet — l'utilisateur crée et modifie
+
+
+MONDE PHYSIQUE / SOURCES
+        ↓
+   [Collecte]
+   Capteurs IoT, formulaires, APIs externes, fichiers
+        ↓
+   [Stockage]
+   MySQL / MongoDB / Firebase / fichiers
+        ↓
+   [Logique]
+   Validation → Transformation → Analyse (IA) → Règles métier
+        ↓
+   [Interface]
+   Web (React) / Mobile (Android) / Desktop (Tkinter)
+        ↓
+   UTILISATEUR
+
+Et l'utilisateur peut aussi remonter dans le sens inverse — il modifie des données qui retournent dans le stockage, qui redéclenchent la logique.
+C'est un cycle, pas une ligne droite.
+
+__-
+
+Oui exactement — "formulaire" c'est juste la forme la plus visible de collecte. La collecte c'est tout moment où ton système capture quelque chose d'un utilisateur ou de l'environnement :
+
+Clic, position souris, scroll → JavaScript événements
+Texte tapé → input form
+Photo prise → caméra/API
+Localisation → GPS
+Température ambiante → capteur IoT
+
+Si tu enregistres la position habituelle de la souris, tu collectes, tu stockes, tu analyses — c'est exactement le cycle complet.
+
+Technologies par couche
+
+COUCHE 1 — COLLECTE
+Tout ce qui capture une donnée à l'origine
+Depuis l'utilisateur humain
+
+HTML5 forms — champs texte, boutons, fichiers
+JavaScript events — clics, hover, scroll, position souris, keypresses
+React forms — formulaires contrôlés avec état
+jQuery events — capture d'événements DOM
+Android (Kotlin/Java) — touch, gestures, input utilisateur
+
+Depuis l'environnement physique
+
+gpiozero (Python) — lecture des capteurs GPIO sur Raspberry Pi
+Capteurs DHT11 — température et humidité
+Capteur PIR — détection de mouvement
+Caméra OpenCV — capture d'images et frames vidéo
+face_recognition — capture des features d'un visage
+GPS Android — coordonnées de localisation
+
+Depuis des sources externes
+
+Fetch / Axios (JavaScript) — appels à des APIs externes
+Retrofit (Android/Kotlin) — appels REST depuis une app mobile
+PHP file_get_contents / cURL — lecture de sources web côté serveur
+
+
+COUCHE 2 — STOCKAGE
+Où les données vivent
+Relationnel — données structurées avec relations
+
+MySQL — le plus utilisé dans le programme, schémas normalisés
+SQL Server — utilisé avec ASP.NET et Entity Framework
+Oracle PL/SQL — administration avancée, procédures stockées
+SQLite — base légère embarquée dans Android et Python
+
+Non-relationnel — documents flexibles
+
+MongoDB — documents JSON, utilisé avec Node.js/Express
+MongoDB Atlas — version cloud de MongoDB
+Firebase Firestore — NoSQL temps réel de Google
+
+Cloud & temps réel
+
+Firebase Realtime Database — synchronisation instantanée
+Firebase Auth — stockage sécurisé des identités utilisateurs
+
+Fichiers
+
+Fichiers CSV/JSON — lecture avec pandas, Python
+localStorage (JavaScript) — stockage côté navigateur, temporaire
+
+
+COUCHE 3 — LOGIQUE
+Tout ce qui traite, transforme, analyse, décide
+Backend web — traitement des requêtes
+
+Node.js / Express.js — serveur JavaScript, routing, middleware, API REST
+PHP MVC — serveur PHP, architecture Modèle-Vue-Contrôleur
+ASP.NET Core / C# — serveur Microsoft, Entity Framework, LINQ
+Python Flask/FastAPI — (mentionné dans les cours IA comme option de déploiement)
+
+ORM — traduction code ↔ base de données
+
+Entity Framework (C#) — requêtes LINQ, approche database-first
+Requêtes SQL directes — MySQL, Oracle PL/SQL, procédures stockées, triggers
+
+IA & analyse
+
+pandas / numpy — manipulation et nettoyage des données
+matplotlib / seaborn — visualisation des données
+scikit-learn — régression, classification, clustering, validation croisée
+YOLOv8 — détection d'objets en temps réel
+OpenCV — traitement d'image, manipulation de frames
+face_recognition — reconnaissance faciale
+TensorFlow / TensorFlow Lite — réseaux de neurones, déploiement mobile
+
+Sécurité & authentification
+
+JWT (JSON Web Tokens) — authentification stateless
+Sessions PHP — gestion d'état côté serveur
+Firebase Auth — authentification clé en main
+Hachage de mots de passe (bcrypt) — sécurisation des données sensibles
+Stripe API — logique de paiement sécurisé
+
+Automatisation système
+
+Bash scripts — automatisation Linux
+Procédures stockées Oracle/MySQL — logique directement dans la BD
+Triggers SQL — réactions automatiques aux changements de données
+SCADA — supervision et contrôle industriel IoT
+
+
+COUCHE 4 — INTERFACE
+Ce que l'utilisateur voit et avec quoi il interagit
+Web — lecture seule ou interactive
+
+HTML5 / CSS3 — structure et style de base
+Bootstrap — grille responsive, composants prêts
+Media Queries — adaptation à tous les écrans
+JavaScript DOM — manipulation dynamique de la page
+jQuery — simplification des interactions DOM
+React.js — composants réutilisables, état, SPA complètes
+React Hooks — useState, useEffect, useContext
+Context API — gestion d'état global
+React Router — navigation entre pages sans rechargement
+AJAX / Fetch / Axios — mise à jour partielle sans recharger la page
+
+Mobile Android — interaction native
+
+XML Layouts — définition de l'interface Android
+ConstraintLayout — mise en page flexible
+RecyclerView / ListView — affichage de listes performantes
+Jetpack Compose — interface déclarative moderne (Kotlin)
+View Binding — liaison directe vues ↔ code
+Material Design — guidelines visuelles Google
+Animations natives Android
+
+Desktop / Embarqué
+
+Tkinter (Python) — interfaces graphiques desktop simples
+Streamlit — interfaces web pour apps data/IA, très rapide à construire
+
+
+COUCHE 5 — TRANSPORT
+Ce qui fait circuler les données entre les couches
+C'est une couche que le programme n'a pas nommée explicitement mais que t'as utilisée partout :
+
+HTTP / HTTPS — protocole de base du web
+REST API — convention de communication entre frontend et backend
+JSON — format d'échange de données universel
+JWT — token transporté dans chaque requête sécurisée
+WebSocket / Firebase Realtime — communication temps réel bidirectionnelle
+SSH / FTP — transfert de fichiers et accès distant serveur
+DHCP / DNS — résolution des adresses réseau
+I2C / SPI / UART — protocoles de communication entre composants IoT
+
+
+COUCHE 6 — INFRASTRUCTURE & OUTILS
+Ce qui supporte tout le reste — invisible mais essentiel
+Environnement
+
+Linux (Ubuntu) — serveur de production
+Windows 10/11 — poste de développement
+Raspberry Pi OS — système embarqué IoT
+
+Serveurs web
+
+Apache — serveur web classique Linux
+Nginx — serveur web haute performance
+IIS — serveur web Microsoft
+
+Versionnement & collaboration
+
+Git — gestion des versions
+GitHub / GitLab — hébergement et collaboration
+Branches, merges, résolution de conflits
+
+IDEs & outils de développement
+
+VS Code — éditeur universel
+Visual Studio — développement .NET/C#
+Android Studio — développement Android
+Postman — test des APIs REST
+Proteus — simulation de circuits électroniques
+Chrome DevTools — debug frontend
+
+Documentation & gestion de projet
+
+UML — diagrammes de classes, séquence, cas d'utilisation
+Gantt — planification de projet
+Agile / Scrum — méthodologie de développement itératif
+Markdown — documentation technique
+Swagger — documentation d'API
+
+
+C'est l'image complète de ce que tu as appris. 
+
+__.
+
+Voilà. La toile complète — toutes les technos de ton programme, dans leur couche exacte, avec leurs connexions.VvisualizeVvisualizeL'outil de visualisation a un problème technique en ce moment. Pas grave — voici tout en texte, c'est aussi solide.
+
+Le plan de remise à niveau — la toile se construit par phases
+La philosophie d'abord : tu ne réapprends pas technologie par technologie. Tu réapprends par couche, en construisant toujours quelque chose qui connecte plusieurs couches à la fois. C'est ça qui crée les liens.
+
+Phase 0 — La vision globale (1 semaine)
+Avant de toucher au code, comprends comment une requête web voyage de A à Z : le clic d'un utilisateur → HTTP → serveur → base de données → réponse → affichage. Une seule action, six couches traversées.
+Ressource : CS50W Harvard, Lecture 0 sur YouTube (gratuit, 1h30) — la meilleure explication de l'architecture web jamais faite.
+
+Phase 1 — HTML/CSS/JavaScript (2 semaines)
+La trinité. HTML structure, CSS stylise, JS rend vivant. Tout part de là.
+Ressource : javascript.info — disponible partiellement en français. LA référence JavaScript. Pas de tutoriels YouTube aléatoires — va directement à la source.
+Exercice clé : une page HTML qui fait un fetch à une API publique (météo, etc.) et affiche les résultats. Tu touches Collecte + Transport + Interface en même temps.
+
+Phase 2 — Les données (2 semaines)
+SQL d'abord : schema, requêtes, jointures, normalisation. Puis MongoDB : documents, flexibilité, quand l'utiliser vs MySQL.
+Ressources : CS50 SQL (Harvard, YouTube/edX, gratuit) — MongoDB University M001 (officiel, gratuit).
+Exercice clé : modéliser une app simple (users + posts), créer les tables, faire les requêtes. La BD devient concrète.
+
+Phase 3 — Le backend Node.js (3 semaines)
+Créer une API REST complète : routes, middleware, connexion à MongoDB, authentification JWT.
+Ressource : The Odin Project (path NodeJS, gratuit, projet-based, anglais) — documentation officielle Express.js.
+Exercice clé : API REST avec users + posts, auth JWT, CRUD complet. C'est le cœur de la couche Logique + Transport.
+
+Phase 4 — Le frontend React (3 semaines)
+Composants, useState, useEffect, Context API, React Router. Puis connecter à ton API du Phase 3.
+Ressource : react.dev — les meilleures docs officielles jamais écrites pour un framework. Pas besoin d'autre chose.
+Exercice clé : frontend React qui consomme ton API. Tu vois maintenant Interface → Transport → Logique → Stockage en action.
+
+Phase 5 — Déploiement (1 semaine)
+Ton app tourne sur le vrai internet. Backend sur Render ou Railway (gratuit), frontend sur Vercel ou Netlify (gratuit).
+Ressource : docs officielles Render + Vercel. C'est là que Linux, Apache/Nginx et SSH deviennent concrets.
+
+Phase 6 — Mobile Android/Kotlin (3 semaines)
+Kotlin de base, puis Retrofit pour appeler ton API, Firebase pour le temps réel.
+Ressource : developer.android.com/courses — officiel, gratuit, Kotlin-based. Plus fiable que n'importe quel YouTube.
+Exercice clé : version Android de ton app web. Même API, nouvelle interface.
+
+Phase 7 — IA appliquée (2-3 semaines)
+pandas pour nettoyer, scikit-learn pour prédire, Streamlit pour afficher.
+Ressource : fast.ai (gratuit, pragmatique, anglais) — part du projet vers la théorie, pas l'inverse. Scikit-learn user guide pour les détails.
+Exercice clé : modèle ML qui prédit quelque chose de réel, servi via Streamlit.
+
+Phase 8 — IoT (1-2 semaines)
+Raspberry Pi + gpiozero + ton API Node.js du Phase 3. Un capteur DHT11 envoie sa température à ton serveur, React l'affiche en temps réel.
+Ressource : tes notes de cours Teccart + raspberrypi.com/documentation (officiel, gratuit).
+
+Les 5 ressources universelles — garde-les toujours ouvertes
+roadmap.sh/full-stack — ta carte globale. Consulte-la chaque semaine pour voir où tu en es.
+Fireship.io (YouTube, anglais) — 100 secondes pour comprendre n'importe quelle techno. Regarde AVANT d'apprendre, pas après.
+MDN Web Docs — LA référence pour tout ce qui touche au web. Marque-page permanent.
+javascript.info — le meilleur resource JavaScript qui existe. Partiellement en français.
+The Odin Project — curriculum complet gratuit basé sur des projets. Pour le web full-stack.
+
+À ne PAS faire
+W3Schools — souvent incorrect et daté. ChatGPT pour "apprendre" — ça t'explique sans que tu construises. Cours payants au début — tout ce dont tu as besoin est gratuit.
+
+La règle d'or
+Après chaque nouvelle chose apprise, pose-toi la question : dans quelle couche ça se trouve ? Ça connecte à quoi au-dessus et en dessous ? Si tu peux répondre à ces deux questions, tu as compris. Sinon, tu as juste mémorisé.
+
+---____===
+1 Collecte
+D'ou vient la donnee
+HTML Forms
+JS Events
+Android Inputs
+gpiozero
+OpenCV
+GPS Android
+Fetch/Axios
+Retrofit
+2 Stockage
+Ou elle est gardee
+MySQL
+MongoDB
+Firebase Firestore
+SQLite
+SQL Server
+Oracle PL/SQL
+Firebase Auth
+3 Logique
+Ce qui la traite
+Node.js/Express
+PHP MVC
+ASP.NET Core
+Python
+scikit-learn
+YOLOv8
+face_recognition
+JWT
+Stripe
+Entity Framework
+pandas/numpy
+Triggers/Procs
+SCADA/IoT
+4 Transport
+Comment elle circule
+HTTP/REST
+JSON
+JWT Token
+WebSocket
+SSH/FTP
+I2C/SPI/UART
+5 Interface
+Ce que l'usager voit
+React.js
+HTML5/CSS3
+Bootstrap
+jQuery
+Kotlin/Android
+Jetpack Compose
+Tkinter
+Streamlit
+6 Infrastructure
+Ce qui supporte tout
+Linux
+Apache/Nginx
+Git/GitHub
+Postman
+Proteus
+UML/Scrum
+Bash
+
+___----====
+htmlforms
+C'est la façon dont une page web collecte des données d'un utilisateur. La balise <form> avec des champs à l'intérieur :
+html<form>
+  <input type="text" name="email" />
+  <input type="password" name="password" />
+  <button type="submit">Connexion</button>
+</form>
+Quand l'utilisateur clique "Connexion", les données voyagent vers un serveur — PHP, Node.js, ASP.NET peu importe. C'est pour ça que dans la toile il connecte directement à ces trois-là.
+Dans la couche Collecte parce que c'est littéralement le premier moment où la donnée existe dans ton système — avant ça elle était dans la tête de l'utilisateur, après ça elle est dans ton code.
+
+====---____=
+Avant d'apprendre une techno → tu cliques dessus, tu lis sa description, tu regardes ses connexions. Tu sais où tu vas avant de partir.
+Après avoir appris quelque chose → tu reviens, tu cliques, et tu te demandes : "est-ce que je comprends maintenant pourquoi ça connecte à ça ?" Si oui, c'est ancré.
+
+Les phases — oui, dans l'ordre croissant
+Tu apprends 1 → 2 → 3 → 4 → 5 → 6 (Collecte → Stockage → Logique → Transport → Interface → Infrastructure). Pourquoi cet ordre ? Parce que chaque couche a besoin de la précédente pour avoir du sens :
+
+Tu ne peux pas stocker (2) une donnée que tu n'as pas collectée (1)
+Tu ne peux pas traiter (3) une donnée que tu n'as pas stockée (2)
+Tu ne peux pas afficher (5) un résultat que tu n'as pas traité (3)
+
+
+Mais tu penses aussi en sens décroissant
+Une fois que tu connais les couches, tu traces le chemin inverse : quand un utilisateur voit quelque chose à l'écran (5), d'où ça vient ?
+Interface (5) → Transport (4) → Logique (3) → Stockage (2) → Collecte (1)
+Exemple concret : tu vois ton solde bancaire (Interface). Comment il est arrivé là ? React l'a demandé via une requête HTTP (Transport), le serveur Node.js a calculé (Logique), à partir des transactions dans MySQL (Stockage), qui venaient de tes achats passés (Collecte).
+Savoir tracer dans les deux sens = tu as compris l'architecture.
+
+Ce que chaque phase apporte aux autres
+C'est ta vraie question, et c'est la plus importante :
+
+Collecte donne la matière première à Stockage
+Stockage garde ce que Logique va chercher
+Logique transforme ce que Transport va livrer
+Transport fait circuler entre Logique et Interface
+Interface présente ce que Logique a produit
+Infrastructure porte les 5 autres — sans elle, rien ne tourne
+
+Aucune couche ne sert à rien seule. C'est un relais, pas des silos.
+
+Les règles d'or — compris vs mémorisé
+Après chaque session d'apprentissage, pose ces 3 questions sur ce que tu viens de voir :
+
+Dans quelle couche ça se trouve ?
+Ça reçoit quoi de la couche en dessous ?
+Ça donne quoi à la couche au dessus ?
+
+Si tu réponds aux trois sans regarder → compris. Si tu hésites → juste mémorisé, retournes-y.
+
+Le plan concret, semaine par semaine
+Reprends les phases du plan que je t'ai donné plus tôt :
+
+Sem. 1 → Phase 0 : la vision (CS50W Lecture 0)
+Sem. 2-3 → Phase 1 : HTML/CSS/JS (javascript.info)
+Sem. 4-5 → Phase 2 : données SQL + MongoDB
+Sem. 6-8 → Phase 3 : backend Node.js
+Sem. 9-11 → Phase 4 : React
+Sem. 12 → Phase 5 : déploiement
+Sem. 13-15 → Phase 6 : mobile Android
+Ensuite → IA + IoT + projet intégré
+
+
+La clé de tout
+À la fin, tu construis un seul projet qui touche les 6 couches. C'est là que la toile devient solide pour de vrai — parce que tu auras vu chaque connexion fonctionner de tes propres mains.
+
++===---____
+1. La vision globale — le cycle des données dans les deux sens, ce que chaque couche apporte aux autres
+2. Les 6 couches — chaque couche avec sa description + tableau technologie/rôle/connexions
+3. Technologies par session — sessions 1 à 6 avec les cours, les couches et les technos apprises
+4. Les 8 phases d'apprentissage — chaque phase avec durée, description, ressources et exercice clé
+5. Comment utiliser la toile — avant / après / pendant / pour déboguer
+6. Les règles d'or — les 3 questions, compris vs mémorisé, tester dans les deux sens
+7. Les ressources — universelles + par phase + à éviter
+8. La philosophie — le cycle d'apprentissage efficace, signe que la toile est solide
+________________________
+-_-=_=-_-=_=-_-=_=-_-=_=
+________________________
+ session 6 était incomplète dans le guide. Voici ce qui manquait :
+420-D0T-TT (M. Bani) — ce que j'avais mis en vague, c'est en réalité :
+
+Cycle de vie d'un logiciel (SDLC) complet
+Méthodologie Agile/Scrum — rôles (Product Owner, Scrum Master, Dev), sprints, backlog, daily standups
+Analyse des besoins et professions TI
+Intégration au marché du travail
+
+420-RCW-TT (M. Ait Abderrahim) — j'avais juste "microservices" mais c'est beaucoup plus :
+
+FastAPI (pas Flask) — nouveau framework Python pour les APIs
+Docker — conteneurisation
+Kubernetes — orchestration de conteneurs
+GitHub Actions — CI/CD automatisé
+Azure / AWS — cloud
+LLM / Chatbots IA — grands modèles de langage intégrés
+Cahier des charges, UML, architecture microservices
+
+Ces technologies appartiennent toutes à la couche Infrastructure (Docker, K8s, CI/CD, Cloud) et couche Logique (FastAPI, LLM) — elles manquent dans la toile et dans le guide.
+
+-?-?-
+Session 6 fait trois choses en même temps — pas une seule.
+
+Le stage (SEE-TT) = consolidation pure. C'est 240 heures dans le monde réel. Tu prends tout ce que t'as appris sessions 1-5 et tu le vis dans un vrai contexte professionnel — avec de vraies contraintes, de vrais clients, de vraies deadlines. Pas de nouvelles technologies, juste tes compétences actuelles sous pression réelle.
+
+D0T = élévation professionnelle. Ce n'est pas "encore du code". C'est la couche meta — comment les professionnels organisent le développement logiciel. SDLC, Agile, Scrum, c'est la culture du milieu. Tu peux savoir coder React et ne rien comprendre à comment une équipe de 10 développeurs livre un produit ensemble. D0T comble exactement ce manque.
+Ce que j'ai raté dans le guide : D0T parle aussi du marché du travail TI — rôles (dev, DevOps, analyste), types d'entreprises, associations professionnelles. C'est une préparation à devenir un professionnel, pas juste un codeur.
+
+RCW = même fondements, nouvelle échelle. Tu connais déjà React, Node.js, Python, MySQL. RCW prend ça et montre comment ça tourne en production, à grande échelle, maintenu par une équipe.
+Docker n'est pas une nouvelle technologie — c'est MySQL dans un container portable au lieu d'une installation locale. Kubernetes n'est pas nouveau — c'est "si ton Node.js crash à 3h du matin, qui le redémarre automatiquement ?" GitHub Actions n'est pas nouveau — c'est Git que tu connais, mais qui déclenche des actions automatiques à chaque push.
+Le vrai saut conceptuel de RCW : passer de "ça marche sur ma machine" à "ça tourne en production, déployé automatiquement, avec zero downtime."
+
+Ce que le guide rate encore pour session 6 :
+Pour D0T : les détails Scrum (user stories, story points, velocity, burndown charts), les rôles précis, la documentation Swagger/README professionnel.
+Pour RCW : la progression logique — pourquoi Docker avant Kubernetes, pourquoi GitHub Actions avant Azure/AWS, comment le LLM/RAG s'intègre dans une architecture microservices qu'on connaît déjà.
+--??--??--
+ across sessions toward unified engineering visionExcellent — j'ai maintenant tout. Voici la liste complète et détaillée session par session, suivie de la vision globale.
+
+SESSION 1 — Automne 2024 · Fondations
+Cours techniques
+420-HTM-TT — Conception de pages web
+Concepts : structure d'un document web, sémantique HTML5, balises de mise en page, formulaires, liens, images, multimédia
+Technologies : HTML5, CSS3 (formatage, couleurs, bordures, responsive, Media Queries), éditeurs (VS Code)
+Méthodes : validation W3C, séparation structure/style
+420-ALP-TT — Logique de programmation
+Concepts : algorithme, pseudocode, décomposition de problème, structures de contrôle (if/else, boucles for/while), fonctions, récursivité, structures de données (listes, tuples, dictionnaires, piles, files)
+Technologies : Python, Anaconda, VS Code
+Méthodes : pensée algorithmique, plan de tests fonctionnels, débogage
+420-APP-TT — Algorithme et programmation C#
+Concepts : variables, types de données, opérateurs arithmétiques/logiques, structures conditionnelles et répétitives, tableaux, fonctions, passage par valeur/référence, algorithmes de recherche
+Technologies : C#, Visual Studio
+Méthodes : traduction pseudocode → code, débogueur, tests fonctionnels
+420-PPT-TT — Préparer son poste de travail
+Concepts : systèmes d'exploitation, partitionnement, gestion des utilisateurs/groupes, droits d'accès NTFS, sauvegarde/restauration, sécurité informatique
+Technologies : Windows 10/11, IIS, VPN, pare-feu, antivirus, EFS, cryptographie, Bureau à distance
+Méthodes : installation OS, administration système, stratégies de sécurité
+Cours généraux
+
+201-RPM-TT : Mathématiques appliquées (algèbre, logique, statistiques de base)
+604-101-MQ : Langue anglaise et communication
+109-101-M1 : Santé et activité physique
+
+
+SESSION 2 — Hiver 2025 · Web dynamique + POO + BD
+420-SRD-TT — Sites web responsives et dynamiques
+Concepts : DOM, événements, animations, responsive design, grille CSS, composants UI
+Technologies : JavaScript (ES6), jQuery, Bootstrap, Media Queries
+Méthodes : manipulation du DOM, gestion des événements, debug navigateur (F12)
+420-POO-TT — Programmation orientée objet
+Concepts : classes, objets, héritage, polymorphisme, encapsulation, interfaces, design patterns, UML (diagrammes de classes), gestion des exceptions, gestion des versions
+Technologies : Java, C# (Visual Studio), Git, GitHub/GitLab
+Méthodes : modélisation UML, algorithmique orientée objet, documentation du code
+420-CBD-TT — Conception de bases de données
+Concepts : modèle entité-relation (MCD/MLD), normalisation (1NF/2NF/3NF), clés primaires/étrangères, intégrité référentielle, requêtes SQL (SELECT, JOIN, GROUP BY, sous-requêtes)
+Technologies : MySQL, phpMyAdmin
+Méthodes : modélisation relationnelle, conception du schéma, optimisation des requêtes
+420-DSI-TT — Dépanner des scripts internet
+Concepts : débogage JavaScript, analyse des erreurs console, gestion des exceptions, DOM asynchrone
+Technologies : JavaScript, Chrome DevTools, console navigateur
+Méthodes : approche méthodique de débogage, isolation des erreurs, tests
+420-RCA-TT — Réaliser un contrat d'achat
+Concepts : composants matériels (CPU, RAM, GPU, stockage), cahier des charges, devis d'installation, évaluation des besoins
+Technologies : outils bureautiques, documentation technique
+Méthodes : analyse des besoins client, rédaction de devis professionnel
+420-DSW-TT — Déploiement de serveurs web sous Linux
+Concepts : architecture client-serveur, serveurs web, protocoles réseau, gestion de services, automatisation
+Technologies : Linux (Ubuntu), Apache, Nginx, SSH, FTP, DHCP, DNS, Bash
+Méthodes : configuration serveur, scripts d'automatisation, sécurisation
+Cours généraux
+
+601-MNA-TT : Communication en français
+
+
+SESSION 3 — Été 2025 · Mobile + Web transactionnel + BD avancée
+420-AM1-TT — Développement mobile Android 1
+Concepts : architecture Android, cycle de vie des activités, layouts (ConstraintLayout, RecyclerView, ListView), événements utilisateur, animations natives, stockage local, accès réseau
+Technologies : Java, Kotlin (initiation), Android Studio, SQLite, Firebase (Firestore, Auth), GPS, notifications push, Retrofit, REST API
+Méthodes : architecture MVC/MVVM mobile, Material Design, gestion des permissions
+420-AT1-TT — Applications transactionnelles Web 1
+Concepts : programmation côté serveur, sessions, cookies, authentification, gestion des formulaires, CRUD, gestion des états
+Technologies : ASP.NET WebForms, C#, SQL Server, HTML/CSS, JavaScript
+Méthodes : architecture web transactionnelle, gestion des sessions, sécurisation des données
+420-MAB-TT — Maintenance et administration de BD
+Concepts : transactions (ACID), procédures stockées, fonctions, triggers, curseurs, gestion des utilisateurs BD, sauvegarde/restauration, optimisation des requêtes, index
+Technologies : MySQL, Oracle PL/SQL, SQL Server
+Méthodes : administration BD, audit de performance, sécurisation des données
+420-CEA-TT — Commerce électronique 1
+Concepts : sessions PHP, panier d'achat, gestion des utilisateurs, formulaires sécurisés, interaction BD dynamique
+Technologies : PHP, MySQL, HTML/CSS, Git
+Méthodes : développement d'une application e-commerce complète, travail en équipe Git
+420-FCS-TT — Frameworks côté serveur
+Concepts : architecture REST, middleware, routing, moteurs de templates, gestion des variables d'environnement, CRUD NoSQL
+Technologies : Node.js, Express.js, MongoDB, EJS, npm
+Méthodes : conception d'API REST, architecture MVC backend, gestion des routes
+Cours généraux
+
+340-101-MQ : Philosophie — l'être humain (rationalité, argumentation)
+109-102-M3 : Activité physique 2
+601-101-MQ : Écriture et littérature
+
+
+SESSION 4 — Automne 2025 · Web avancé + Mobile avancé + React
+420-AT2-TT — Applications transactionnelles Web 2
+Concepts : approche database-first, Entity Framework (ORM), LINQ, interfaces dynamiques, AJAX asynchrone, gestion des erreurs côté serveur
+Technologies : ASP.NET Core MVC, C#, Entity Framework, SQL Server, jQuery, AJAX
+Méthodes : architecture MVC avancée, optimisation des requêtes ORM, interfaces réactives
+420-AM2-TT — Développement mobile Android 2
+Concepts : architecture avancée (MVVM), Jetpack Compose, liaison de données, appels API distants, stockage cloud, animations avancées
+Technologies : Kotlin, Java, Jetpack Compose, Firebase Firestore/Auth, Retrofit, SQLite, GPS, notifications push
+Méthodes : architecture MVVM, tests unitaires Android, publication d'app
+420-CE2-TT — Commerce électronique 2
+Concepts : programmation orientée objet en PHP, modèle MVC, gestion avancée des sessions, intégration de paiement, sécurité applicative
+Technologies : PHP MVC, MySQL, Stripe API, JWT, Git
+Méthodes : architecture MVC PHP, intégration de services tiers, sécurisation des paiements
+420-FCC-TT — Frameworks côté client
+Concepts : composants React, état (useState/useReducer), Context API, React Router, communication avec API, gestion des formulaires, design responsive
+Technologies : React.js, JavaScript ES6+, Fetch/Axios, CSS3, localStorage
+Méthodes : SPA (Single Page Application), gestion d'état, consommation d'API REST
+Cours généraux
+
+340-102-MQ : Philosophie — l'être humain
+383-MNA-03 : L'entreprise et vous (notions de gestion, entrepreneuriat)
+601-102-MQ : Littérature et imaginaire
+
+
+SESSION 5 — Hiver 2026 · IA + IoT + Intégration full-stack
+420-1AA-TT — IA 1 : Apprentissage automatique
+Concepts : statistiques descriptives, régression, classification, clustering, validation croisée, overfitting/underfitting, métriques d'évaluation (précision, rappel, F1), pipeline ML
+Technologies : Python, pandas, numpy, matplotlib, scikit-learn, Streamlit
+Méthodes : cycle ML complet (collecte → nettoyage → modélisation → évaluation → déploiement)
+420-1AB-TT — IA 2 : Vision artificielle
+Concepts : traitement d'image, convolution, réseaux de neurones convolutifs (CNN), détection d'objets, reconnaissance faciale, segmentation
+Technologies : Python, OpenCV, YOLOv8, face_recognition, TensorFlow/TensorFlow Lite, Streamlit, SQLite
+Méthodes : pipelines de vision par ordinateur, transfer learning, déploiement de modèles
+420-POC-TT — Périphériques et objets connectés
+Concepts : électronique numérique/analogique, protocoles IoT (I2C, SPI, UART), capteurs (PIR, DHT11, température), actionneurs (buzzer, LED, LCD), systèmes embarqués
+Technologies : Raspberry Pi, Python, gpiozero, Tkinter, Proteus (simulation), SCADA
+Méthodes : prototypage IoT, simulation de circuits, intégration hardware/software
+420-RCS-TT — Réaliser un contrat sur les bases de données
+Concepts : API REST avancée, architecture microservices (initiation), authentification JWT, gestion des erreurs API, documentation API (Swagger/Postman)
+Technologies : React.js, Node.js, Express.js, MongoDB Atlas, JWT, Postman
+Méthodes : développement full-stack intégré, déploiement cloud, documentation technique
+420-CE2-TT — Commerce électronique 2 (reprise)
+Technologies : PHP MVC, MySQL, Stripe — idem session 4
+420-STU-TT — Soutien technique aux usagers
+Concepts : modèle OSI, diagnostic réseau, gestion des incidents, support niveau 1/2, documentation d'incidents
+Technologies : outils de diagnostic réseau, Linux, Windows
+Méthodes : méthodologie ITIL de base, escalade des incidents, communication avec les usagers
+Cours généraux
+
+203-MNA-TT : Histoire de la méthode scientifique (Kuhn, Foucault, méthode expérimentale)
+601-102-MQ : Littérature et imaginaire (reprise)
+
+
+SESSION 6 — Été 2026 · Intégration finale — Stage + Documentation + Web transactionnel avancé
+420-SEE-TT — Stage en entreprise (ou projet)
+Objectif : appliquer toutes les compétences acquises en milieu professionnel, 240 heures
+Livrables : cahier des charges, rapport de stage, présentation finale
+Superviseur : Sameh Chaieb
+420-D0T-TT — Documentation technique
+Concepts : cycle de vie du logiciel, UML (diagrammes de classes, séquence, cas d'utilisation), Gantt, gestion de projet Agile/Scrum, sprints, documentation API, rapports techniques
+Technologies : outils UML, Markdown, outils de gestion de projet
+Méthodes : rédaction technique professionnelle, modélisation complète d'un système
+420-RCW-TT — Réaliser un contrat de service Web transactionnel
+Concepts : architectures de services web, microservices, API REST avancée, sécurité web avancée, déploiement cloud, intégration continue
+Technologies : stack complète web (React + Node.js + MongoDB + MySQL), Docker (initiation), services cloud
+Méthodes : architecture de services, intégration bout-en-bout, tests d'intégration
+Cours généraux
+
+340-MNA-TT : Éthique et société contemporaine (en ligne)
+601-102-MQ ou 601-103-MQ : Littérature québécoise
+109-103 : Autonomie et multisport
+
+
+LA VISION GLOBALE
+Voilà ce que le programme t'a appris à faire — même si tu l'as pas encore vécu comme un tout cohérent :
+DONNÉES          →    LOGIQUE           →    INTERFACE
+(BD, API, IoT)        (Backend, IA)          (Web, Mobile)
+     ↕                     ↕                      ↕
+  MySQL             Node.js / PHP            React / Kotlin
+  MongoDB           ASP.NET / Python         Android / HTML
+  Firebase          scikit-learn             Streamlit / Tkinter
+  Raspberry Pi      Express.js               Jetpack Compose
+Ce que ça veut dire concrètement : tu peux construire un système complet — un capteur Raspberry Pi collecte des données, une API Node.js les stocke dans MongoDB, un modèle scikit-learn les analyse, et une app React ou Android les affiche à l'utilisateur.
+Personne à Teccart ne t'a montré cette image complète. Chaque prof t'a donné une pièce. La session 6 c'est le moment où tu assembles tout.

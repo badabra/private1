@@ -1,0 +1,256 @@
+
+<style>
+  :root { --accent: var(--color-text-info); }
+  .tier-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 0 0 1rem; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .tier-btn { padding: 6px 14px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); background: transparent; cursor: pointer; font-size: 13px; color: var(--color-text-secondary); transition: all 0.15s; }
+  .tier-btn.active { background: var(--color-background-info); color: var(--color-text-info); border-color: transparent; font-weight: 500; }
+  .tier-btn:hover:not(.active) { background: var(--color-background-secondary); }
+  .term-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s; }
+  .term-card:hover { border-color: var(--color-border-secondary); }
+  .term-card.open { border-color: var(--color-border-primary); }
+  .term-header { display: flex; justify-content: space-between; align-items: center; }
+  .term-name { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+  .term-tag { font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: 500; }
+  .tag-core { background: var(--color-background-info); color: var(--color-text-info); }
+  .tag-pos { background: var(--color-background-success); color: var(--color-text-success); }
+  .tag-combat { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .tag-adv { background: var(--color-background-danger); color: var(--color-text-danger); }
+  .term-body { margin-top: 10px; font-size: 14px; color: var(--color-text-secondary); line-height: 1.65; display: none; border-top: 0.5px solid var(--color-border-tertiary); padding-top: 10px; }
+  .term-body.open { display: block; }
+  .example { margin-top: 8px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 12px; font-size: 13px; color: var(--color-text-secondary); border-left: 2px solid var(--color-border-info); }
+  .example strong { color: var(--color-text-info); font-weight: 500; }
+  .tier-header { margin-bottom: 1rem; }
+  .tier-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 4px; }
+  .tier-desc { font-size: 13px; color: var(--color-text-secondary); margin: 0 0 1rem; }
+  .chevron { font-size: 16px; color: var(--color-text-tertiary); transition: transform 0.2s; }
+  .term-card.open .chevron { transform: rotate(180deg); }
+</style>
+
+<h2 class="sr-only">Brawlhalla vocabulary guide organized by tier from foundational to advanced</h2>
+
+<div style="padding: 1rem 0">
+  <div class="tier-nav" id="tierNav"></div>
+  <div id="tierHeader" class="tier-header"></div>
+  <div id="termList"></div>
+</div>
+
+<script>
+const tiers = [
+  {
+    id: 'foundation',
+    label: 'Tier 1 — foundation',
+    desc: 'The absolute bedrock. You cannot talk about anything else without these.',
+    terms: [
+      {
+        name: 'Neutral',
+        tag: 'core',
+        def: `Neutral is not a move or a position — it's a PHASE. It's the state of the game where neither player has an advantage: you're both standing freely, nothing is happening yet, and everything is possible.\n\nThink of it like chess before any piece is committed. The moment you throw an attack that misses, or your opponent lands a hit, you've LEFT neutral. The game then shifts into a different phase (advantage, disadvantage, or combo).\n\nWinning neutral means you land the FIRST meaningful hit when the game was "open." How you win neutral: make the opponent commit to something (an attack, a jump, a dodge), and then punish that commitment. You don't have to be faster — you have to be smarter.`,
+        example: 'Both players are walking around center stage, no one attacking. That\'s neutral. You fake a forward dash — your opponent panics and throws a side attack. You sidestep it and hit them. You just won neutral by making them commit first.'
+      },
+      {
+        name: 'Commitment',
+        tag: 'core',
+        def: `When you press a move, you are "committed" to it for its entire duration. You cannot cancel it, and you cannot dodge. This window of vulnerability is what the whole game is built around.\n\nEvery move has startup frames (before it hits), active frames (when it hits), and recovery frames (after it ends). Recovery frames = your commitment. The opponent can punish you there.\n\nUnderstanding commitment is understanding why you get hit. You got punished not because you used the wrong move — but because you committed at the wrong moment.`,
+        example: 'You throw a heavy attack that misses. While you\'re in the recovery animation, your opponent hits you. That\'s commitment punished.'
+      },
+      {
+        name: 'Punish',
+        tag: 'core',
+        def: `A punish is a hit you land because the opponent made a mistake — usually because they whiffed an attack and you hit them during their recovery frames.\n\nPunishes are the core economy of the game. You win by punishing mistakes, not just by attacking freely. At high level, every single hit is supposed to be a punish or a called read — not a random swing.`,
+        example: 'Opponent dashes in and throws a ground attack. You dodge through it. While they recover from the whiff, you hit them. Clean punish.'
+      },
+      {
+        name: 'Whiff',
+        tag: 'core',
+        def: `A whiff means an attack that hits nothing — either because the opponent dodged, moved away, or was out of range. Whiffing is dangerous because it puts you in recovery frames (commitment) with no reward.\n\nWhiff punishing means specifically training yourself to attack the moment your opponent whiffs. It's a core skill: see the miss, immediately respond.`,
+        example: 'You walk just outside the hitbox of your opponent\'s attack. They hit air. You immediately dash back in and hit them during their recovery. Whiff punish.'
+      },
+      {
+        name: 'Percent / damage',
+        tag: 'core',
+        def: `In Brawlhalla, damage is shown as a percentage. The higher your percent, the farther you fly when hit. At low percent, you barely move. At high percent (130%+), a single strong hit can KO you.\n\nThis is different from health bars. Your percent NEVER resets between stocks unless you manually play on a mode that resets it. Controlling the damage gap between you and your opponent is a key strategic layer.`,
+        example: 'You\'re at 40%, opponent is at 90%. Even if they hit you once for 20 damage, you\'re at 60%. But if you hit them once for 25 damage, they\'re at 115% — one heavy and they\'re dead.'
+      },
+      {
+        name: 'Stock / life',
+        tag: 'core',
+        def: `A stock is one life. Standard ranked is 3 stocks. When you get knocked off the screen and can't recover, you lose a stock. The player who runs out of stocks first loses.\n\nStock advantage matters beyond just damage. Being up a stock means you can afford to play more defensively or take safer trades.`,
+        example: 'You\'re at 2 stocks, opponent at 1. Even at 120% damage, you can afford to play safer — losing this stock still gives you one more. That changes how you should play.'
+      },
+      {
+        name: 'KO / offstage',
+        tag: 'core',
+        def: `A KO happens when a player is knocked beyond the blast zones — the invisible boundaries around the stage. There are four: left, right, top, bottom.\n\nOffstage means the area OUTSIDE the main platform but INSIDE the blast zones — over the void. When you or your opponent is out there, recovery becomes critical. Most KOs happen because someone was sent offstage and couldn't get back.`,
+        example: 'You knock your opponent offstage to the right at 120%. They try to recover with their jump + legend movement. You edge-guard them and they hit the right blast zone. KO.'
+      }
+    ]
+  },
+  {
+    id: 'positioning',
+    label: 'Tier 2 — positioning',
+    desc: 'Where you are on the stage matters as much as what moves you use.',
+    terms: [
+      {
+        name: 'Stage control / center',
+        tag: 'pos',
+        def: `Controlling the center of the stage means you have the most options: you can go left, right, up, or down. The player in the center dictates the fight. The player on the edge is cornered.\n\nEdge = bad. Center = good. This is why you should always try to push your opponent toward corners and edges, while avoiding being cornered yourself.`,
+        example: 'You\'re both at center. You land a side attack that sends them toward the left edge. Now they\'re cornered — their only safe movement is right, which is toward you. You have control.'
+      },
+      {
+        name: 'Disadvantage state',
+        tag: 'pos',
+        def: `Being in disadvantage means you\'re in a bad position — you were just hit, you\'re in the air after a missed attack, you\'re cornered at an edge, or you\'re recovering from offstage.\n\nIn disadvantage, your options are limited: you need to escape. The worst thing you can do in disadvantage is panic and throw out random attacks — that usually leads to getting hit again.`,
+        example: 'You jumped and your opponent hit you upward. Now you\'re airborne above them with no double jump. They\'re below you with all options. You\'re in disadvantage — your job now is to land safely, not attack.'
+      },
+      {
+        name: 'Advantage state',
+        tag: 'pos',
+        def: `The opposite of disadvantage. You have the positional and momentum edge. Your opponent just whiffed, got sent flying, or is recovering from offstage. Now it\'s your job to CONVERT — turn this advantage into damage or a KO.\n\nMany players win neutral then do nothing with it. Being in advantage is worthless if you don\'t press it.`,
+        example: 'You hit your opponent off the stage. They\'re recovering from below. You\'re at the edge above them. You\'re in advantage — now edgeguard them and finish the stock.'
+      },
+      {
+        name: 'Ledge / edge',
+        tag: 'pos',
+        def: `The edge of the main platform. Being at the ledge limits your movement options (you can\'t walk back, only jump or fall off). The ledge is a critical zone for offense (edgeguarding) and defense (ledge options).\n\nLedge trapping means staying near the edge to intercept a recovering opponent as they try to get back on stage.`,
+        example: 'Your opponent is below the stage trying to recover. You stand at the ledge and throw attacks downward to block their recovery path. Ledge trap.'
+      },
+      {
+        name: 'Recovery',
+        tag: 'pos',
+        def: `Getting back to the stage after being knocked offstage. In Brawlhalla, you use your double jump and your legend\'s movement ability (the Q/special move). Using your double jump ENDS your airborne ability to change direction freely. Using your recovery move usually gives you upward or directional momentum.\n\nGood recovery = vary your timing, angle, and height so the opponent can\'t predict where you\'re aiming. Bad recovery = same trajectory every time.`,
+        example: 'You get knocked left offstage. Instead of immediately jumping back right (predictable), you drop a bit, then use your recovery at an angle. The opponent expected the direct path and missed their edgeguard.'
+      }
+    ]
+  },
+  {
+    id: 'combat',
+    label: 'Tier 3 — combat mechanics',
+    desc: 'The actual fighting layer — combos, reads, and defensive tools.',
+    terms: [
+      {
+        name: 'True combo',
+        tag: 'combat',
+        def: `A true combo is a sequence of attacks where the opponent CANNOT escape — no matter what they do. The second hit connects before the opponent\'s hitstun (the forced freeze after being hit) ends.\n\nTrue combos exist at specific percentages. A combo that\'s true at 0–50% might not be true at 80% because the opponent is flung farther and recovers faster.`,
+        example: 'Nair → ground pound is a common true combo at low percent with many legends. If you land the Nair, the ground pound connects before they can dodge. It\'s guaranteed.'
+      },
+      {
+        name: 'Read / read combo',
+        tag: 'combat',
+        def: `A read is when you predict what the opponent will do and act to counter it specifically. A read combo is a combo that only lands if the opponent does a specific thing (dodge in a direction, jump, stand still).\n\nReads are NOT guaranteed — they\'re predictions. When your read is right, it feels amazing. When it\'s wrong, you get punished for committing.`,
+        example: 'You think the opponent will dodge forward after being hit. You delay and throw a forward attack exactly where they\'d end up. They dodge right into it. That\'s a read.'
+      },
+      {
+        name: 'Hitstun',
+        tag: 'combat',
+        def: `After being hit, you freeze for a short period — you can\'t act. That\'s hitstun. The length of hitstun depends on the move\'s knockback. Heavy knockback = more hitstun = more time for the attacker to follow up.\n\nCombos exist because the follow-up move reaches the opponent BEFORE hitstun ends. Once hitstun ends, the opponent can dodge or attack — the combo is over.`,
+        example: 'You hit someone with a weak attack at 20%. They\'re in hitstun for 20 frames. Your follow-up attack takes 15 frames to reach them. It lands — it\'s a true combo because 15 < 20.'
+      },
+      {
+        name: 'DI — directional influence',
+        tag: 'combat',
+        def: `When you get hit, you can hold a direction to slightly change your knockback trajectory. This is DI. Smart DI can help you survive longer (DI toward center stage when sent outward), escape combos (DI away from the follow-up), or make edgeguarding harder for the opponent.\n\nMost players at mid level completely ignore DI. Learning it is a free upgrade to your survivability.`,
+        example: 'You get hit with a heavy attack that sends you right toward the blast zone at 120%. If you hold left (toward center), you travel less toward the blast zone. DI saved the stock.'
+      },
+      {
+        name: 'Dodge / airdodge',
+        tag: 'combat',
+        def: `Your main defensive tool. Dodge has invincibility frames (i-frames) — a brief window where you can\'t be hit. Ground dodge moves you left or right. Airdodge can go in any direction.\n\nDodges have a COOLDOWN. Spam dodge and you\'ll be stuck in dodge cooldown — wide open. Good players watch your dodge pattern and punish accordingly.`,
+        example: 'Opponent keeps attacking with the same move. You notice the pattern and dodge through it repeatedly. Then they adapt and delay — you dodge early, hit cooldown, and they punish. Dodge cooldown punish.'
+      },
+      {
+        name: 'String',
+        tag: 'combat',
+        def: `A string is a sequence of attacks that connects reliably but is NOT always a true combo — it can potentially be escaped with perfect dodge timing, but the options are limited enough that it usually connects.\n\nStrings are the bread and butter of Brawlhalla. Most of your damage output in a real game comes from strings, not guaranteed true combos.`,
+        example: 'Sword down-light → side-light → side-light is a classic string. It\'s escapable with perfect DI + dodge, but most players get hit by all three.'
+      }
+    ]
+  },
+  {
+    id: 'advanced',
+    label: 'Tier 4 — advanced concepts',
+    desc: 'What separates gold/plat from diamond. These require the lower tiers to make sense.',
+    terms: [
+      {
+        name: 'Footsies',
+        tag: 'adv',
+        def: `Footsies is the ground-based spacing game at mid-range — the edges of attack range where both players are close enough to threaten but not close enough for full combos. It\'s a constant back-and-forth of: step in to bait, step out to avoid, throw an attack at max range.\n\nIn Brawlhalla this is less developed than in traditional fighters but still applies at the edge of your weapon range. Mastering footsies means you stop running face-first into attacks.`,
+        example: 'You walk just outside the opponent\'s gauntlet range. They step in to try a hit — you step back and counter from outside their range with your own attack. Classic footsies exchange.'
+      },
+      {
+        name: 'Mix-up',
+        tag: 'adv',
+        def: `A mix-up is when you present two or more options to the opponent and they have to guess which one you\'ll do — there\'s no single answer that beats both.\n\nExample: you can hit them either side or down. If they dodge side, the down hits. If they dodge down, the side hits. That\'s a 50/50 mix-up. Mix-ups are how you break defensive players who rely on reactions.`,
+        example: 'After a down-light you can follow with a ground pound (hits if they stand still or dodge down) OR a down-air (hits if they jump). They have to choose. You mix between both so they can\'t always be right.'
+      },
+      {
+        name: 'Edgeguard',
+        tag: 'adv',
+        def: `Edgeguarding is attacking an opponent while they\'re trying to recover from offstage, preventing them from reaching the stage. It\'s one of the most efficient ways to KO — instead of building damage to 150%+ and hoping a move KOs, you hit them offstage at 60% and they can\'t get back.\n\nGreat edgeguarding requires reading the opponent\'s recovery angle and putting your hitbox in the way. It\'s a skill that converts mid-% damage into stocks.`,
+        example: 'Opponent is offstage to the right at 75%. They always recover with their legend ability straight up. You stand at the ledge and time a down-air to hit them mid-recovery. They fall. KO at only 75% — efficiency.'
+      },
+      {
+        name: 'Wall of pain',
+        tag: 'adv',
+        def: `Wall of pain (WoP) is a tactic where you keep an airborne opponent in the air continuously, building damage by chaining aerial hits and pushing them progressively toward a blast zone — usually the top or sides.\n\nIt\'s not necessarily a true combo — it relies on the opponent being unable to land and escaping. It\'s a high-risk, high-reward pressure tool that works well on opponents who panic in the air.`,
+        example: 'You hit someone upward, follow them with an uair, they bounce, you uair again — pushing them higher and higher toward the top blast zone. Wall of pain toward the ceiling KO.'
+      },
+      {
+        name: 'Option select',
+        tag: 'adv',
+        def: `An option select is when a single input covers multiple situations at once — you don\'t have to read correctly because your action handles several outcomes.\n\nExample: some neutral inputs in Brawlhalla can hit someone who\'s standing still AND someone who\'s dodging forward at the same time. You pick the move that beats the largest range of their options, not just one specific thing.`,
+        example: 'Instead of reading which direction they dodge, you throw a wide hitbox attack at mid-range that covers both "they stay" and "they approach." You\'re not guessing — you\'re covering multiple options with one input.'
+      },
+      {
+        name: 'Neutral game (deep)',
+        tag: 'adv',
+        def: `Now that you know the building blocks: neutral game is the constant war of controlling space, baiting commitment, and punishing whiffs WITHOUT committing yourself unnecessarily.\n\nThe core loop of neutral: approach/threaten → bait the opponent into committing → dodge or space the attack → punish during recovery → convert the punish into damage or KO → reset to neutral.\n\nAt high level, neutral is almost entirely about whiff punishing and patience. The player who attacks less but more accurately wins neutral more often.`,
+        example: 'You dash forward, stop short, fake a swing. Opponent commits to a defensive attack. You were already stepping back — their attack whiffs. You dash back in during their recovery and hit. That full sequence IS neutral game.'
+      }
+    ]
+  }
+];
+
+const tagLabel = { core: 'core concept', pos: 'positioning', combat: 'combat', adv: 'advanced' };
+let currentTier = 0;
+
+function renderNav() {
+  const nav = document.getElementById('tierNav');
+  nav.innerHTML = tiers.map((t, i) => `<button class="tier-btn${i===currentTier?' active':''}" onclick="switchTier(${i})">${t.label}</button>`).join('');
+}
+
+function renderTerms() {
+  const t = tiers[currentTier];
+  document.getElementById('tierHeader').innerHTML = `<p class="tier-title">${t.label}</p><p class="tier-desc">${t.desc}</p>`;
+  document.getElementById('termList').innerHTML = t.terms.map((term, i) => `
+    <div class="term-card" id="tc${currentTier}_${i}" onclick="toggleTerm(${i})">
+      <div class="term-header">
+        <span class="term-name">${term.name}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="term-tag tag-${term.tag}">${tagLabel[term.tag]}</span>
+          <span class="chevron">&#8964;</span>
+        </div>
+      </div>
+      <div class="term-body" id="tb${currentTier}_${i}">
+        <div style="white-space:pre-line">${term.def}</div>
+        <div class="example"><strong>Concrete example:</strong> ${term.example}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function switchTier(i) {
+  currentTier = i;
+  renderNav();
+  renderTerms();
+}
+
+function toggleTerm(i) {
+  const card = document.getElementById(`tc${currentTier}_${i}`);
+  const body = document.getElementById(`tb${currentTier}_${i}`);
+  card.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+renderNav();
+renderTerms();
+</script>

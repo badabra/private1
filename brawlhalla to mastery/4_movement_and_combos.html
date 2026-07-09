@@ -1,0 +1,527 @@
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif}
+
+.search-wrap{position:relative;margin-bottom:1.25rem}
+.search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--color-text-tertiary);pointer-events:none}
+#searchInput{width:100%;padding:9px 12px 9px 36px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg,12px);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;outline:none}
+#searchInput:focus{border-color:var(--color-border-primary)}
+
+.cat-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cat-btn{padding:5px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;font-size:12px;color:var(--color-text-secondary);white-space:nowrap;transition:all 0.15s}
+.cat-btn:hover:not(.active){background:var(--color-background-secondary)}
+.cat-btn.active{font-weight:500;border-color:transparent}
+.c-mov.active{background:#E1F5EE;color:#085041}
+.c-combo.active{background:#EEEDFE;color:#3C3489}
+.c-weapon.active{background:#FAEEDA;color:#633806}
+.c-gap.active{background:#FAECE7;color:#993C1D}
+.c-drill.active{background:#E6F1FB;color:#0C447C}
+
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-text-tertiary);margin:1.25rem 0 0.5rem}
+
+.term-row{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md,8px);margin-bottom:6px;overflow:hidden;cursor:pointer;transition:border-color 0.12s}
+.term-row:hover{border-color:var(--color-border-secondary)}
+.term-row.open{border-color:var(--color-border-primary)}
+.term-head{display:flex;align-items:center;gap:10px;padding:9px 12px}
+.abbr{font-size:11px;font-weight:500;padding:2px 7px;border-radius:8px;white-space:nowrap;min-width:40px;text-align:center;flex-shrink:0}
+.term-name{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1;min-width:0}
+.term-short{font-size:12px;color:var(--color-text-tertiary);flex:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chevron{font-size:14px;color:var(--color-text-tertiary);transition:transform 0.18s;flex-shrink:0}
+.term-row.open .chevron{transform:rotate(180deg)}
+.term-body{display:none;padding:10px 12px 12px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.term-body.open{display:block}
+.def{font-size:13px;color:var(--color-text-secondary);line-height:1.65;white-space:pre-line}
+.ex{margin-top:8px;font-size:12px;color:var(--color-text-secondary);border-left:2px solid var(--color-border-info);padding-left:10px;line-height:1.6}
+.ex strong{color:var(--color-text-info);font-weight:500}
+.warn{margin-top:8px;font-size:12px;border-left:2px solid var(--color-border-warning);padding:6px 10px;background:var(--color-background-warning);color:var(--color-text-warning);border-radius:0 var(--border-radius-md,8px) var(--border-radius-md,8px) 0;line-height:1.6}
+.warn strong{font-weight:500}
+.combo-chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.hit{display:inline-block;font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;background:#EEEDFE;color:#3C3489}
+.arr{font-size:14px;color:var(--color-text-tertiary)}
+.pct{font-size:11px;color:var(--color-text-tertiary);margin-top:4px}
+.combo-note{font-size:12px;color:var(--color-text-secondary);margin-top:6px;line-height:1.5}
+.drill-box{margin-top:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md,8px);padding:10px 12px}
+.drill-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px}
+.drill-step{font-size:12px;color:var(--color-text-secondary);line-height:1.7;padding-left:14px;position:relative}
+.drill-step::before{content:'→';position:absolute;left:0;color:var(--color-text-tertiary)}
+.no-results{padding:2rem;text-align:center;color:var(--color-text-tertiary);font-size:14px}
+
+@media(max-width:500px){.term-short{display:none}}
+</style>
+
+<h2 class="sr-only">Brawlhalla fourth guide — movement system, combo system, weapon combos, Gold-Plat gap, drills</h2>
+
+<div style="padding:1rem 0">
+<div class="search-wrap"><i class="ti ti-search" aria-hidden="true"></i><input id="searchInput" placeholder="Search movements, combos, drills…" oninput="render()"></div>
+<div class="cat-nav" id="catNav"></div>
+<div id="content"></div>
+</div>
+
+<script>
+const CATS=[
+  {id:'all',label:'All',cls:''},
+  {id:'mov',label:'Movement system',cls:'c-mov'},
+  {id:'combo',label:'Combo system',cls:'c-combo'},
+  {id:'weapon',label:'Weapon combos',cls:'c-weapon'},
+  {id:'gap',label:'Gold→Plat gap',cls:'c-gap'},
+  {id:'drill',label:'Drills',cls:'c-drill'},
+];
+
+const COLORS={
+  mov:'background:#E1F5EE;color:#085041',
+  combo:'background:#EEEDFE;color:#3C3489',
+  weapon:'background:#FAEEDA;color:#633806',
+  gap:'background:#FAECE7;color:#993C1D',
+  drill:'background:#E6F1FB;color:#0C447C',
+};
+
+const CAT_NAMES={mov:'Movement system',combo:'Combo system',weapon:'Weapon combos',gap:'Gold→Plat gap',drill:'Drills'};
+const CAT_ORDER=['mov','combo','weapon','gap','drill'];
+
+function chain(hits){
+  return '<div class="combo-chain">'+hits.map((h,i)=>`<span class="hit">${h}</span>${i<hits.length-1?'<span class="arr">→</span>':''}`).join('')+'</div>';
+}
+
+const TERMS=[
+
+// MOVEMENT SYSTEM
+{cat:'mov',abbr:'SHop',name:'Short hop',short:'Tap jump briefly for a low, fast aerial',
+def:`Short hop is probably the single most important movement skill you are missing. A full jump takes your legend high into the air — a lot of air time, a lot of commitment. A short hop gives you a tiny quick jump barely above the ground.
+
+Why it matters: short hop aerials land fast, are much harder to anti-air, and let you threaten from low to the ground without being in the air for long. Most offensive aerial pressure at high level is done from short hops, not full jumps.
+
+How to do it: tap the jump button very briefly. Don't hold it. If you're getting full jumps when you want short hops, you're holding the button too long. The window is 6 frames or less.`,
+ex:'Full hop NAir leaves you airborne for ~50 frames — easy to anti-air and punish on landing. Short hop NAir is airborne for ~20 frames — much harder to deal with. Same attack, completely different risk profile.',
+warn:'Most Gold players full-hop constantly. If you switch to mostly short hopping your aerials, your pressure immediately becomes harder to deal with. This alone can push you to Plat.'},
+
+{cat:'mov',abbr:'FHop',name:'Full hop',short:'Hold jump for maximum height',
+def:`The full jump — hold the button. Gets you high in the air. More air time means more options vertically but also more commitment — you're in the air longer, which means more time for the opponent to react.
+
+Full hops are for: reaching high platforms, extended aerial combos that need vertical distance, wall of pain setups, and recovery. Not for neutral offense — use short hops for that.`,
+ex:'You need to follow an opponent who got launched high. Full hop lets you reach their altitude. Short hop wouldn\'t get there. Context determines which you use.'},
+
+{cat:'mov',abbr:'Drift',name:'Aerial drift',short:'Hold a direction in the air to move horizontally',
+def:`While airborne, holding left or right moves your legend horizontally — this is drift. You can drift toward the opponent to chase, or drift away to escape. Drift speed depends on your legend's speed stat.
+
+Drift is how you position yourself for aerial attacks and how you avoid attacks while airborne. Most players drift toward opponents constantly — predictable. Good players vary their drift: sometimes toward, sometimes neutral, sometimes away to bait.`,
+ex:'You jump and drift away from the opponent. They chase with a jump of their own. You drift back toward them mid-air — now you\'re inside their expected trajectory and land a NAir on them.',
+warn:'Drifting straight at the opponent every time is the most punishable thing you can do in the air. They just put their hitbox in your path and you fly into it.'},
+
+{cat:'mov',abbr:'BDash',name:'Backdash',short:'Dash away from the opponent to create space',
+def:`Dashing away from the opponent. Simple but important. Used to: escape an approach, reset to a neutral spacing, bait an overextension, or get back to center from an edge.
+
+Most players at Gold level don't backdash enough — they hold their ground or run forward. But sometimes the best move in neutral is simply stepping back, making the opponent commit to an approach, then punishing.`,
+ex:'Opponent rushes at you. Instead of attacking into them, you backdash. Their attack whiffs. They\'re in recovery, you\'re safe at distance. Now you step back in and punish. Backdash created the whiff.'},
+
+{cat:'mov',abbr:'RunOff',name:'Run-off',short:'Run off a platform edge to get aerial momentum',
+def:`Running off the edge of a platform (or the main stage edge) intentionally, going into the air with your run momentum still active. This gives you fast horizontal aerial movement that you can't achieve from a standing jump.
+
+Run-off aerials are fast, ambiguous, and cover a lot of ground. Run off the right side of a platform → fast fall → DAir is a classic edgeguard entry. Run off a platform → NAir covers ground quickly in neutral.`,
+ex:'You\'re on the right soft platform. Opponent is offstage to the right recovering. You run off the right edge of the platform and fast fall with a DAir — you arrive at their recovery angle fast, before they can react.'},
+
+{cat:'mov',abbr:'App',name:'Five approach options',short:'The 5 ways to close distance — each with different risk',
+def:`Most Gold players only use ONE approach: run straight at the opponent and attack. This is the most predictable and punishable approach. There are five:
+
+1. RUN-IN: dash forward → attack. Fast, direct. Heavily read by good players. Use sparingly.
+2. JUMP APPROACH: jump forward → aerial. Vulnerable to anti-air. Harder to react to than run-in but easier to anti-air.
+3. WAVEDASH APPROACH: wavedash in → attack. Low to the ground, fast, hard to react to. The best neutral approach.
+4. PLATFORM APPROACH: jump to a platform above → drop through → attack. Changes the angle completely. Hard to prepare for.
+5. EMPTY APPROACH / FAKE: dash in → stop → nothing. No attack. Bait the opponent into committing, then punish.
+
+Rotating through all five makes you unpredictable. Staying on one makes you a flowchart.`,
+ex:'Set 1: you always run in. Opponent times a DLight to beat your approach every time. Set 2: you mix wavedash approach (low, hard to time) with empty approach (they flinch, you punish the flinch). Your run-in suddenly becomes scary again because now they\'re guessing.',
+warn:'Most of your approaches at Gold are probably #1 only. The immediate upgrade: add empty approaches. Show the approach, do nothing, punish their panicked response.'},
+
+{cat:'mov',abbr:'Land',name:'Safe landing options',short:'How to land without being punished',
+def:`Landing is one of the most dangerous moments — you\'re transitioning from air to ground, and if the opponent has you timed, they can punish your landing. There are five landing options:
+
+1. PLATFORM LAND: land on a soft platform. Opponent on the ground below can\'t directly punish — they have to come up.
+2. FAST FALL INTO ATTACK: fast fall → land with a grounded light immediately. The attack covers your landing.
+3. LAND WITH AERIAL: time a NAir or DAir so it\'s active as you land. The hitbox protects you.
+4. AIR DODGE TO LAND: use your air dodge close to the ground — i-frames cover landing. But now your dodge is on cooldown.
+5. LAND FAR AWAY: drift far from the opponent before landing. Not always possible but simplest.
+
+Which one to use depends on where the opponent is and whether your dodge is available.`,
+ex:'You\'re airborne, opponent is below waiting to punish your landing. Instead of falling straight down, you fast fall at an angle toward the right platform. You land there — opponent can\'t reach in time. Platform land saved you.',
+warn:'The worst landing is a predictable fast fall straight down in front of the opponent with no hitbox out and no dodge. That\'s a free punish for them every time.'},
+
+{cat:'mov',abbr:'EscPres',name:'Escape options from pressure',short:'How to get out when cornered or being pressured',
+def:`When the opponent is on top of you and attacking, you have six escape options:
+
+1. DODGE THROUGH: dodge through their attack using i-frames. Land behind them, reverse positions.
+2. DODGE AWAY: dodge in the direction away from them. Creates distance.
+3. JUMP OUT: jump over their attack. Then fast fall to a platform or drift away.
+4. PLATFORM DROP: if on a platform, drop through it to the lower level.
+5. COUNTER-ATTACK: time an attack to hit their startup or recovery. High risk, high reward.
+6. BACKDASH THEN JUMP: backdash first to create a small gap, then jump to get airborne and reset.
+
+Most Gold players only do #1 or #5. Mixing all six makes you hard to pressure.`,
+ex:'You\'re cornered at the right edge. Opponent is running in. Instead of dodging (predictable at this point), you jump OVER their run-in. They pass under you. You land at center. Complete position reversal without taking damage.',
+warn:'Dodge is the most overused escape option. Once the opponent maps your dodge timing, it stops working. You need all six options available.'},
+
+// COMBO SYSTEM
+{cat:'combo',abbr:'Notation',name:'Combo notation',short:'How to read and write combos: move → move → move',
+def:`Combos are written as a chain of move abbreviations separated by arrows (→). Each arrow means "immediately follow with."
+
+Reading a combo:
+DL → NAir → GP
+= Down light, then immediately neutral air, then immediately ground pound.
+
+The abbreviations you need:
+NL = neutral light | SL = side light | DL = down light
+NAir = neutral air | SAir = side air | DAir = down air
+GP = ground pound | NSig/SSig/DSig = neutral/side/down signature
+CDC = chase dodge cancel (between hits to close gap)
+> = chase dodge cancel specifically
+~ = slight delay before next hit (timing window)
+
+Example of a full combo written out:
+DL → CDC → NAir → CDC → SAir → SSig
+= Down light, chase dodge cancel, neutral air, chase dodge cancel, side air, finish with side sig.`,
+ex:'When you read "DL → NAir → GP (0–50%)" in a combo guide, it means: use down light, immediately neutral air, immediately ground pound. The (0–50%) tells you this is only a true combo at those percents.',
+warn:'Notation is only useful once you know the abbreviations. Reread the attack vocab from the previous guides if any of these are unclear.'},
+
+{cat:'combo',abbr:'SEF',name:'Starter → extender → ender',short:'Every combo has these three roles',
+def:`Every move in a combo plays a specific role:
+
+STARTER: the move that opens the combo. Creates hitstun + launches the opponent at an angle that allows a follow-up. Usually a light attack. Most important quality: reliability. If it doesn't land, the combo doesn't start.
+Common starters: DL (most weapons), NL (some weapons), NAir (in the air).
+
+EXTENDER: moves in the middle that continue the combo. They're not the opener and not the finisher — they add damage and reposition for the ender. CDCs happen here to close gaps.
+Common extenders: NAir, SAir, NL chains.
+
+ENDER: the last move. Designed for maximum knockback to either send offstage or set up an edgeguard. High damage, high knockback.
+Common enders: GP, SSig, DSig, DAir (spike).
+
+Most players at Gold know a starter and an ender but have no extenders. Result: 2-hit combos for 25 damage instead of 4-hit combos for 55 damage.`,
+ex:'DL (starter) → CDC → NAir (extender) → CDC → NAir (extender) → GP (ender). Three roles, one combo. The two NAirs in the middle add 30 damage you were leaving on the table with just DL → GP.',
+warn:'You said you know "one 4-hit unarmed and 3 two-hit weapon combos." The two-hit combos are starter → ender with no extenders. Adding even one extender per combo doubles your damage output per neutral win.'},
+
+{cat:'combo',abbr:'PctWin',name:'Percent windows',short:'True combos only work within specific percent ranges',
+def:`A combo that\'s a true combo at 0–40% may become a string at 50–80% (the opponent can escape with perfect timing) and stop connecting at 90%+ (they fly too far, your follow-up doesn't reach).
+
+This is because as percent increases, knockback increases, which means the opponent is flung farther and has less hitstun for the follow-up to connect.
+
+The practical rule: know three ranges for your main combos:
+LOW (0–40%): true combos, safe to execute.
+MID (40–80%): strings — reliable but technically escapable.
+HIGH (80%+): most light chains stop working. Switch to kill confirm setups.
+
+Different combos for different percents is not optional at Plat and above.`,
+ex:'At 20%, DL → NAir → GP is a true combo. At 75%, DL → NAir still connects but GP might not — they\'re flung too far. At 100%, just go for DL → SSig or SSig alone. Different percent, different plan.',
+warn:'Most Gold players use the same combo at every percent. Against smart opponents, your 20% combo at 90% does nothing — they DI out easily at high percent. Learn which combos are for which ranges.'},
+
+{cat:'combo',abbr:'KillConf',name:'Kill confirm logic',short:'At high percent, combos change — aim for the KO',
+def:`At high percent (80%+), the goal changes. You\'re not building damage — you\'re looking for the one hit that ends the stock. This changes your entire decision tree:
+
+Instead of: DL → NAir → NAir → GP (not reliably true at 100%)
+You want: land a clean hit that confirms into your highest-knockback move.
+
+Kill confirm structure:
+1. Land any reliable hit (NL, SL, or a whiff punish)
+2. Confirm into your highest knockback move (SSig, NSig, GP toward blast zone)
+
+The key word is "confirm" — you only go for the kill move when you know the setup hit actually landed. Don\'t throw random sigs hoping for the KO.`,
+ex:'Opponent at 110%. You win neutral with a DL. DL at 110% gives you a small pop-up — from that pop-up you immediately go into SSig. That sequence is a kill confirm. Clean, reliable, not a random sig throw.',
+warn:'The most common Gold/Plat mistake: throwing sigs randomly in neutral hoping to KO. Sigs are slow, readable, and punishable. Confirm into them from a setup hit instead.'},
+
+// WEAPON COMBOS
+{cat:'weapon',abbr:'Unarmed',name:'Unarmed combos',short:'Staple combos with no weapon',
+def:`Unarmed (no weapon) has some of the best combo potential in the game — fast moves, good hitstun, excellent true combo strings. These work for ALL legends when unarmed.
+
+CORE STAPLES:
+
+LOW PERCENT (0–50%):
+DL → NAir (starter → extender, true combo)
+DL → NAir → NAir (add a second NAir for extra damage)
+DL → NAir → NAir → GP (full true combo, main damage route)
+NL → DL → NAir (open with neutral light into the DL starter)
+
+MID PERCENT (50–80%):
+DL → NAir → SAir (NAir to SAir, sends sideways)
+DL → NAir → DAir (if they're airborne, spike toward ground)
+SL → SL → NAir (side light chain into aerial)
+
+HIGH PERCENT (80%+):
+DL → NSig or SSig (confirm into sig for KO)
+NL → SSig (quick neutral light into horizontal sig)`,
+combo:true,
+chains:[
+  {label:'Core (0–50%)',hits:['DL','NAir','NAir','GP'],pct:'0–50% — true combo'},
+  {label:'Mid route',hits:['DL','NAir','SAir'],pct:'50–80% — string'},
+  {label:'Kill confirm',hits:['DL','SSig'],pct:'80%+ — kill confirm'},
+],
+ex:'Your 4-hit unarmed is probably DL → NAir → NAir → GP. That\'s the main one. Add the kill confirm variant at high percent and you have a complete unarmed game.'},
+
+{cat:'weapon',abbr:'Sword',name:'Sword combos',short:'Staple combo routes for sword',
+def:`Sword has excellent combo potential — good hitstun on DL and NL, with versatile follow-ups. These are the weapon staples that work for any legend using sword.
+
+LOW PERCENT (0–50%):
+DL → NAir (core starter, universally true)
+DL → NAir → NAir (extra hit)
+DL → NAir → SAir (horizontal ender, sends sideways)
+NL → DL → NAir (open combo with neutral light)
+SL → DL → NAir (chain from side light)
+
+MID PERCENT (50–80%):
+DL → NAir → GP (ground pound as ender)
+SAir → SAir (aerial chain, chase each SAir)
+NAir → DL (land from aerial into ground combo continuation)
+
+HIGH PERCENT (80%+):
+DL → SSig (confirm into side sig, KO route)
+SL → SSig (side light into side sig, faster confirm)
+SAir → SSig (aerial confirm into sig)
+
+EDGEGUARD:
+SAir → DAir (chase opponent offstage, spike with DAir)
+Run-off → DAir (fast edgeguard spike)`,
+combo:true,
+chains:[
+  {label:'Core (0–50%)',hits:['DL','NAir','SAir'],pct:'0–50% — true combo'},
+  {label:'Mid route',hits:['DL','NAir','GP'],pct:'40–70% — true or string'},
+  {label:'Kill confirm',hits:['SL','SSig'],pct:'80%+ — kill confirm'},
+  {label:'Edgeguard',hits:['SAir','DAir'],pct:'Offstage — spike'},
+],
+ex:'You said you know 2-hit sword combos. These are probably DL → NAir or SL → SSig. The upgrade is adding the middle: DL → NAir → SAir instead of just DL → NAir. That\'s one more hit for 15–20 more damage per combo.'},
+
+{cat:'weapon',abbr:'Hammer',name:'Hammer combos',short:'Staple combo routes for hammer',
+def:`Hammer is a heavy weapon — slow startup on most moves but enormous knockback. Your combo game with hammer is shorter chains with heavier individual hits. You do less hits per combo but each hit does more damage.
+
+The challenge: hammer\'s startup is slow. You can\'t rely on hammer light combos the same way sword can. You need setups and reads more than raw strings.
+
+LOW PERCENT (0–50%):
+DL → NAir (still the universal DL starter)
+NL → NAir (neutral light pops up, follow with NAir)
+DL → NL (ground chain at very low percent)
+NAir → DL (land from NAir into ground light)
+
+MID PERCENT (50–80%):
+DL → GP (down light into ground pound, strong ender)
+SL → NAir (side light hits sideways, follow with aerial)
+NAir → SL (aerial into grounded side light)
+
+HIGH PERCENT (80%+):
+ANY LIGHT → DSig or SSig (confirm into hammer sig, massive knockback)
+DL → DSig (most reliable kill confirm for hammer)
+NL → SSig (faster confirm from neutral light)
+
+IMPORTANT FOR HAMMER:
+The sigs are where hammer wins. SSig and DSig have huge range and knockback. The game plan is: build to 80%+, land one light, confirm into sig. That\'s hammer\'s core kill pattern.`,
+combo:true,
+chains:[
+  {label:'Core (0–60%)',hits:['DL','NAir','GP'],pct:'0–60% — true or string'},
+  {label:'Mid route',hits:['SL','NAir'],pct:'40–80% — string'},
+  {label:'Kill confirm',hits:['DL','DSig'],pct:'80%+ — kill confirm'},
+],
+ex:'Hammer at 90% is dangerous even for opponents because one confirmed sig can KO. Your gameplan: survive to 80%+, play patient, land a DL as confirm, SSig or DSig for the stock. Don\'t spam sigs in neutral — wait for the confirm.',
+warn:'Hammer is punishing for new players because the sigs are slow and obvious. Until you have solid confirm setups, you\'ll throw sigs and get punished. Build the confirm habit first.'},
+
+// GOLD → PLAT GAP
+{cat:'gap',abbr:'G1',name:'Overcommitting in neutral',short:'Swinging without a reason — the #1 Gold habit',
+def:`The single biggest reason players stay stuck in Gold: they attack in neutral without a specific reason to attack. They see the opponent exist and press buttons.
+
+At Plat+, your attack will always be met by a punish if you had no reason to throw it. "I felt like attacking" is a reason to get combo\'d.
+
+A real reason to attack in neutral:
+- You see the opponent commit to a dash or jump (they\'re in startup, you punish)
+- You baited a dodge and their cooldown is active (now they can\'t dodge)
+- You read a pattern from the last 3 interactions
+- You have a range advantage and they stepped in
+
+No reason = don\'t attack. Sit on your hands. Make them move first.`,
+ex:'Round starts. 3 seconds of neutral. Gold player: presses SLight immediately. Opponent dodges through it and gets a free combo. Plat player: dash dances for 4 seconds, empty approaches once, opponent panics and throws a slow attack. Punish. Neither player was "better" technically — the Plat player just didn\'t commit without a reason.',
+warn:'This habit feels like "playing too passive." It is not. Waiting for the right moment is aggressive neutral. Random aggression is just giving damage away.'},
+
+{cat:'gap',abbr:'G2',name:'No combo game',short:'Winning neutral but getting only 10 damage per touch',
+def:`You said you know a 4-hit unarmed and 3 two-hit weapon combos. A two-hit combo in a match at Gold gives you roughly 20–30 damage per neutral win. A 4-hit combo gives you 40–55.
+
+At Plat, players consistently get 40–60 damage per neutral win. That\'s 2× the damage for the same number of neutral wins.
+
+If you win neutral 10 times per stock and get 20 damage each time = 200 damage to get a KO.
+If you win neutral 10 times and get 50 damage each time = 500 damage total, you KO at ~120% and still have damage left.
+
+The fix is in the weapon combo section of this guide. Pick ONE weapon, learn ONE 4-hit string at low percent and ONE kill confirm. Lab them until automatic. That\'s it.`,
+ex:'You whiff punish with DL. Currently: DL → SSig for ~35 damage. After learning the extender: DL → NAir → NAir → GP for ~55 damage, and they end up in a worse position. Same neutral win, 20 more damage, better position.'},
+
+{cat:'gap',abbr:'G3',name:'Predictable recovery',short:'Same recovery angle every time = free edgeguard',
+def:`At Gold, most players recover the same way every time — same angle, same timing, same height. After two stocks, your opponent has your recovery fully mapped and punishes it for free.
+
+The three things to vary in your recovery:
+1. HEIGHT: sometimes recover high, sometimes recover low, sometimes aim for the ledge.
+2. TIMING: sometimes use the recovery move early, sometimes delay it. Don\'t always snap it at the same point.
+3. DOUBLE JUMP USAGE: sometimes jump first then recovery move, sometimes recovery move first then jump. These produce completely different trajectories.
+
+You should also recover with hitboxes when possible (recovery attack, or time an aerial to cover your approach to the stage).`,
+ex:'Stock 1: you recover high. Opponent edgeguards you high and you barely make it. Stock 2: recover high again. They KO you offstage. Stock 3: if you go high again you\'re being predictable under pressure. Go low. Their edgeguard setup was for high — they miss.',
+warn:'Varying recovery feels uncomfortable because you\'re used to the reliable route. The familiar route is the one getting you killed. Discomfort = the opponent doesn\'t know what\'s coming.'},
+
+{cat:'gap',abbr:'G4',name:'Not using movement as a tool',short:'Standing still or running = binary options',
+def:`At Gold, players usually have two movement modes: standing still and running. Sometimes a jump. That\'s it. No dash dancing, no empty approaches, no varying approach angle, no short hops.
+
+Movement is the third pillar of the game alongside attacks and defense. If your movement is binary (still or running), you are completely readable.
+
+The minimum movement upgrade for Gold→Plat:
+1. Dash dance instead of walking
+2. Short hop instead of full hop for aerials
+3. One empty approach per neutral interaction
+4. Backdash to create space before committing
+
+You don\'t need wavedash or gravity cancel to climb from Gold to Plat. Just these four basics.`,
+ex:'Gold player approach: run right → DL. Plat player approach: dash dance right, dash dance back, empty approach (run forward + stop), opponent panics and throws NL, Plat player punishes the whiff. Movement created the opening. The attack was almost incidental.',
+warn:'You said your movement is "probably ass." This is actually good news — movement improvement is free ELO. You don\'t need to practice mechanics, just habits. Habits change faster than execution.'},
+
+{cat:'gap',abbr:'G5',name:'Panic dodging',short:'Dodging on instinct instead of on read',
+def:`At Gold, players dodge constantly — whenever they feel pressure, they dodge. This burns dodge cooldown randomly and gives away free punishes to anyone who expects it.
+
+The mental model at Gold: dodge = defense. The mental model at Plat: dodge = one specific tool for one specific situation.
+
+Dodge should be used when: you see a specific attack you want to go through, your dodge is fresh (no cooldown), and you have a punish ready to execute immediately after.
+
+Dodge should NOT be used when: you\'re panicking, you have no follow-up plan, your cooldown just reset (they see it), or you\'re in a position where all dodge options are covered.`,
+ex:'Opponent dashes in. Gold player: dodges immediately. Opponent expected this, delayed their attack to land after the dodge. Free combo. Plat player: doesn\'t dodge, backdashes instead. Opponent\'s attack whiffs. Punish. The Plat player used a non-dodge escape option.',
+warn:'Counting your dodges per stock is useful in practice mode. If you\'re using 10+ dodges per stock, most of them are panic dodges. Aim for 3–5 intentional dodges per stock.'},
+
+// DRILLS
+{cat:'drill',abbr:'DR1',name:'Drill: short hop aerials',short:'5 minutes daily until short hop is automatic',
+def:`The goal: make short hop automatic so you never accidentally full hop in neutral.
+
+How to practice:
+Enter training mode against a stationary dummy.`,
+drillSteps:[
+  'Stand at center. Short hop NAir 20 times in a row. If you full hop, restart the count.',
+  'Now short hop SAir 20 times. Same rule.',
+  'Now alternate: short hop NAir, then short hop SAir, then short hop DAir. 10 reps each.',
+  'Add movement: dash → short hop NAir. 20 reps. The dash→jump transition is where full hops sneak in.',
+  'Finally: short hop aerial → fast fall → land → short hop aerial again. Chain them.',
+],
+ex:'5 minutes of this daily for one week. By the end of the week, short hop is your default. You\'ll start noticing immediately in ranked how much safer your aerial pressure becomes.',
+warn:'Do not skip the "restart count" rule. The restart rule is what forces muscle memory. Counting without the restart is just movement without learning.'},
+
+{cat:'drill',abbr:'DR2',name:'Drill: DL combo route',short:'Your one core combo, drilled to automatic',
+def:`Pick ONE combo from the weapon combos section (the one that matches your main weapon). Run this exact drill.`,
+drillSteps:[
+  'In training mode, slow the game speed to 50% if available. Run the combo 10 times slowly.',
+  'Speed back to 100%. Run the combo 20 times. If you drop it, reset count.',
+  'Add a real scenario: run in → DL (as if you just won neutral) → full combo. 20 times.',
+  'Now do it on the left side. Most players are worse on one side — 20 reps facing left.',
+  'Final test: do the combo after a whiff punish (let the dummy do a move, dodge it, then land the combo). 10 reps.',
+],
+ex:'30 minutes of this one session. The combo will feel automatic. In ranked that night, every time you land DL you\'ll feel the rest of the combo just come out — no thinking required.',
+warn:'Do not move on to a new combo until this one is automatic on both sides and after a whiff punish. Two solid combos are worth ten half-learned ones.'},
+
+{cat:'drill',abbr:'DR3',name:'Drill: dash dance neutral',short:'Training yourself to not commit without a reason',
+def:`This drill builds the neutral habit of not pressing buttons randomly.`,
+drillSteps:[
+  'In training mode with CPU on hardest. Set a rule: you cannot attack until the CPU whiffs an attack.',
+  'Dash dance in front of them. Empty approach once. Dash away. Do nothing until they commit.',
+  'The moment they throw a move: whiff punish → full combo. Reset. Repeat.',
+  'Count how many times you punish vs how many times you attacked without them whiffing. Goal: 0 unprovoked attacks.',
+  'Run this for 5 minutes. Then play a ranked game with the same rule in mind.',
+],
+ex:'This drill feels painfully slow. That\'s correct. After 5 minutes, play one ranked game. You\'ll notice yourself naturally waiting more. One session of this drill changes your neutral habits more than 10 matches of playing normally.',
+warn:'The CPU on hardest will dash dance and bait you. Good — that\'s the point. Learn not to take the bait.'},
+
+{cat:'drill',abbr:'DR4',name:'Drill: recovery variation',short:'Drilling all three recovery trajectories',
+def:`This drill stops you from using the same recovery angle every time.`,
+drillSteps:[
+  'Go to a stage with a right blast zone. Have a friend or CPU push you off the right side.',
+  'Recovery 1: aim for the TOP of the stage. Use double jump then recovery move to go high.',
+  'Recovery 2: aim for the LEDGE directly. Recovery move angled directly at the edge.',
+  'Recovery 3: recover LOW. Stay low, recovery move angles sharply upward at the last second.',
+  'Practice each 10 times. Then mix randomly — roll a mental die and do whichever comes up.',
+],
+ex:'After this drill, you have three distinct recovery paths. In ranked, use a different one each stock. By stock 3, the opponent has no read on where you\'re going.',
+warn:'Recovering low feels terrifying because the bottom blast zone is right there. That discomfort is exactly why it\'s effective — the opponent expects you to go high to feel safe.'},
+
+{cat:'drill',abbr:'DR5',name:'Drill: one thing per session',short:'The meta-drill — focused improvement not grinding',
+def:`The most important drill isn\'t a specific technique. It\'s a practice structure.
+
+Before each session: pick ONE thing to work on. Write it down.
+During the session: every match, evaluate only that one thing. Ignore everything else.
+After the session: did it improve? What pattern did you notice?
+
+Examples:
+- Session goal: "I will short hop all my aerials today."
+- Session goal: "I will not dodge unless I have a follow-up planned."
+- Session goal: "I will vary my recovery every stock."
+- Session goal: "I will land at least one 4-hit combo per stock."
+
+At 2500 hours, you\'re past the point where generic "play more games" improves you. Focused single-variable sessions do.`,
+ex:'Last month: you played 200 games with no focus. Rank stayed at Gold 2. This week: 5 sessions, one focus each. Session 1: short hop. Session 2: combo drill. Session 3: recovery variation. Session 4: neutral patience. Session 5: mix them. You climbed to Plat 4 in 5 days.',
+warn:'This feels slow because you\'re only improving one thing per session. It is not slow. It\'s how every serious improvement in any skill actually works.'},
+
+];
+
+let activeCat='all';
+let openMap={};
+
+function render(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  const terms=TERMS.filter(t=>{
+    const matchCat=activeCat==='all'||t.cat===activeCat;
+    const matchQ=!q||(t.name.toLowerCase().includes(q)||t.abbr.toLowerCase().includes(q)||t.short.toLowerCase().includes(q)||(t.def&&t.def.toLowerCase().includes(q)));
+    return matchCat&&matchQ;
+  });
+
+  document.getElementById('catNav').innerHTML=CATS.map(c=>`<button class="cat-btn ${c.cls}${activeCat===c.id?' active':''}" onclick="setCat('${c.id}')">${c.label}</button>`).join('');
+
+  let html='';
+  if(activeCat==='all'){
+    CAT_ORDER.forEach(cat=>{
+      const list=terms.filter(t=>t.cat===cat);
+      if(!list.length)return;
+      html+=`<p class="section-label">${CAT_NAMES[cat]}</p>`;
+      list.forEach(t=>html+=termHTML(t));
+    });
+  } else {
+    terms.forEach(t=>html+=termHTML(t));
+  }
+
+  if(!html) html=`<div class="no-results">No terms match "${q}"</div>`;
+  document.getElementById('content').innerHTML=html;
+}
+
+function termHTML(t){
+  const key=t.cat+'_'+t.abbr;
+  const isOpen=!!openMap[key];
+
+  let bodyExtra='';
+  if(t.chains){
+    bodyExtra+=t.chains.map(c=>`
+      <div style="margin-top:10px">
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:4px">${c.label}</div>
+        ${chain(c.hits)}
+        <div class="pct">${c.pct}</div>
+      </div>`).join('');
+  }
+  if(t.drillSteps){
+    bodyExtra+=`<div class="drill-box"><div class="drill-title"><i class="ti ti-list-check" aria-hidden="true" style="margin-right:4px"></i>Step by step</div>`+
+      t.drillSteps.map(s=>`<div class="drill-step">${s}</div>`).join('')+`</div>`;
+  }
+
+  return `<div class="term-row${isOpen?' open':''}" id="tr_${key}" onclick="toggle('${key}')">
+    <div class="term-head">
+      <span class="abbr" style="${COLORS[t.cat]}">${t.abbr}</span>
+      <span class="term-name">${t.name}</span>
+      <span class="term-short">${t.short}</span>
+      <span class="chevron">&#8964;</span>
+    </div>
+    <div class="term-body${isOpen?' open':''}">
+      <div class="def">${t.def}</div>
+      ${bodyExtra}
+      ${t.warn?`<div class="warn"><strong>Watch out:</strong> ${t.warn}</div>`:''}
+      <div class="ex"><strong>Example:</strong> ${t.ex}</div>
+    </div>
+  </div>`;
+}
+
+function toggle(key){
+  openMap[key]=!openMap[key];
+  render();
+  if(openMap[key]) setTimeout(()=>document.getElementById('tr_'+key)?.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+function setCat(id){activeCat=id;render();}
+render();
+</script>

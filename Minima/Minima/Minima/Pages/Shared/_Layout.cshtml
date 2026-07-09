@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Minima</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col antialiased">
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-100">
+        <nav class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a asp-page="/Index" class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-xl bg-blue-600 text-white font-extrabold text-lg flex items-center justify-center shadow-sm">M</span>
+                <span class="font-extrabold text-gray-900 text-lg tracking-tight">Minima</span>
+            </a>
+
+            <div class="flex items-center gap-1 text-sm">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-page="/Dashboard" class="px-3 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 font-medium transition hidden sm:block">Tableau de bord</a>
+                    <a asp-page="/Contacts" class="px-3 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 font-medium transition">Contacts</a>
+                    <a asp-page="/Profile" class="px-3 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 font-medium transition">Mon compte</a>
+                    <span class="flex items-center gap-2 pl-3 ml-2 border-l border-gray-200">
+                        <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">
+                            @(User.Identity.Name?.Substring(0, 1).ToUpper())
+                        </span>
+                        <a asp-page="/Logout" class="px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 font-medium transition">Déconnexion</a>
+                    </span>
+                }
+                else
+                {
+                    <a asp-page="/Login" class="px-3 py-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 font-medium transition">Connexion</a>
+                    <a asp-page="/Register" class="ml-1 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow-sm transition">Créer un compte</a>
+                }
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-1">
+        @RenderBody()
+    </main>
+
+    <footer class="border-t border-gray-100 bg-white py-4 text-center text-xs text-gray-400">
+        &copy; 2026 Minima — Équipe SenTech
+    </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

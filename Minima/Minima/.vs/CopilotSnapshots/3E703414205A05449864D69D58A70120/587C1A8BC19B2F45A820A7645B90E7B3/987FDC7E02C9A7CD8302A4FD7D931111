@@ -1,0 +1,112 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Minima.Data;
+using Minima.Services;
+
+namespace Minima.Pages
+{
+    public class LoginModel : PageModel
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly IPasswordHashService _passwordHashService;
+        private readonly IJwtTokenService _jwtTokenService;
+
+        [BindProperty]
+        public string UsernameOrEmail { get; set; } = string.Empty;
+
+        [BindProperty]
+        public string Password { get; set; } = string.Empty;
+
+        public string ErrorMessage { get; set; } = string.Empty;
+        public string SuccessMessage { get; set; } = string.Empty;
+
+        public LoginModel(ApplicationDbContext context, IPasswordHashService passwordHashService, IJwtTokenService jwtTokenService)
+        {
+            _context = context;
+            _passwordHashService = passwordHashService;
+            _jwtTokenService = jwtTokenService;
+        }
+
+        public void OnGet(string message = "")
+        {
+            SuccessMessage = message;
+        }
+
+        public IActionResult OnPost()
+        {
+            // Validation
+            if (string.IsNullOrWhiteSpace(UsernameOrEmail))
+            {
+                ErrorMessage = "Veuillez entrer votre identifiant ou adresse courriel.";
+                return Page();
+            }
+
+            if (string.IsNullOrWhiteSpace(Password))
+            {
+                ErrorMessage = "Veuillez entrer votre mot de passe.";
+                return Page();
+            }
+
+            try
+            {
+                // Find user by username or email
+                var user = _context.Users.FirstOrDefault(u =>
+                    u.Username == UsernameOrEmail || u.Email == UsernameOrEmail);
+
+                if (user == null)
+                {
+                    ErrorMessage = "Identifiant ou mot de passe incorrect.";
+                    return Page();
+                }
+
+                // Check if user is blocked
+                if (user.IsBlocked)
+                {
+                    ErrorMessage = "Votre compte a été bloqué. Contactez un administrateur.";
+                    return Page();
+                }
+
+                // Check if user is active
+                if (!user.IsActive)
+                {
+                    ErrorMessage = "Votre compte n'est pas actif.";
+                    return Page();
+                }
+
+                // Verify password
+                if (!_passwordHashService.VerifyPassword(Password, user.PasswordHash))
+                {
+                    ErrorMessage = "Identifiant ou mot de passe incorrect.";
+                    return Page();
+                }
+
+                // Generate JWT token
+                var token = _jwtTokenService.GenerateToken(user.Id, user.Username);
+
+                // Store token in a secure HTTP-only cookie (for Razor Pages)
+                Response.Cookies.Append(
+                    "authToken",
+                    token,
+                    new Microsoft.AspNetCore.Http.CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict,
+                        Expires = DateTimeOffset.UtcNow.AddMinutes(1440)
+                    });
+
+                // Also return token in response for client-side storage (optional)
+                TempData["Token"] = token;
+                TempData["UserId"] = user.Id;
+
+                // Redirect to dashboard
+                return RedirectToPage("/Dashboard");
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Une erreur s'est produite: {ex.Message}";
+                return Page();
+            }
+        }
+    }
+}

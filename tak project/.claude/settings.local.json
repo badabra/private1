@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(extract-text \"Suivi_Stage_Gabarit.docx\")",
+      "Bash(extract-text \"CahierDesCharges_TakHub_SEE-TT.docx\")",
+      "Bash(pandoc \"20260531224320_CahierDesCharges_TakGame_Aliounebadarathioune.docx\" -t markdown -o cdc1.md)",
+      "Bash(pandoc \"Suivi_Stage_Gabarit.docx\" -t markdown -o suivi.md)",
+      "Bash(pandoc \"CahierDesCharges_TakHub_SEE-TT.docx\" -t markdown -o cdc2.md)",
+      "Read(//c//**)",
+      "Bash(python __TRACKED_VAR__/scripts/office/unpack.py '20260531224320_CahierDesCharges_TakGame_Aliounebadarathioune \\(1\\).docx' unpacked_cdc1/)",
+      "Bash(python __TRACKED_VAR__/scripts/office/unpack.py Suivi_Stage_Gabarit.docx unpacked_suivi/)",
+      "Bash(where pandoc *)",
+      "Bash(mkdir -p \"/c/Users/Alioune/Desktop/tak project/packages/puzzle-gen/src\" \"/c/Users/Alioune/Desktop/tak project/packages/puzzle-gen/tests\" \"/c/Users/Alioune/Desktop/tak project/packages/puzzle-gen/fixtures/sample-games\")",
+      "Bash(npm install *)",
+      "Bash(node \"C:/Users/Alioune/AppData/Local/Temp/claude/C--Users-Alioune-Desktop-tak-project/ef5462d2-28ea-4ef6-9bf1-37586a8aed1a/scratchpad/probe.mjs\")",
+      "Bash(npx vitest *)",
+      "Bash(npm run *)"
+    ]
+  }
+}
