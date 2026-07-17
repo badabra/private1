@@ -58,14 +58,23 @@ rafraîchissement périodique côté client.
 
 ---
 
-## Sprint 3 — Communauté (14 juillet – 4 août) — 🔲 À venir
+## Sprint 3 — Communauté (14 juillet – 4 août) — ✅ Terminé (cette session)
 
 | Fonctionnalité (CDC) | Module / package | Statut |
 |---|---|---|
-| Chat de partie | `packages/server` (routes/socket chat), `packages/client` (composant Chat) | 🔲 Planifié |
-| Blogs + commentaires | `server/src/routes/blogsRoutes.js`, `client/src/pages/BlogPage.jsx` | 🔲 Planifié |
-| Groupes thématiques | `server/src/routes/groupsRoutes.js`, `client/src/pages/GroupsPage.jsx` | 🔲 Planifié |
-| Puzzles (bibliothèque + validation via le moteur) | `server/src/routes/puzzlesRoutes.js`, `client/src/pages/PuzzlesPage.jsx`, réutilise `tak-engine` pour valider les solutions | 🔲 Planifié |
+| Chat de partie | `server/src/controllers/chatController.js` + routes `/games/:id/messages`, `client/src/components/GameChat.jsx` (intégré à `GamePage`) | ✅ Fait |
+| Blogs + commentaires | `server/src/routes/blogsRoutes.js`, `server/src/models/Post.js`, `client/src/pages/BlogPage.jsx` | ✅ Fait |
+| Groupes thématiques | `server/src/routes/groupsRoutes.js`, `server/src/models/Group.js`, `client/src/pages/GroupsPage.jsx` | ✅ Fait |
+| Puzzles (bibliothèque + validation via le moteur) | `packages/puzzle-gen` (générateur), `server/src/routes/puzzlesRoutes.js`, `server/src/models/Puzzle.js`, `client/src/pages/PuzzlesPage.jsx` | ✅ Fait |
+| Générateur de puzzles (solveur de gains forcés, extraction depuis PTN) | `packages/puzzle-gen/src/{solver,extractPuzzles,ingest,cli}.js` | ✅ Fait |
+| Amorçage de la bibliothèque de puzzles (branché sur `puzzle-gen`) | `server/src/controllers/puzzlesController.js` (`seedPuzzlesIfEmpty`), `npm run seed:puzzles` | ✅ Fait |
+| Tests d'intégration Communauté (chat, blogs, groupes, puzzles) | `server/tests/community.test.js` | ✅ Fait |
+
+Le générateur `puzzle-gen` extrait les positions à gain forcé de vraies
+parties (format PTN) et les exporte en JSONL (CLI) ou les fournit directement
+au serveur en tant que bibliothèque (`generateSamplePuzzles`). Le serveur
+amorce sa collection de puzzles au premier appel de `GET /api/puzzles` (ou via
+`npm run seed:puzzles`) puis valide chaque tentative avec le moteur `tak-engine`.
 
 ---
 

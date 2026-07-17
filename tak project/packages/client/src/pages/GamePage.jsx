@@ -5,6 +5,7 @@ import { api } from '../services/api.js';
 import { subscribeToGame } from '../services/firebase.js';
 import Board from '../components/board/Board3D.jsx';
 import MovePanel from '../components/board/MovePanel.jsx';
+import GameChat from '../components/GameChat.jsx';
 import { useTakMove } from '../hooks/useTakMove.js';
 
 const POLL_INTERVAL_MS = 2000;
@@ -189,6 +190,8 @@ export default function GamePage() {
             </ol>
           )}
         </div>
+
+        <GameChat gameId={id} />
       </div>
     </div>
   );

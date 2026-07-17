@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "src/cli.js",
+  "main": "index.js",
   "scripts": {
     "generate": "node src/cli.js",
     "test": "vitest run"

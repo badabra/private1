@@ -10,7 +10,8 @@ Projet de session — DEC Informatique, Programmation Web et Applications (Aliou
 ```
 packages/
   tak-engine/   Moteur de jeu Tak (JS pur, indépendant) — règles, piles, routes, PTN
-  server/       API Express (auth JWT/bcrypt, MongoDB Atlas)
+  puzzle-gen/   Générateur de puzzles — solveur de gains forcés, extraction depuis PTN
+  server/       API Express (auth JWT/bcrypt, MongoDB Atlas) — parties, chat, blogs, groupes, puzzles
   client/       Application React + Vite + TailwindCSS
 docs/
   PROJECT_BREAKDOWN.md   Découpage du projet par sprint
@@ -48,4 +49,14 @@ npm run dev:client
 
 - **Sprint 1 — Fondations** : moteur Tak, authentification, UI de plateau locale (6 formats)
 - **Sprint 2 — Multijoueur** : synchronisation temps réel (Firebase Firestore), persistance des parties, spectateurs, profils
-- **Sprint 3 — Communauté** : chat, blogs, groupes, puzzles
+- **Sprint 3 — Communauté** : chat de partie, blogs + commentaires, groupes thématiques, puzzles (générés par `puzzle-gen`, validés par le moteur)
+
+### Puzzles (Sprint 3)
+
+Le paquet `puzzle-gen` extrait des positions à gain forcé depuis des parties
+PTN. Le serveur amorce automatiquement sa bibliothèque au premier appel de
+`GET /api/puzzles` ; pour amorcer une base MongoDB réelle :
+
+```bash
+npm run seed:puzzles --workspace=@takhub/server
+```

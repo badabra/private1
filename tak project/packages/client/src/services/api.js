@@ -41,4 +41,26 @@ export const api = {
   getGame: (id) => request(`/games/${id}`),
   joinGame: (id) => request(`/games/${id}/join`, { method: 'POST', auth: true }),
   playMove: (id, move) => request(`/games/${id}/move`, { method: 'POST', body: { move }, auth: true }),
+
+  // Chat de partie (Sprint 3)
+  listMessages: (gameId) => request(`/games/${gameId}/messages`),
+  postMessage: (gameId, text) => request(`/games/${gameId}/messages`, { method: 'POST', body: { text }, auth: true }),
+
+  // Blogs (Sprint 3)
+  listPosts: () => request('/blogs'),
+  createPost: (payload) => request('/blogs', { method: 'POST', body: payload, auth: true }),
+  getPost: (id) => request(`/blogs/${id}`),
+  addComment: (id, text) => request(`/blogs/${id}/comments`, { method: 'POST', body: { text }, auth: true }),
+
+  // Groupes (Sprint 3)
+  listGroups: () => request('/groups'),
+  createGroup: (payload) => request('/groups', { method: 'POST', body: payload, auth: true }),
+  getGroup: (id) => request(`/groups/${id}`),
+  joinGroup: (id) => request(`/groups/${id}/join`, { method: 'POST', auth: true }),
+  leaveGroup: (id) => request(`/groups/${id}/leave`, { method: 'POST', auth: true }),
+
+  // Puzzles (Sprint 3)
+  listPuzzles: () => request('/puzzles'),
+  getPuzzle: (id) => request(`/puzzles/${id}`),
+  attemptPuzzle: (id, move) => request(`/puzzles/${id}/attempt`, { method: 'POST', body: { move } }),
 };

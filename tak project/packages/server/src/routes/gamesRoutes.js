@@ -11,6 +11,7 @@ import {
   joinByCode,
   playMove,
 } from '../controllers/gamesController.js';
+import { listMessages, postMessage } from '../controllers/chatController.js';
 
 export const gamesRouter = Router();
 
@@ -63,3 +64,8 @@ gamesRouter.post('/join-by-code', requireAuth, asyncHandler(joinByCode));
 gamesRouter.get('/:id', asyncHandler(getGame));
 gamesRouter.post('/:id/join', requireAuth, asyncHandler(joinGame));
 gamesRouter.post('/:id/move', requireAuth, asyncHandler(playMove));
+
+// Chat de partie (Sprint 3) : lecture publique (comme la vue spectateur),
+// écriture réservée aux utilisateurs connectés.
+gamesRouter.get('/:id/messages', asyncHandler(listMessages));
+gamesRouter.post('/:id/messages', requireAuth, asyncHandler(postMessage));
